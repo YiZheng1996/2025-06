@@ -46,7 +46,7 @@ namespace MainUI
                 {
                     ["参数"] = paraconfig,
                 };
-                string modelName = VarHelper.mTestViewModel.ModelName;
+                string modelName = VarHelper.TestViewModel.ModelName;
                 foreach (var step in lstStep)
                 {
                     string processName = step.ProcessName;
@@ -320,13 +320,13 @@ namespace MainUI
         {
             try
             {
-                if (VarHelper.mTestViewModel == null) return;
+                if (VarHelper.TestViewModel == null) return;
                 paraconfig = new();
                 paraconfig.SetSectionName(VarHelper.ModelTypeName);
                 paraconfig.Load();
                 BaseTest.para = paraconfig;
                 InitItem();
-                ModelLoadDSL(VarHelper.mTestViewModel.ModelID);
+                ModelLoadDSL(VarHelper.TestViewModel.ID);
                 if (!string.IsNullOrEmpty(paraconfig.RptFile))
                 {
                     rowIndex = 0;
@@ -349,7 +349,7 @@ namespace MainUI
         {
             try
             {
-                if (string.IsNullOrEmpty(VarHelper.mTestViewModel.TypeName)) return;
+                if (string.IsNullOrEmpty(VarHelper.TestViewModel.ModelTypeName)) return;
                 InitParaConfig();
             }
             catch (Exception ex)
@@ -373,7 +373,7 @@ namespace MainUI
         {
             _itemPoints.Clear();
             TestStepBLL stepBLL = new();
-            var testSteps = stepBLL.GetTestItems(VarHelper.mTestViewModel.ModelID);
+            var testSteps = stepBLL.GetTestItems(VarHelper.TestViewModel.ID);
             _itemPoints.AddRange(testSteps.Select(ts => new ItemPointModel
             {
                 Check = true,
@@ -515,7 +515,7 @@ namespace MainUI
             {
                 return (false, "请注意，急停情况下无法启动自动试验!");
             }
-            if (string.IsNullOrEmpty(VarHelper.mTestViewModel.ModelName))
+            if (string.IsNullOrEmpty(VarHelper.TestViewModel.ModelName))
             {
                 return (false, "未选择型号，无法启动自动试验!");
             }
@@ -619,7 +619,7 @@ namespace MainUI
                     MessageHelper.MessageOK("报表模板未设置，无法保存！");
                     return;
                 }
-                if (string.IsNullOrEmpty(VarHelper.mTestViewModel.ModelName))
+                if (string.IsNullOrEmpty(VarHelper.TestViewModel.ModelName))
                 {
                     MessageHelper.MessageOK("型号未选择！");
                     return;
@@ -629,12 +629,12 @@ namespace MainUI
                 if (result == DialogResult.No) return;
                 string rootPath = Application.StartupPath + @"Save\";
                 if (!Directory.Exists(rootPath)) Directory.CreateDirectory(rootPath);
-                string filname = rootPath + VarHelper.mTestViewModel.ModelName + "_" + "" + "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
+                string filname = rootPath + VarHelper.TestViewModel.ModelName + "_" + "" + "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
                 TestRecordNewBLL recordbll = new();
                 recordbll.SaveTestRecord(new TestRecordModel
                 {
-                    Kind = VarHelper.mTestViewModel.TypeID.ToString(),
-                    Model = VarHelper.mTestViewModel.ModelName,
+                    KindID = VarHelper.TestViewModel.TypeID,
+                    ModelID = VarHelper.TestViewModel.ID,
                     TestID = txtNumber.Text.Trim(),
                     Tester = NewUsers.NewUserInfo.Username,
                     TestTime = DateTime.Now,
@@ -702,7 +702,7 @@ namespace MainUI
             VarHelper.ShowDialogWithOverlay(frm, frmSpec);
             if (frmSpec.DialogResult == DialogResult.OK)
             {
-                txtModel.Text = VarHelper.mTestViewModel.ModelName;
+                txtModel.Text = VarHelper.TestViewModel.ModelName;
                 sRefresh();
             }
         }

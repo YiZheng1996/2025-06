@@ -68,7 +68,13 @@
     <Compile Update="Modules\DOGrp.cs" />
     <Compile Update="Modules\OpcStatusGrp.cs" />
     <Compile Update="Modules\PLCCalibration.cs" />
+    <Compile Update="Procedure\Edit\frmModelEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Procedure\Edit\frmPermissionEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Procedure\Edit\frmModelTypeEdit.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Procedure\Edit\frmRoleEdit.cs">
@@ -92,7 +98,7 @@
     <Compile Update="Procedure\ucKindManage.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Procedure\ucTypeManage.cs">
+    <Compile Update="Procedure\ucModelManage.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Procedure\ucTestParams.cs">

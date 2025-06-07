@@ -1,14 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.Defaults;
-using LiveChartsCore.Drawing;
-using LiveChartsCore.Measure;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using LiveChartsCore.SkiaSharpView.Painting.Effects;
-using LiveChartsCore.SkiaSharpView.VisualElements;
-using SkiaSharp;
-
-namespace MainUI
+﻿namespace MainUI
 {
     public partial class Form1 : Form
     {
@@ -118,15 +108,15 @@ namespace MainUI
             cartesianChart1.ZoomMode = ZoomAndPanMode.ZoomX;
         }
 
-       public LabelVisual Title { get; set; } =
-       new LabelVisual
-       {
-           Text = "My chart title",
-           TextSize = 25,
-           Padding = new LiveChartsCore.Drawing.Padding(15)
-       };
+        public LabelVisual Title { get; set; } =
+        new LabelVisual
+        {
+            Text = "My chart title",
+            TextSize = 25,
+            Padding = new LiveChartsCore.Drawing.Padding(15)
+        };
 
-        private Random random = new ();
+        private Random random = new();
         private void timer1_Tick(object sender, EventArgs e)
         {
             Values1.Add(new DateTimePoint(DateTime.Now, random.Next(1, 600)));

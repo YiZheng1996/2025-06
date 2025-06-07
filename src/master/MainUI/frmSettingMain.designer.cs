@@ -73,6 +73,7 @@
             imageList1.Images.SetKeyName(6, "角色管理.png");
             imageList1.Images.SetKeyName(7, "账号权限管理.png");
             imageList1.Images.SetKeyName(8, "权限分配.png");
+            imageList1.Images.SetKeyName(9, "类型管理.png");
             // 
             // pnlMain
             // 

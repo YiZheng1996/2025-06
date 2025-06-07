@@ -8,11 +8,10 @@ namespace MainUI.CurrencyHelper
     {
         public static IFreeSql fsql;
         public static string SoftName = "";
-        public static string ModelTypeName => $"{mTestViewModel.TypeName}_{mTestViewModel.ModelName}";
-        public static TestViewModel mTestViewModel = new();
-        static VarHelper()
-        {
-        }
+        public static string ModelTypeName => $"{TestViewModel.ModelTypeName}_{TestViewModel.ModelName}";
+        public static NewModels TestViewModel = new();
+        
+        static VarHelper() { }
 
         /// <summary>
         /// SHA512加密

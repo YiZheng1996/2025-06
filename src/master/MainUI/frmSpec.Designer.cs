@@ -28,184 +28,42 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
-            uiButton1 = new UIButton();
-            uiButton2 = new UIButton();
-            uiButton3 = new UIButton();
-            uiDataGridView1 = new UIDataGridView();
-            colID = new DataGridViewTextBoxColumn();
-            TypeName = new DataGridViewTextBoxColumn();
-            colUsername = new DataGridViewTextBoxColumn();
-            colMark = new DataGridViewTextBoxColumn();
+            btnSelectRow = new UIButton();
             cboType = new UIComboBox();
             cboModel = new UIComboBox();
             uiLabel2 = new UILabel();
             uiLabel1 = new UILabel();
-            btnSearch = new UIButton();
-            ((System.ComponentModel.ISupportInitialize)uiDataGridView1).BeginInit();
+            Tables = new AntdUI.Table();
+            uiLine1 = new UILine();
             SuspendLayout();
             // 
-            // uiButton1
+            // btnSelectRow
             // 
-            uiButton1.Cursor = Cursors.Hand;
-            uiButton1.FillColor = Color.DodgerBlue;
-            uiButton1.FillColor2 = Color.DodgerBlue;
-            uiButton1.Font = new Font("思源黑体 CN Bold", 11F, FontStyle.Bold);
-            uiButton1.Location = new Point(18, 675);
-            uiButton1.MinimumSize = new Size(1, 1);
-            uiButton1.Name = "uiButton1";
-            uiButton1.RectColor = Color.DodgerBlue;
-            uiButton1.RectDisableColor = Color.DodgerBlue;
-            uiButton1.Size = new Size(86, 38);
-            uiButton1.TabIndex = 389;
-            uiButton1.Text = "▲";
-            uiButton1.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiButton1.TipsText = "1";
-            uiButton1.Click += button1_Click;
-            // 
-            // uiButton2
-            // 
-            uiButton2.Cursor = Cursors.Hand;
-            uiButton2.FillColor = Color.DodgerBlue;
-            uiButton2.FillColor2 = Color.DodgerBlue;
-            uiButton2.Font = new Font("思源黑体 CN Bold", 11F, FontStyle.Bold);
-            uiButton2.Location = new Point(110, 675);
-            uiButton2.MinimumSize = new Size(1, 1);
-            uiButton2.Name = "uiButton2";
-            uiButton2.RectColor = Color.DodgerBlue;
-            uiButton2.RectDisableColor = Color.DodgerBlue;
-            uiButton2.Size = new Size(86, 38);
-            uiButton2.TabIndex = 390;
-            uiButton2.Text = "▼";
-            uiButton2.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiButton2.TipsText = "1";
-            uiButton2.Click += button2_Click;
-            // 
-            // uiButton3
-            // 
-            uiButton3.Cursor = Cursors.Hand;
-            uiButton3.DialogResult = DialogResult.OK;
-            uiButton3.FillColor = Color.DodgerBlue;
-            uiButton3.FillColor2 = Color.DodgerBlue;
-            uiButton3.Font = new Font("思源黑体 CN Bold", 11F, FontStyle.Bold);
-            uiButton3.Location = new Point(651, 673);
-            uiButton3.MinimumSize = new Size(1, 1);
-            uiButton3.Name = "uiButton3";
-            uiButton3.RectColor = Color.DodgerBlue;
-            uiButton3.RectDisableColor = Color.DodgerBlue;
-            uiButton3.Size = new Size(120, 40);
-            uiButton3.TabIndex = 391;
-            uiButton3.Text = "选择实行";
-            uiButton3.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiButton3.TipsForeColor = Color.Transparent;
-            uiButton3.TipsText = "1";
-            uiButton3.Click += button3_Click;
-            // 
-            // uiDataGridView1
-            // 
-            uiDataGridView1.AllowUserToAddRows = false;
-            uiDataGridView1.AllowUserToDeleteRows = false;
-            uiDataGridView1.AllowUserToResizeColumns = false;
-            uiDataGridView1.AllowUserToResizeRows = false;
-            dataGridViewCellStyle6.BackColor = Color.WhiteSmoke;
-            uiDataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle6;
-            uiDataGridView1.BackgroundColor = Color.White;
-            uiDataGridView1.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle7.BackColor = Color.FromArgb(44, 62, 80);
-            dataGridViewCellStyle7.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            dataGridViewCellStyle7.ForeColor = Color.White;
-            dataGridViewCellStyle7.SelectionBackColor = Color.FromArgb(44, 62, 80);
-            dataGridViewCellStyle7.SelectionForeColor = Color.FromArgb(64, 64, 64);
-            dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
-            uiDataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
-            uiDataGridView1.ColumnHeadersHeight = 32;
-            uiDataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            uiDataGridView1.Columns.AddRange(new DataGridViewColumn[] { colID, TypeName, colUsername, colMark });
-            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle8.BackColor = SystemColors.Window;
-            dataGridViewCellStyle8.Font = new Font("微软雅黑", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dataGridViewCellStyle8.ForeColor = Color.FromArgb(235, 227, 221);
-            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.False;
-            uiDataGridView1.DefaultCellStyle = dataGridViewCellStyle8;
-            uiDataGridView1.EnableHeadersVisualStyles = false;
-            uiDataGridView1.Font = new Font("微软雅黑", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiDataGridView1.GridColor = Color.FromArgb(42, 47, 55);
-            uiDataGridView1.Location = new Point(17, 96);
-            uiDataGridView1.Name = "uiDataGridView1";
-            uiDataGridView1.ReadOnly = true;
-            uiDataGridView1.RectColor = Color.FromArgb(49, 54, 64);
-            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle9.BackColor = Color.FromArgb(235, 243, 255);
-            dataGridViewCellStyle9.Font = new Font("微软雅黑", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dataGridViewCellStyle9.ForeColor = Color.FromArgb(48, 48, 48);
-            dataGridViewCellStyle9.SelectionBackColor = Color.FromArgb(80, 160, 255);
-            dataGridViewCellStyle9.SelectionForeColor = Color.White;
-            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.True;
-            uiDataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
-            dataGridViewCellStyle10.BackColor = Color.FromArgb(224, 247, 250);
-            dataGridViewCellStyle10.Font = new Font("思源黑体 CN Bold", 12F, FontStyle.Bold);
-            dataGridViewCellStyle10.ForeColor = Color.FromArgb(64, 64, 64);
-            dataGridViewCellStyle10.SelectionBackColor = Color.FromArgb(80, 160, 255);
-            dataGridViewCellStyle10.SelectionForeColor = Color.White;
-            uiDataGridView1.RowsDefaultCellStyle = dataGridViewCellStyle10;
-            uiDataGridView1.RowTemplate.Height = 37;
-            uiDataGridView1.ScrollBarColor = Color.FromArgb(42, 47, 55);
-            uiDataGridView1.ScrollBarStyleInherited = false;
-            uiDataGridView1.SelectedIndex = -1;
-            uiDataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            uiDataGridView1.Size = new Size(753, 564);
-            uiDataGridView1.StripeEvenColor = Color.FromArgb(224, 247, 250);
-            uiDataGridView1.StripeOddColor = Color.WhiteSmoke;
-            uiDataGridView1.TabIndex = 392;
-            uiDataGridView1.CellDoubleClick += dataGridView_Spec_CellDoubleClick;
-            // 
-            // colID
-            // 
-            colID.DataPropertyName = "ID";
-            colID.HeaderText = "ID";
-            colID.Name = "colID";
-            colID.ReadOnly = true;
-            colID.Visible = false;
-            // 
-            // TypeName
-            // 
-            TypeName.DataPropertyName = "modeltype";
-            TypeName.HeaderText = "产品类型";
-            TypeName.Name = "TypeName";
-            TypeName.ReadOnly = true;
-            TypeName.Visible = false;
-            TypeName.Width = 250;
-            // 
-            // colUsername
-            // 
-            colUsername.DataPropertyName = "Name";
-            colUsername.HeaderText = "产品型号";
-            colUsername.Name = "colUsername";
-            colUsername.ReadOnly = true;
-            colUsername.Width = 400;
-            // 
-            // colMark
-            // 
-            colMark.DataPropertyName = "mark";
-            colMark.HeaderText = "备注";
-            colMark.Name = "colMark";
-            colMark.ReadOnly = true;
-            colMark.Width = 310;
+            btnSelectRow.Cursor = Cursors.Hand;
+            btnSelectRow.DialogResult = DialogResult.OK;
+            btnSelectRow.FillColor = Color.DodgerBlue;
+            btnSelectRow.FillColor2 = Color.DodgerBlue;
+            btnSelectRow.Font = new Font("思源黑体 CN Bold", 11F, FontStyle.Bold);
+            btnSelectRow.Location = new Point(651, 673);
+            btnSelectRow.MinimumSize = new Size(1, 1);
+            btnSelectRow.Name = "btnSelectRow";
+            btnSelectRow.RectColor = Color.DodgerBlue;
+            btnSelectRow.RectDisableColor = Color.DodgerBlue;
+            btnSelectRow.Size = new Size(120, 40);
+            btnSelectRow.TabIndex = 391;
+            btnSelectRow.Text = "选择实行";
+            btnSelectRow.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            btnSelectRow.TipsForeColor = Color.Transparent;
+            btnSelectRow.TipsText = "1";
+            btnSelectRow.Click += btnSelectRow_Click;
             // 
             // cboType
             // 
             cboType.BackColor = Color.Transparent;
             cboType.DataSource = null;
             cboType.DropDownStyle = UIDropDownStyle.DropDownList;
-            cboType.FillColor = Color.FromArgb(218, 220, 230);
-            cboType.FillColor2 = Color.FromArgb(218, 220, 230);
+            cboType.FillColor = Color.White;
+            cboType.FillColor2 = Color.White;
             cboType.FillDisableColor = Color.FromArgb(218, 220, 230);
             cboType.FilterMaxCount = 50;
             cboType.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
@@ -213,7 +71,7 @@
             cboType.ForeDisableColor = Color.FromArgb(46, 46, 46);
             cboType.ItemHoverColor = Color.FromArgb(155, 200, 255);
             cboType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
-            cboType.Location = new Point(319, 50);
+            cboType.Location = new Point(319, 48);
             cboType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             cboType.MinimumSize = new Size(63, 0);
             cboType.Name = "cboType";
@@ -221,14 +79,12 @@
             cboType.Radius = 10;
             cboType.RectColor = Color.Gray;
             cboType.RectDisableColor = Color.Gray;
-            cboType.RectSides = ToolStripStatusLabelBorderSides.Bottom;
+            cboType.RectSides = ToolStripStatusLabelBorderSides.None;
             cboType.Size = new Size(244, 29);
             cboType.SymbolSize = 24;
             cboType.TabIndex = 393;
             cboType.TextAlignment = ContentAlignment.MiddleLeft;
             cboType.Watermark = "请选择";
-            cboType.WatermarkActiveColor = Color.FromArgb(46, 46, 46);
-            cboType.WatermarkColor = Color.FromArgb(46, 46, 46);
             cboType.SelectedIndexChanged += cboType_SelectedIndexChanged;
             // 
             // cboModel
@@ -283,45 +139,65 @@
             uiLabel1.BackColor = Color.Transparent;
             uiLabel1.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel1.ForeColor = Color.FromArgb(46, 46, 46);
-            uiLabel1.Location = new Point(223, 52);
+            uiLabel1.Location = new Point(223, 50);
             uiLabel1.Name = "uiLabel1";
             uiLabel1.Size = new Size(102, 26);
             uiLabel1.TabIndex = 394;
             uiLabel1.Text = "产品类型：";
             uiLabel1.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // btnSearch
+            // Tables
             // 
-            btnSearch.Cursor = Cursors.Hand;
-            btnSearch.FillDisableColor = Color.FromArgb(70, 75, 85);
-            btnSearch.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnSearch.ForeDisableColor = Color.White;
-            btnSearch.Location = new Point(480, 672);
-            btnSearch.MinimumSize = new Size(1, 1);
-            btnSearch.Name = "btnSearch";
-            btnSearch.RectDisableColor = Color.FromArgb(80, 160, 255);
-            btnSearch.Size = new Size(120, 40);
-            btnSearch.TabIndex = 397;
-            btnSearch.Text = "搜索";
-            btnSearch.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            btnSearch.TipsText = "1";
-            btnSearch.Visible = false;
-            btnSearch.Click += btnSearch_Click;
+            Tables.AutoSizeColumnsMode = AntdUI.ColumnsMode.Fill;
+            Tables.BackColor = Color.White;
+            Tables.BackgroundImageLayout = ImageLayout.None;
+            Tables.BorderColor = Color.Black;
+            Tables.Bordered = true;
+            Tables.CheckSize = 20;
+            Tables.ClipboardCopy = false;
+            Tables.ColumnBack = Color.FromArgb(44, 62, 80);
+            Tables.ColumnFont = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            Tables.ColumnFore = Color.White;
+            Tables.DefaultExpand = true;
+            Tables.Font = new Font("微软雅黑", 14.25F);
+            Tables.ImeMode = ImeMode.NoControl;
+            Tables.Location = new Point(15, 109);
+            Tables.Name = "Tables";
+            Tables.RightToLeft = RightToLeft.No;
+            Tables.RowHeight = 50;
+            Tables.RowHeightHeader = 40;
+            Tables.Size = new Size(756, 558);
+            Tables.SwitchSize = 25;
+            Tables.TabIndex = 411;
+            Tables.CellClick += Tables_CellClick;
+            Tables.CellDoubleClick += Tables_CellDoubleClick;
+            // 
+            // uiLine1
+            // 
+            uiLine1.BackColor = Color.Transparent;
+            uiLine1.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            uiLine1.ForeColor = Color.FromArgb(48, 48, 48);
+            uiLine1.LineColor = Color.White;
+            uiLine1.LineColor2 = Color.White;
+            uiLine1.Location = new Point(15, 74);
+            uiLine1.MinimumSize = new Size(1, 1);
+            uiLine1.Name = "uiLine1";
+            uiLine1.Size = new Size(756, 29);
+            uiLine1.StartCap = UILineCap.Circle;
+            uiLine1.TabIndex = 412;
             // 
             // frmSpec
             // 
             AutoScaleMode = AutoScaleMode.None;
-            BackColor = Color.White;
+            BackColor = Color.FromArgb(236, 236, 236);
             ClientSize = new Size(786, 722);
-            Controls.Add(btnSearch);
             Controls.Add(cboType);
+            Controls.Add(uiLine1);
+            Controls.Add(Tables);
             Controls.Add(cboModel);
             Controls.Add(uiLabel2);
             Controls.Add(uiLabel1);
-            Controls.Add(uiDataGridView1);
-            Controls.Add(uiButton3);
-            Controls.Add(uiButton2);
-            Controls.Add(uiButton1);
+            Controls.Add(btnSelectRow);
             Font = new Font("思源黑体 CN Bold", 11F, FontStyle.Bold);
             ForeColor = Color.FromArgb(235, 227, 221);
             Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
@@ -333,27 +209,20 @@
             ShowInTaskbar = false;
             Text = "车型选择";
             TitleColor = Color.FromArgb(65, 100, 204);
-            TitleFont = new Font("思源黑体 CN Heavy", 15F, FontStyle.Bold);
+            TitleFont = new Font("微软雅黑", 15F, FontStyle.Bold, GraphicsUnit.Point, 134);
             ZoomScaleRect = new Rectangle(15, 15, 786, 678);
             Load += frmSpec_Load;
-            ((System.ComponentModel.ISupportInitialize)uiDataGridView1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-        private Sunny.UI.UIButton uiButton1;
-        private Sunny.UI.UIButton uiButton2;
-        private Sunny.UI.UIButton uiButton3;
-        private Sunny.UI.UIDataGridView uiDataGridView1;
+        private Sunny.UI.UIButton btnSelectRow;
         private UIComboBox cboType;
         private UIComboBox cboModel;
         private UILabel uiLabel2;
         private UILabel uiLabel1;
-        private UIButton btnSearch;
-        private DataGridViewTextBoxColumn colID;
-        private DataGridViewTextBoxColumn TypeName;
-        private DataGridViewTextBoxColumn colUsername;
-        private DataGridViewTextBoxColumn colMark;
+        private AntdUI.Table Tables;
+        private UILine uiLine1;
     }
 }

@@ -2,69 +2,78 @@
 {
     public class ModelBLL
     {
-        public List<ModelsType> GetAllModelType() =>
-            VarHelper.fsql.Select<ModelsType>().ToList();
+        public List<Models> GetAllKind(int id) => VarHelper.fsql.Select<Models>()
+            .Where(w => w.TypeID == id)
+            .ToList();
 
 
-        public bool IsExist(string TypeName) =>
-            VarHelper.fsql
-            .Select<ModelsType>()
-            .Where(a => a.ModelType == TypeName)
+        public bool IsExist(int typeid, string modelname) =>
+            VarHelper.fsql.Select<Models>()
+            .Where(a => a.TypeID == typeid && a.ModelName == modelname)
             .ToList().Count > 0;
 
-
-        public bool Add(string TypeName, string Mark)
+        public bool Add(Models models, string lxname = null)
         {
-            //NewFile(SpecificSymbol(TypeName));
-            return VarHelper.fsql.Insert<ModelsType>().AppendData(new ModelsType
+            //NewFile(SpecificSymbol(lxname), SpecificSymbol(modelName));
+            return VarHelper.fsql.Insert<Models>().AppendData(new Models
             {
-                ModelType = TypeName,
-                Mark = Mark
+                ModelName = models.ModelName,
+                TypeID = models.TypeID,
+                Mark = models.Mark,
+                CreateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             }).ExecuteAffrows() > 0;
         }
 
-        public bool Delete(int id, string name)
+        public bool Delete(int modelID, string lxname = null, string xhname = null)
         {
-            //deleteFile(SpecificSymbol(name));
-            return VarHelper.fsql.Delete<ModelsType>()
-              .Where(a => a.ID == id)
-              .ExecuteAffrows() > 0;
-        }
-
-
-        public bool Updata(int id, string name, string bz, string OldName)
-        {
-            //changeFileName(SpecificSymbol(name), SpecificSymbol(OldName));
-            return VarHelper.fsql.Update<ModelsType>()
-            .Set(a => a.ModelType, name)
-            .Set(a => a.Mark, bz)
-            .Where(a => a.ID == id)
+            //deleteFile(SpecificSymbol(lxname), SpecificSymbol(xhname));
+            return VarHelper.fsql.Delete<Models>()
+            .Where(a => a.ID == modelID)
             .ExecuteAffrows() > 0;
         }
 
-        private void NewFile(string newName)
+        public bool Update(Models models, string lxname = null, string oldxhname = null)
         {
-            string rootDirectory = Application.StartupPath + "\\proc\\";
-            bool s = AddFileName(rootDirectory + newName, false);
+            //changeFileName(SpecificSymbol(name), SpecificSymbol(oldxhname), SpecificSymbol(lxname));
+            return VarHelper.fsql.Update<Models>()
+            .Set(a => a.ModelName, models.ModelName)
+            .Set(a => a.TypeID, models.TypeID)
+            .Set(a => a.Mark, models.Mark)
+            .Set(a => a.UpdateTime, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+            .Where(a => a.ID == models.ID)
+            .ExecuteAffrows() > 0;
         }
 
+
+        void NewFile(string LX, string newName)
+        {
+            string rootDirectory = Application.StartupPath + "\\proc\\" + LX + "\\";
+            bool s = AddFileName(rootDirectory + newName, false);
+            if (s)
+                MoveStepPara(LX, newName);
+        }
         public bool AddFileName(string newFile, bool isFile)
         {
-            if (isFile && !File.Exists(newFile))
+            if (isFile && !System.IO.File.Exists(newFile))
             {
-                File.Create(newFile);
+                System.IO.File.Create(newFile);
             }
 
-            if (!isFile && !Directory.Exists(newFile))
+            if (!isFile && !System.IO.Directory.Exists(newFile))
             {
-                Directory.CreateDirectory(newFile);
+                System.IO.Directory.CreateDirectory(newFile);
             }
 
             return true;
         }
-        void deleteFile(string filename)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="LX">类型</param>
+        /// <param name="filename">型号名称</param>
+        void deleteFile(string LX, string filename)
         {
-            string rootDirectory = Application.StartupPath + "\\proc\\";
+            string rootDirectory = Application.StartupPath + "\\proc\\" + LX + "\\";
             string path = rootDirectory + filename;
             bool s = DelFileName(path);
         }
@@ -72,9 +81,10 @@
         {
             try
             {
-                if (Directory.Exists(fileName))
+                if (System.IO.Directory.Exists(fileName))
                 {
-                    Directory.Delete(fileName, true);
+                    System.IO.Directory.Delete(fileName, true);
+
                 }
             }
             catch (Exception)
@@ -83,36 +93,63 @@
             }
             return true;
         }
-        void changeFileName(string filename, string oldname)
+        /// <summary>
+        /// 修改名称
+        /// </summary>
+        /// <param name="filename">新名称</param>
+        /// <param name="oldname">旧名称</param>
+        /// <param name="LX">类型</param>
+        void changeFileName(string filename, string oldname, string LX)
         {
-            string rootDirectory = Application.StartupPath + "\\proc\\";
+            string rootDirectory = Application.StartupPath + "proc\\" + LX + "\\";
             string path = rootDirectory + oldname;
-            if (!System.IO.Directory.Exists(path))
+            if (Directory.Exists(path))
                 Microsoft.VisualBasic.FileIO.FileSystem.RenameDirectory(path, filename);
-        }
 
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        void MoveStepPara(string LXname, string xhname)
+        {
+            string rootDirectory = Application.StartupPath + "\\proc\\" + LXname;
+            string path = rootDirectory + "\\" + xhname;
+            var a = System.IO.Directory.GetFiles(rootDirectory);
+            foreach (var item in a)
+            {
+                string fileName = Path.GetFileName(item);
+                string targetPath = Path.Combine(path, fileName);
+                FileInfo file = new FileInfo(item);
+                if (file.Exists)
+                {
+                    file.CopyTo(targetPath, true);
+                }
+
+            }
+
+        }
         public string SpecificSymbol(string gg)
         {
             while (true)
             {
-                if (gg.IndexOf('%') > -1)
+                if (gg.IndexOf("%") > -1)
                 {
-                    int i = gg.IndexOf('%');
-                    string a = gg[..i];
-                    string b = gg.Substring(i + 1, gg.Length - i - 1);
-                    gg = a + b;
-                }
-                else if (gg.IndexOf(':') > -1)
-                {
-                    int i = gg.IndexOf(':');
+                    int i = gg.IndexOf("%");
                     string a = gg.Substring(0, i);
                     string b = gg.Substring(i + 1, gg.Length - i - 1);
                     gg = a + b;
                 }
-                else if (gg.IndexOf('/') > -1)
+                else if (gg.IndexOf(":") > -1)
                 {
-                    int i = gg.IndexOf('/');
-                    string a = gg[..i];
+                    int i = gg.IndexOf(":");
+                    string a = gg.Substring(0, i);
+                    string b = gg.Substring(i + 1, gg.Length - i - 1);
+                    gg = a + b;
+                }
+                else if (gg.IndexOf("/") > -1)
+                {
+                    int i = gg.IndexOf("/");
+                    string a = gg.Substring(0, i);
                     string b = gg.Substring(i + 1, gg.Length - i - 1);
                     gg = a + b;
                 }
@@ -122,28 +159,6 @@
                 }
             }
             return gg;
-        }
-
-        public List<ModelsType> GetModels()
-        {
-            return VarHelper.fsql.Select<ModelsType>().ToList();
-        }
-
-        public List<Models> GetAllModels()
-        {
-            return VarHelper.fsql.Select<Models>().ToList();
-        }
-
-        public List<NewModels> GetNewModels(int typeID)
-        {
-            return VarHelper.fsql.Select<Models, ModelsType>()
-                .LeftJoin((m, t) => m.TypeID == t.ID)
-                .Where((m, t) => m.TypeID == typeID)
-                .ToList((m, t) => new NewModels
-                {
-                    ModelTypeID = t.ID,
-                    ModelType = t.ModelType,
-                });
         }
     }
 }

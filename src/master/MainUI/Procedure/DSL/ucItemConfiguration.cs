@@ -5,7 +5,7 @@ namespace MainUI.Procedure.DSL
 {
     public partial class ucItemConfiguration : ucBaseManagerUI
     {
-        ModelBLL ModelBLL = new();
+        ModelTypeBLL ModelBLL = new();
         TestStepBLL StepBLL = new();
         TestProcessBLL TestProcessBLL = new();
         public ucItemConfiguration()
@@ -23,7 +23,7 @@ namespace MainUI.Procedure.DSL
 
         void LoadCboModels()
         {
-            cboType.DisplayMember = "ModelType";
+            cboType.DisplayMember = "ModelTypeName";
             cboType.ValueMember = "ID";
             cboType.DataSource = ModelBLL.GetModels();
             LoadProcess();
@@ -158,9 +158,9 @@ namespace MainUI.Procedure.DSL
 
         private void cboType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ModelBLL bModelType = new();
+            ModelTypeBLL bModelType = new();
             cboModel.ValueMember = "ID";
-            cboModel.DisplayMember = "Name";
+            cboModel.DisplayMember = "ModelName";
             cboModel.DataSource = bModelType.GetNewModels(cboType.SelectedValue.ToInt32());
         }
 

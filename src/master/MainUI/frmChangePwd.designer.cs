@@ -267,7 +267,7 @@
             uiLabel3.Text = "新密码";
             uiLabel3.TextAlign = ContentAlignment.MiddleRight;
             // 
-            // FrmChangePwd
+            // frmRemindEdit
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
@@ -279,8 +279,8 @@
             MaximizeBox = false;
             MaximumSize = new Size(0, 0);
             MinimizeBox = false;
-            Name = "FrmChangePwd";
-            RectColor = Color.FromArgb(236, 236, 236);
+            Name = "frmRemindEdit";
+            RectColor = Color.FromArgb(65, 100, 204);
             ShowIcon = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;

@@ -17,9 +17,9 @@ namespace MainUI.Procedure.User
             Tables.Columns = [
                 new Column("ID","ID"){ Align = ColumnAlign.Center , Visible = false },
                 new Column("PermissionName","权限名称"){ Align = ColumnAlign.Center , Width="auto" },
-                new Column("PermissionCode","权限代码"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("PermissionCode","权限代码"){ Align = ColumnAlign.Center , Width="auto" , Visible = false},
                 new Column("ControlName","控件名称"){ Align = ColumnAlign.Center , Width="auto" },
-                //new Column("PermissionType","权限类型"){ Align = ColumnAlign.Center , Width="auto" },
+               
                 new Column("PermissionNotes","备注"){ Align = ColumnAlign.Center , Width="auto" },
            ];
             Tables.DataSource = permissionBLL.GetPermissions();

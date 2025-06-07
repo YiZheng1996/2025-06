@@ -11,7 +11,7 @@ namespace MainUI.Model
         [Column(IsIdentity = true, IsPrimary = true)]
         public int ID { get; set; }
 
-        public string ModelType { get; set; }
+        public string ModelTypeName { get; set; }
 
         public string Mark { get; set; }
     }
@@ -23,7 +23,7 @@ namespace MainUI.Model
     {
         [Column(IsIdentity = true, IsPrimary = true)]
         public int ID { get; set; }
-        public string Name { get; set; }
+        public string ModelName { get; set; }
         public string Mark { get; set; }
         public int TypeID { get; set; }
         public string CreateTime { get; set; }
@@ -34,6 +34,6 @@ namespace MainUI.Model
     public class NewModels : Models
     {
         public int ModelTypeID { get; set; }
-        public string ModelType { get; set; }
+        public string ModelTypeName { get; set; }
     }
 }

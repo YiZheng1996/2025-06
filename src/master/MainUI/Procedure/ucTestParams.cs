@@ -1,6 +1,4 @@
-﻿using MainUI.Config;
-
-namespace MainUI.Procedure
+﻿namespace MainUI.Procedure
 {
     public partial class ucTestParams : ucBaseManagerUI
     {
@@ -90,8 +88,8 @@ namespace MainUI.Procedure
             fs.ShowDialog();
             if (fs.DialogResult == DialogResult.OK)
             {
-                txtType.Text = VarHelper.mTestViewModel.TypeName;
-                txtModel.Text = VarHelper.mTestViewModel.ModelName;
+                txtType.Text = VarHelper.TestViewModel.ModelTypeName;
+                txtModel.Text = VarHelper.TestViewModel.ModelName;
                 LoadConfig();
             }
         }

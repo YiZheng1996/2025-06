@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="btnAdd.Font" type="System.Drawing.Font, System.Drawing">
-    <value>思源黑体 CN Bold, 12pt, style=Bold</value>
+    <value>微软雅黑, 13pt, style=Bold</value>
   </data>
   <data name="btnAdd.Location" type="System.Drawing.Point, System.Drawing">
     <value>2, 615</value>
@@ -150,7 +150,7 @@
     <value>3</value>
   </data>
   <data name="btnDelete.Font" type="System.Drawing.Font, System.Drawing">
-    <value>思源黑体 CN Bold, 12pt, style=Bold</value>
+    <value>微软雅黑, 13pt, style=Bold</value>
   </data>
   <data name="btnDelete.Location" type="System.Drawing.Point, System.Drawing">
     <value>183, 615</value>
@@ -180,7 +180,7 @@
     <value>2</value>
   </data>
   <data name="btnEdit.Font" type="System.Drawing.Font, System.Drawing">
-    <value>思源黑体 CN Bold, 12pt, style=Bold</value>
+    <value>微软雅黑, 13pt, style=Bold</value>
   </data>
   <data name="btnEdit.Location" type="System.Drawing.Point, System.Drawing">
     <value>364, 615</value>
@@ -263,7 +263,7 @@
     <value>0, 32, 0, 0</value>
   </data>
   <data name="grpUser.Size" type="System.Drawing.Size, System.Drawing">
-    <value>665, 660</value>
+    <value>665, 655</value>
   </data>
   <data name="grpUser.TabIndex" type="System.Int32, mscorlib">
     <value>398</value>
@@ -293,7 +293,7 @@
     <value>3, 4, 3, 4</value>
   </data>
   <data name="$this.Size" type="System.Drawing.Size, System.Drawing">
-    <value>665, 665</value>
+    <value>665, 655</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>ucUserManager</value>

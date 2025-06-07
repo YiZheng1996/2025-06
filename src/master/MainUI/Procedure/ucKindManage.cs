@@ -1,127 +1,69 @@
-﻿namespace MainUI.Procedure
+﻿using AntdUI;
+namespace MainUI.Procedure
 {
     public partial class ucKindManage : ucBaseManagerUI
     {
-        ModelBLL BLLmodelType = new ModelBLL();
-        string grpTxt = "";
+        private ModelsType modelsType = new();
+        private readonly ModelTypeBLL modelBLL = new();
+        public ucKindManage() => InitializeComponent();
 
-        public ucKindManage()
+        private void ucModelManage_Load(object sender, EventArgs e) => LoadData();
+
+        private void LoadData()
         {
-            InitializeComponent();
-            dataGridView1.AutoGenerateColumns = false;
+            Tables.Columns = [
+                new Column("ID","ID"){ Align = ColumnAlign.Center , Visible = false },
+                new Column("ModelTypeName","类型名称"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("Mark","类型备注"){ Align = ColumnAlign.Center , Width="auto" },
+           ];
+            Tables.DataSource = modelBLL.GetAllModelType();
         }
 
-        private void ucModelManage_Load(object sender, EventArgs e)
+        private void LoadData(ModelsType model)
         {
-            grpTxt = groupBox1.Text;
-            LoadModelType();
+            using frmModelTypeEdit edit = new(model);
+            edit.ShowDialog();
+            LoadData();
         }
 
-        private void LoadModelType()
+        private void Tables_CellClick(object sender, TableClickEventArgs e)
         {
-            dataGridView1.DataSource = BLLmodelType.GetAllModelType();
+            if (e.Record is ModelsType model)
+            {
+                modelsType = model;
+            }
+        }
+
+        private void Tables_CellDoubleClick(object sender, TableClickEventArgs e)
+        {
+            LoadData(modelsType);
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string curModel = txtModelName.Text.Trim();
-                if (string.IsNullOrEmpty(curModel))
-                    return;
+            LoadData(null);
+        }
 
-                string mark = txtChexing.Text;
-                if (BLLmodelType.IsExist(curModel))
-                {
-                    MessageBox.Show("类型【" + txtModelName + "】已存在", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                if (BLLmodelType.Add(curModel, mark))
-                {
-
-                    MessageBox.Show("新增成功", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LoadModelType();
-                }
-                else
-                {
-                    MessageBox.Show("新增失败", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageHelper.MessageOK($"新增错误：{ex.Message}");
-            }
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            LoadData(modelsType);
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            string curModel = txtModelName.Text.Trim();
-            if (string.IsNullOrEmpty(curModel))
-                return;
-
-            if (BLLmodelType.Delete(id, curModel))
+            var DialogResult = MessageHelper.MessageYes("是否删除选中记录？", TType.Warn);
+            if (DialogResult == DialogResult.OK)
             {
-                MessageBox.Show("删除成功", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                LoadModelType();
-
-            }
-            else
-            {
-                MessageBox.Show("删除失败", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void btnChange_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string curModel = txtModelName.Text.Trim();
-                if (string.IsNullOrEmpty(curModel))
-                    return;
-                string mark = txtChexing.Text;
-                if (BLLmodelType.Updata(id, curModel, mark, OldName))
+                if (modelBLL.Delete(modelsType.ID))
                 {
-                    MessageBox.Show("修改成功", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    LoadModelType();
+                    MessageHelper.MessageOK("删除成功！");
                 }
                 else
                 {
-                    MessageBox.Show("修改失败", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageHelper.MessageOK("删除失败！");
                 }
-            }
-            catch (Exception)
-            {
-
-                MessageBox.Show("修改失败", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadData();
             }
         }
-
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            //ShowCurRecord();
-        }
-
-        private void dataGridView1_SelectionChanged(object sender, EventArgs e)
-        {
-            ShowCurRecord();
-        }
-        int id = 0;
-        private void ShowCurRecord()
-        {
-            if (dataGridView1.DataSource == null)
-                return;
-            if (dataGridView1.Rows.Count < 1)
-                return;
-            id = Convert.ToInt32(dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells["name"].Value);
-            string name = dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells["ModelType"].Value.ToString();
-            string mark = dataGridView1.Rows[dataGridView1.CurrentRow.Index].Cells["mark"].Value.ToString();
-
-            txtModelName.Text = name;
-            txtChexing.Text = mark;
-            OldName = name;
-        }
-        string OldName = "";
     }
 }

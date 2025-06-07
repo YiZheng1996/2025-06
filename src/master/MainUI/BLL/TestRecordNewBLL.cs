@@ -5,8 +5,8 @@
         // 更新测试记录
         public bool UpdateTestRecord(TestRecordModel model) => VarHelper.fsql
                    .Update<TestRecordModel>()
-                   .Set(a => a.Kind, model.Kind)
-                   .Set(a => a.Model, model.Model)
+                   .Set(a => a.KindID, model.KindID)
+                   .Set(a => a.ModelID, model.ModelID)
                    .Set(a => a.Driver, model.Driver)
                    .Set(a => a.TestID, model.TestID)
                    .Set(a => a.Tester, model.Tester)
@@ -26,13 +26,17 @@
             .ExecuteAffrows() > 0;
 
         // 获取测试记录
-        public List<TestRecordModel> GetTestRecord(TestRecordModel model, DateTime toTime) => VarHelper.fsql
-            .Select<TestRecordModel>()
-            .WhereIf(!string.IsNullOrEmpty(model.Kind), t => t.Kind == model.Kind)
-            .WhereIf(!string.IsNullOrEmpty(model.Model), t => t.Model == model.Model)
-            .WhereIf(!string.IsNullOrEmpty(model.TestID), t => t.TestID.Contains(model.TestID))
-            .WhereIf(!string.IsNullOrEmpty(model.Tester), t => t.Tester == model.Tester)
-            .Where( t => t.TestTime.Between(model.TestTime, toTime))
-            .ToList();
+        public List<TestRecordModelDto> GetTestRecord(TestRecordModel model, DateTime toTime) => VarHelper.fsql
+            .Select<TestRecordModel, ModelsType, Models>()
+            .LeftJoin((t, mt, m) => t.KindID == mt.ID)
+            .LeftJoin((t, mt, m) => t.ModelID == m.ID)
+            .WhereIf(model.KindID != -1, (t, mt, m) => t.KindID == model.KindID)
+            .WhereIf(model.ModelID != -1, (t, mt, m) => t.ModelID == model.ModelID)
+            .WhereIf(!string.IsNullOrEmpty(model.TestID)
+            , (t, mt, m) => t.TestID.Contains(model.TestID))  
+            .WhereIf(!string.IsNullOrEmpty(model.Tester)
+            , (t, mt, m) => t.Tester == model.Tester)  
+            .Where((t, mt, m) => t.TestTime.Between(model.TestTime, toTime))
+            .ToList<TestRecordModelDto>();
     }
 }

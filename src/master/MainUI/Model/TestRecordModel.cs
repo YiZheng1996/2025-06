@@ -14,12 +14,12 @@ namespace MainUI.Model
         /// <summary>
         /// 类型名称ID
         /// </summary>
-        public string Kind { get; set; }
+        public int KindID { get; set; }
 
         /// <summary>
-        /// 类型名称ID
+        /// 型号名称ID
         /// </summary>
-        public string Model { get; set; }
+        public int ModelID { get; set; }
 
         /// <summary>
         /// ？？？
@@ -45,5 +45,18 @@ namespace MainUI.Model
         /// 保存报告路径
         /// </summary>
         public string ReportPath { get; set; }
+    }
+
+    public class TestRecordModelDto : TestRecordModel
+    {
+        /// <summary>
+        /// 类型名称
+        /// </summary>
+        public string ModelTypeName { get; set; }
+
+        /// <summary>
+        /// 型号名称
+        /// </summary>
+        public string ModelName { get; set; }
     }
 }

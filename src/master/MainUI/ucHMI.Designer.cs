@@ -2581,9 +2581,9 @@ namespace MainUI
             // tabPage1
             // 
             tabPage1.Controls.Add(panelChart);
-            tabPage1.Location = new Point(-1419, -897);
+            tabPage1.Location = new Point(-1419, -904);
             tabPage1.Name = "tabPage1";
-            tabPage1.Size = new Size(1419, 897);
+            tabPage1.Size = new Size(1419, 904);
             tabPage1.TabIndex = 1;
             tabPage1.Text = "tabPage1";
             // 
@@ -2604,7 +2604,7 @@ namespace MainUI
             panelChart.Radius = 0;
             panelChart.RectColor = Color.FromArgb(236, 236, 236);
             panelChart.RectDisableColor = Color.FromArgb(236, 236, 236);
-            panelChart.Size = new Size(1419, 897);
+            panelChart.Size = new Size(1419, 904);
             panelChart.TabIndex = 399;
             panelChart.Text = null;
             panelChart.TextAlignment = ContentAlignment.MiddleCenter;
@@ -2623,14 +2623,14 @@ namespace MainUI
             uiPanel6.FillColor2 = Color.White;
             uiPanel6.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             uiPanel6.ForeColor = Color.FromArgb(46, 46, 46);
-            uiPanel6.Location = new Point(778, -4);
+            uiPanel6.Location = new Point(1213, 0);
             uiPanel6.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             uiPanel6.MinimumSize = new Size(1, 1);
             uiPanel6.Name = "uiPanel6";
             uiPanel6.Radius = 10;
             uiPanel6.RectColor = Color.White;
             uiPanel6.RectDisableColor = Color.White;
-            uiPanel6.Size = new Size(209, 718);
+            uiPanel6.Size = new Size(209, 906);
             uiPanel6.TabIndex = 1;
             uiPanel6.Text = null;
             uiPanel6.TextAlignment = ContentAlignment.MiddleCenter;
@@ -2708,7 +2708,7 @@ namespace MainUI
             btnPrint.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             btnPrint.ForeDisableColor = Color.White;
             btnPrint.Image = (Image)resources.GetObject("btnPrint.Image");
-            btnPrint.Location = new Point(17, 568);
+            btnPrint.Location = new Point(17, 671);
             btnPrint.MinimumSize = new Size(1, 1);
             btnPrint.Name = "btnPrint";
             btnPrint.RectDisableColor = Color.FromArgb(80, 160, 255);
@@ -2724,7 +2724,7 @@ namespace MainUI
             btnSave.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             btnSave.ForeDisableColor = Color.White;
             btnSave.Image = (Image)resources.GetObject("btnSave.Image");
-            btnSave.Location = new Point(17, 514);
+            btnSave.Location = new Point(17, 617);
             btnSave.MinimumSize = new Size(1, 1);
             btnSave.Name = "btnSave";
             btnSave.RectDisableColor = Color.FromArgb(80, 160, 255);
@@ -2741,7 +2741,7 @@ namespace MainUI
             ucGrid1.Location = new Point(1, 1);
             ucGrid1.Name = "ucGrid1";
             ucGrid1.Readonly = true;
-            ucGrid1.Size = new Size(773, 895);
+            ucGrid1.Size = new Size(1201, 902);
             ucGrid1.TabIndex = 0;
             // 
             // btnDetection

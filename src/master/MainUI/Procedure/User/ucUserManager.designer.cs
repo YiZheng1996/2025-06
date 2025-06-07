@@ -42,6 +42,7 @@
             btnAdd.BackColor = Color.Transparent;
             btnAdd.Cursor = Cursors.Hand;
             resources.ApplyResources(btnAdd, "btnAdd");
+            btnAdd.ForeDisableColor = Color.White;
             btnAdd.Name = "btnAdd";
             btnAdd.RectDisableColor = Color.FromArgb(80, 160, 255);
             btnAdd.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
@@ -53,6 +54,7 @@
             btnDelete.BackColor = Color.Transparent;
             btnDelete.Cursor = Cursors.Hand;
             resources.ApplyResources(btnDelete, "btnDelete");
+            btnDelete.ForeDisableColor = Color.White;
             btnDelete.Name = "btnDelete";
             btnDelete.RectDisableColor = Color.FromArgb(80, 160, 255);
             btnDelete.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
@@ -64,6 +66,7 @@
             btnEdit.BackColor = Color.Transparent;
             btnEdit.Cursor = Cursors.Hand;
             resources.ApplyResources(btnEdit, "btnEdit");
+            btnEdit.ForeDisableColor = Color.White;
             btnEdit.Name = "btnEdit";
             btnEdit.RectDisableColor = Color.FromArgb(80, 160, 255);
             btnEdit.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);

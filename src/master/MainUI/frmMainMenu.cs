@@ -187,10 +187,11 @@ public partial class frmMainMenu : Form
             ("权限管理", new ucPermission(), 7),
             ("权限分配", new ucPermissionAllocation(), 8),
             ("类型管理", new ucKindManage(), 1),
-            ("型号管理", new ucTypeManage(), 2),
+            ("型号管理", new ucModelManage(), 9),
             ("模块注入", new ucModules(), 3),
             ("项点管理", new ucItemManagerial(), 4),
-            ("项点配置", new ucItemConfiguration(), 5)
+            ("项点配置", new ucItemConfiguration(), 5),
+            ("试验参数", new ucTestParams(), 2)
         };
 
         foreach (var node in nodes)
