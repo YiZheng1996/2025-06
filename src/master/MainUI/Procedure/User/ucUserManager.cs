@@ -1,5 +1,4 @@
 ﻿using AntdUI;
-using MainUI.Model;
 
 namespace MainUI.Procedure.User
 {
@@ -17,7 +16,7 @@ namespace MainUI.Procedure.User
         //数据绑定
         private void LoadData()
         {
-            Tables.Columns = 
+            Tables.Columns =
            [
                new Column("ID","ID"){ Align = ColumnAlign.Center , Visible = false },
                new Column("Username","用户名"){ Align = ColumnAlign.Center , Width="auto" },
@@ -50,6 +49,12 @@ namespace MainUI.Procedure.User
         //删除用户按钮
         private void btnDelete_Click(object sender, EventArgs e)
         {
+            if (OperateUserModel.ID == 1)
+            {
+                MessageHelper.MessageOK("超级管理员不能删除！", TType.Error);
+                return;
+            }
+
             var DialogResult = MessageHelper.MessageYes("是否删除选中记录？", TType.Warn);
             if (DialogResult == DialogResult.OK)
             {

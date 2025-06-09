@@ -1,6 +1,5 @@
 ﻿using AntdUI;
 using RW.DSL;
-using RW.DSL.Debugger;
 using RW.DSL.Procedures;
 using Color = System.Drawing.Color;
 using Label = System.Windows.Forms.Label;
@@ -13,64 +12,94 @@ namespace MainUI
         private readonly frmMainMenu frm = new();
         public delegate void RunStatusHandler(bool obj);
         public event RunStatusHandler EmergencyStatusChanged;
-        private static ParaConfig paraconfig = null;
+        private static ParaConfig paraconfig;
         List<ItemPointModel> _itemPoints = [];
-        Dictionary<int, AntdUI.Button> pairs = [];
-        Dictionary<int, Label> DicAI = [];
-        Dictionary<int, Label> DicTP = [];
-        Dictionary<int, UISwitch> DicDO = [];
-        Dictionary<int, UIButton> DicDOBtn = [];
-        Dictionary<int, Procedure.Controls.SwitchPictureBox> DicDI = [];
+        private readonly ControlMappings controls = new();
         public delegate void TestStateHandler(bool isTesting);
         public event TestStateHandler TestStateChanged;
-        string path2 = Application.StartupPath + @"reports\report.xlsx";
-        string RptFilename = "";  //报表名称
-        string RptFilePath = "";  //报表地址
+        private readonly string reportPath;
+        private readonly string dslPath;
+        private readonly OPCEventRegistration _opcEventRegistration;
         #endregion
 
-        public UcHMI() => InitializeComponent();
+        public UcHMI()
+        {
+            InitializeComponent();
+            _opcEventRegistration = new OPCEventRegistration(this);
+            reportPath = Path.Combine(Application.StartupPath, Constants.ReportsPath);
+            dslPath = Path.Combine(Application.StartupPath, Constants.ProcedurePath);
+        }
 
         #region DSL初始化
         public Dictionary<string, DSLProcedure> DicProcedureModules = [];
-        private string DSLPath = Application.StartupPath + @"\Procedure\";
 
-        public void ModelLoadDSL(int ModelID)
+        // 根据型号加载DSL
+        public void ModelLoadDSL(int modelId)
         {
+            if (modelId <= 0)
+            {
+                throw new ArgumentException("模型ID必须大于0", nameof(modelId));
+            }
+
             try
             {
                 DicProcedureModules.Clear();
-                var testStep = new TestStepBLL();
-                var lstStep = testStep.GetTestItems(ModelID);
-                var visitor = DSLFactory.CreateVisitor();
-                var modules2 = new Dictionary<string, object>
-                {
-                    ["参数"] = paraconfig,
-                };
-                string modelName = VarHelper.TestViewModel.ModelName;
-                foreach (var step in lstStep)
-                {
-                    string processName = step.ProcessName;
-                    string dslNamePath = Path.Combine(DSLPath, modelName, $"{processName}.rw1");
-                    if (File.Exists(dslNamePath))
-                    {
-                        var proc = DSLFactory.CreateProcedure(dslNamePath);
-                        proc.AddModules(modules2);
-                        proc.AddModules(ModuleComponent.Instance.GetList());
-                        DicProcedureModules.Add(processName, proc);
-                        proc.DomainEventInvoked += new DomainHandler<object>(visitor_DomainEventInvoked);
-                    }
-                    else
-                    {
-                        MessageBox.Show($"试验项点：{processName},找不到自动试验文件！");
-                        return;
-                    }
-                }
+                LoadAndInitializeProcedures(modelId);
             }
             catch (Exception ex)
             {
+                NlogHelper.Default.Error("加载DSL文件错误", ex);
                 MessageHelper.MessageOK($"加载DSL文件错误：{ex.Message}");
+                throw;
             }
         }
+
+        // 加载并初始化试验步骤
+        private void LoadAndInitializeProcedures(int modelId)
+        {
+            var testStep = new TestStepBLL();
+            var testItems = testStep.GetTestItems(modelId);
+            
+            if (testItems.Count == 0)
+            {
+                MessageHelper.MessageOK("未找到测试项目");
+                return;
+            }
+
+            var visitor = DSLFactory.CreateVisitor();
+            var moduleParameters = new Dictionary<string, object>
+            {
+                ["参数"] = paraconfig
+            };
+
+            string modelName = VarHelper.TestViewModel.ModelName;
+            foreach (var testItem in testItems)
+            {
+                LoadSingleProcedure(testItem, modelName, moduleParameters, visitor);
+            }
+        }
+
+        // 加载单个试验步骤
+        private void LoadSingleProcedure(TestStepNewModel testItem, string modelName, 
+            Dictionary<string, object> moduleParameters, object visitor)
+        {
+            string processName = testItem.ProcessName;
+            string dslFilePath = Path.Combine(dslPath, modelName, $"{processName}.rw1");
+
+            if (!File.Exists(dslFilePath))
+            {
+                MessageHelper.MessageOK($"试验项点：{processName},找不到自动试验文件！");
+                return;
+            }
+
+            var procedure = DSLFactory.CreateProcedure(dslFilePath);
+            procedure.AddModules(moduleParameters);
+            procedure.AddModules(ModuleComponent.Instance.GetList());
+            procedure.DomainEventInvoked += new DomainHandler<object>(visitor_DomainEventInvoked);
+
+            DicProcedureModules.Add(processName, procedure);
+        }
+
         void visitor_DomainEventInvoked(object sender, string name, List<object> output)
         {
             try
@@ -93,51 +122,68 @@ namespace MainUI
         {
             try
             {
-                OPCHelper.Init();
-                AddBtn();
-                LoaddicDI();
-                LoaddicDO();
-                LoaddicAI();
-                InitColumn();
-                LoaddicDOBtn();
-                OPCHelper.AIgrp.AIvalueGrpChanged += AIgrp_AIvalueGrpChanged;
-                OPCHelper.AIgrp.Fresh();
-                OPCHelper.DIgrp.DIGroupChanged += DIgrp_DIGroupChanged;
-                OPCHelper.DIgrp.Fresh();
-                OPCHelper.AOgrp.AOvalueGrpChaned += AOgrp_AOvalueGrpChanged;
-                OPCHelper.AOgrp.Fresh();
-                OPCHelper.DOgrp.DOgrpChanged += DOgrp_DOgrpChanged;
-                OPCHelper.DOgrp.Fresh();
-                OPCHelper.Currentgrp.CurrentvalueGrpChaned += Currentgrp_CurrentvalueGrpChaned;
-                OPCHelper.Currentgrp.Fresh();
-                OPCHelper.TestCongrp.TestConGroupChanged += TestCongrp_TestConGroupChanged;
-                OPCHelper.TestCongrp.Fresh();
-                BaseTest.TestStateChanged += BaseTest_TestStateChanged;
-                BaseTest.TipsChanged += BaseTest_TipsChanged;
-                OPCHelper.TestCongrp[39] = true;
-                btnStopTest.Enabled = false;
+                InitializeOPC();  //初始化OPC连接和组
+                InitializeControls();  //初始化控件和数据
+                RegisterOPCHandlers();  //注册OPC组事件处理程序
+                RegisterTestEventHandlers();  //注册测试状态和提示事件处理程序
+                SetInitialState();  //设置初始状态
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        private void TestCongrp_TestConGroupChanged(object sender, int index, object value)
+        // 初始化OPC连接和组
+        private void InitializeOPC()
         {
-            if (DicDO.TryGetValue(index, out UISwitch iSwitch))
+            OPCHelper.Init();
+        }
+        // 初始化控件和数据
+        private void InitializeControls()
+        {
+            AddBtn();
+            LoaddicDI();
+            LoaddicDO();
+            LoaddicAI();
+            InitColumn();
+            LoaddicDOBtn();
+        }
+
+        // 注册OPC组事件处理程序
+        private void RegisterOPCHandlers()
+        {
+            _opcEventRegistration.RegisterAll();
+        }
+
+        // 注册测试状态和提示事件处理程序
+        private void RegisterTestEventHandlers()
+        {
+            BaseTest.TestStateChanged += BaseTest_TestStateChanged;
+            BaseTest.TipsChanged += BaseTest_TipsChanged;
+        }
+
+        // 设置初始状态
+        private void SetInitialState()
+        {
+            OPCHelper.TestCongrp[39] = true;
+            btnStopTest.Enabled = false;
+        }
+
+        public void TestCongrp_TestConGroupChanged(object sender, int index, object value)
+        {
+            if (controls.DigitalOutputs.TryGetValue(index, out UISwitch iSwitch))
             {
                 iSwitch.Active = value.ToBool();
             }
-            if (DicDOBtn.TryGetValue(index, out UIButton btn))
+            if (controls.DigitalOutputButtons.TryGetValue(index, out UIButton btn))
             {
                 BtnColor(btn, value.ToBool());
             }
         }
 
-        private void Currentgrp_CurrentvalueGrpChaned(object sender, int index, double value)
+        public void Currentgrp_CurrentvalueGrpChaned(object sender, int index, double value)
         {
-            if (DicTP.TryGetValue(index, out Label label))
+            if (controls.TemperaturePoints.TryGetValue(index, out Label label))
             {
                 label.Text = value.ToString("f1");
             }
@@ -164,29 +210,31 @@ namespace MainUI
             panelHand.Enabled = !isTesting;
         }
 
-        private void BtnColor(UIButton btn, bool value)
+        private static class ButtonColors
         {
-            Color trueCOlor = Color.LimeGreen;
-            Color FalseColor = Color.FromArgb(80, 160, 255);
-            if (value)
+            public static readonly Color ActiveColor = Color.LimeGreen;
+            public static readonly Color InactiveColor = Color.FromArgb(80, 160, 255);
+        }
+
+        private void BtnColor(UIButton btn, bool isActive)
+        {
+            var color = isActive ? ButtonColors.ActiveColor : ButtonColors.InactiveColor;
+
+            // 使用对象初始化器设置所有颜色属性
+            var properties = new[]
             {
-                btn.FillColor = trueCOlor;
-                btn.RectColor = trueCOlor;
-                btn.FillDisableColor = trueCOlor;
-                btn.RectDisableColor = trueCOlor;
-                btn.FillHoverColor = trueCOlor;
-                btn.FillPressColor = trueCOlor;
-                btn.FillSelectedColor = trueCOlor;
-            }
-            else
+                nameof(btn.FillColor),
+                nameof(btn.RectColor),
+                nameof(btn.FillDisableColor),
+                nameof(btn.RectDisableColor),
+                nameof(btn.FillHoverColor),
+                nameof(btn.FillPressColor),
+                nameof(btn.FillSelectedColor)
+            };
+
+            foreach (var property in properties)
             {
-                btn.FillColor = FalseColor;
-                btn.RectColor = FalseColor;
-                btn.FillDisableColor = FalseColor;
-                btn.RectDisableColor = FalseColor;
-                btn.FillHoverColor = FalseColor;
-                btn.FillPressColor = FalseColor;
-                btn.FillSelectedColor = FalseColor;
+                btn.GetType().GetProperty(property)?.SetValue(btn, color);
             }
         }
 
@@ -195,34 +243,34 @@ namespace MainUI
         /// </summary>
         private void LoaddicDI()
         {
-            DicDI.Clear();
+            controls.DigitalInputs.Clear();
         }
 
         private void LoaddicDOBtn()
         {
-            DicDOBtn.Clear();
+            controls.DigitalOutputButtons.Clear();
             UIButton[] labBtns =
             [
                btnWaterPumpStart, btnFaultRemoval, btnElectricalInit, btnSynchronous12, btnSynchronous34
             ];
             foreach (var btn in labBtns)
             {
-                DicDOBtn.TryAdd(btn.Tag.ToInt32(), btn);
+                controls.DigitalOutputButtons.TryAdd(btn.Tag.ToInt32(), btn);
             }
         }
 
         //加载AI模块
         private void LoaddicAI()
         {
-            DicAI.Clear();
-            DicTP.Clear();
+            controls.AnalogInputs.Clear();
+            controls.TemperaturePoints.Clear();
             Label[] labAIs =
             [
                 LabAI01, LabAI02, LabAI03, LabAI04, LabAI05, LabAI06, LabAI07
             ];
             foreach (var lab in labAIs)
             {
-                DicAI.TryAdd(lab.Tag.ToInt32(), lab);
+                controls.AnalogInputs.TryAdd(lab.Tag.ToInt32(), lab);
             }
 
             Label[] labTPs =
@@ -232,22 +280,22 @@ namespace MainUI
             ];
             foreach (var lab in labTPs)
             {
-                DicTP.TryAdd(lab.Tag.ToInt32(), lab);
+                controls.TemperaturePoints.TryAdd(lab.Tag.ToInt32(), lab);
             }
         }
 
         //加载AI模块
         private void LoaddicDO()
         {
-            DicDO.Clear();
+            controls.DigitalOutputs.Clear();
             AddContrls(grpDO);
         }
 
         private void AddBtn()
         {
-            pairs.Clear();
-            pairs.Add(0, btnDetection);
-            pairs.Add(1, btnCurve);
+            controls.NavigationButtons.Clear();
+            controls.NavigationButtons.Add(0, btnDetection);
+            controls.NavigationButtons.Add(1, btnCurve);
         }
 
         /// <summary>
@@ -261,8 +309,8 @@ namespace MainUI
                 if (item is UISwitch)
                 {
                     int key = item.Tag.ToInt32();
-                    if (!DicDO.ContainsKey(key))
-                        DicDO.Add(key, item as UISwitch);
+                    if (!controls.DigitalOutputs.ContainsKey(key))
+                        controls.DigitalOutputs.Add(key, item as UISwitch);
                 }
                 AddContrls(item);
             }
@@ -270,15 +318,15 @@ namespace MainUI
         #endregion
 
         #region 值改变事件
-        private void AIgrp_AIvalueGrpChanged(object sender, int index, double value)
+       public void AIgrp_AIvalueGrpChanged(object sender, int index, double value)
         {
-            if (DicAI.TryGetValue(index, out Label label))
+            if (controls.AnalogInputs.TryGetValue(index, out Label label))
             {
                 label.Text = value.ToString("f1");
             }
         }
 
-        private void AOgrp_AOvalueGrpChanged(object sender, int index, double value)
+        public void AOgrp_AOvalueGrpChanged(object sender, int index, double value)
         {
             switch (index)
             {
@@ -290,7 +338,7 @@ namespace MainUI
                     break;
             }
         }
-        private void DIgrp_DIGroupChanged(object sender, int index, bool value)
+        public void DIgrp_DIGroupChanged(object sender, int index, bool value)
         {
             try
             {
@@ -306,42 +354,62 @@ namespace MainUI
             }
         }
 
-        private void DOgrp_DOgrpChanged(object sender, int index, bool value)
+        public void DOgrp_DOgrpChanged(object sender, int index, bool value)
         {
 
         }
         #endregion
 
         #region 参数
-        /// <summary>
-        /// 读取配置文件，配置参数
-        /// </summary>
+        private string RptFilename;
+        private string RptFilePath; 
+
         private void InitParaConfig()
         {
             try
             {
+                // 验证必要条件
                 if (VarHelper.TestViewModel == null) return;
-                paraconfig = new();
+
+                // 初始化和加载参数配置
+                paraconfig = new ParaConfig();
                 paraconfig.SetSectionName(VarHelper.ModelTypeName);
                 paraconfig.Load();
                 BaseTest.para = paraconfig;
+
+                // 初始化测试项和DSL
                 InitItem();
                 ModelLoadDSL(VarHelper.TestViewModel.ID);
+
+                // 处理报表文件
                 if (!string.IsNullOrEmpty(paraconfig.RptFile))
                 {
-                    rowIndex = 0;
-                    rowIndex = 29;
-                    RptFilename = paraconfig.RptFile;
-                    RptFilePath = Path.GetFileNameWithoutExtension(RptFilename);
-                    string RptPath = Application.StartupPath + "reports\\" + RptFilePath;
-                    File.Copy(RptPath + ".xlsx", path2, true);
-                    ucGrid1.LoadFile(RptPath);
+                    InitializeReportFile();
                 }
             }
             catch (Exception ex)
             {
                 MessageHelper.MessageOK($"加载参数错误：{ex.Message}");
+                NlogHelper.Default.Error($"加载参数错误", ex);
             }
+        }
+
+        private void InitializeReportFile()
+        {
+            rowIndex = 29;
+            RptFilename = paraconfig.RptFile;
+            RptFilePath = Path.GetFileNameWithoutExtension(RptFilename);
+            
+            string rptPath = Path.Combine(Application.StartupPath, "reports", RptFilePath);
+            
+            // 确保目标目录存在
+            Directory.CreateDirectory(Path.GetDirectoryName(reportPath));
+            
+            // 复制报表文件
+            File.Copy($"{rptPath}.xlsx", reportPath, true);
+            
+            // 加载报表文件
+            ucGrid1.LoadFile(rptPath);
         }
 
         //刷新型号
@@ -455,7 +523,7 @@ namespace MainUI
         // 试验前初始化
         private void TestInit()
         {
-            
+
         }
         // 设置行颜色
         private void TableColor(ItemPointModel itemPoint, int state)
@@ -614,50 +682,76 @@ namespace MainUI
         {
             try
             {
-                if (string.IsNullOrEmpty(paraconfig?.RptFile))
-                {
-                    MessageHelper.MessageOK("报表模板未设置，无法保存！");
-                    return;
-                }
-                if (string.IsNullOrEmpty(VarHelper.TestViewModel.ModelName))
-                {
-                    MessageHelper.MessageOK("型号未选择！");
-                    return;
-                }
+                if (!ValidateSaveParameters()) return;// 参数校验
 
-                DialogResult result = MessageBox.Show("是否保存试验结果？", "系统提示", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.No) return;
-                string rootPath = Application.StartupPath + @"Save\";
-                if (!Directory.Exists(rootPath)) Directory.CreateDirectory(rootPath);
-                string filname = rootPath + VarHelper.TestViewModel.ModelName + "_" + "" + "_" + string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
-                TestRecordNewBLL recordbll = new();
-                recordbll.SaveTestRecord(new TestRecordModel
-                {
-                    KindID = VarHelper.TestViewModel.TypeID,
-                    ModelID = VarHelper.TestViewModel.ID,
-                    TestID = txtNumber.Text.Trim(),
-                    Tester = NewUsers.NewUserInfo.Username,
-                    TestTime = DateTime.Now,
-                    ReportPath = filname
-                });
-                ucGrid1.SaveAsPdf(filname, filname);
-                MessageBox.Show("保存成功", "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (!ConfirmSaveReport()) return;  // 提示确认
+
+                string saveFilePath = BuildSaveFilePath(); // 保存路径
+
+                SaveTestRecord(saveFilePath); // 保存记录
+
+                ucGrid1.SaveAsPdf(saveFilePath, saveFilePath);  // 导出PDF
+
+                MessageHelper.MessageOK("保存成功", TType.Success);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("保存失败:" + ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageHelper.MessageOK($"保存失败: {ex.Message}", TType.Error);
             }
         }
 
+        private bool ValidateSaveParameters()
+        {
+            if (string.IsNullOrEmpty(paraconfig?.RptFile))
+            {
+                MessageHelper.MessageOK("报表模板未设置，无法保存！", TType.Warn);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(VarHelper.TestViewModel.ModelName))
+            {
+                MessageHelper.MessageOK("型号未选择！", TType.Warn);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ConfirmSaveReport()
+        {
+            return MessageHelper.MessageYes("是否保存试验结果？") == DialogResult.Yes;
+        }
+
+        private string BuildSaveFilePath()
+        {
+            string rootPath = Path.Combine(Application.StartupPath, "Save");
+            Directory.CreateDirectory(rootPath);
+
+            string fileName = $"{VarHelper.TestViewModel.ModelName}_{DateTime.Now:yyyyMMddHHmmss}";
+            return Path.Combine(rootPath, fileName);
+        }
+
+        private void SaveTestRecord(string filePath)
+        {
+            var record = new TestRecordModel
+            {
+                KindID = VarHelper.TestViewModel.TypeID,
+                ModelID = VarHelper.TestViewModel.ID,
+                TestID = txtNumber.Text.Trim(),
+                Tester = NewUsers.NewUserInfo.Username,
+                TestTime = DateTime.Now,
+                ReportPath = filePath
+            };
+
+            var recordBll = new TestRecordNewBLL();
+            recordBll.SaveTestRecord(record);
+        }
         #endregion
 
         #region 其他
         private void UcHMI_Load(object sender, EventArgs e)
         {
-            //InitializeTimer();
-            //InitViewRecovery();
-            //InitializeParameterNames();
-            //InitializeChart();
+
         }
 
         private void AppendText(string text)
@@ -668,7 +762,7 @@ namespace MainUI
 
         private void BtnColor(int index)
         {
-            foreach (var item in pairs)
+            foreach (var item in controls.NavigationButtons)
             {
                 if (item.Key == index)
                 {
@@ -706,7 +800,7 @@ namespace MainUI
                 sRefresh();
             }
         }
-       
+
         private void RadioAuto_Click(object sender, EventArgs e)
         {
             OPCHelper.TestCongrp[39] = RadioAuto.Checked;
@@ -748,5 +842,118 @@ namespace MainUI
             OPCHelper.TestCongrp[sder.Tag.ToInt32()] = false;
         }
         #endregion
+    }
+
+
+    sealed class OPCEventRegistration
+    {
+        private readonly UcHMI _form;
+
+        public OPCEventRegistration(UcHMI form)
+        {
+            _form = form;
+        }
+
+        public void RegisterAll()
+        {
+            RegisterAIGroup();
+            RegisterDIGroup();
+            RegisterAOGroup();
+            RegisterDOGroup();
+            RegisterCurrentGroup();
+            RegisterTestConGroup();
+        }
+
+        private void RegisterAIGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.AIgrp.AIvalueGrpChanged += _form.AIgrp_AIvalueGrpChanged;
+                OPCHelper.AIgrp.Fresh();
+            }, "AI组");
+        }
+
+        private void RegisterDIGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.DIgrp.DIGroupChanged += _form.DIgrp_DIGroupChanged;
+                OPCHelper.DIgrp.Fresh();
+            }, "DI组");
+        }
+
+        private void RegisterAOGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.AOgrp.AOvalueGrpChaned += _form.AOgrp_AOvalueGrpChanged;
+                OPCHelper.AOgrp.Fresh();
+            }, "AO组");
+        }
+
+        private void RegisterDOGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.DOgrp.DOgrpChanged += _form.DOgrp_DOgrpChanged;
+                OPCHelper.DOgrp.Fresh();
+            }, "DO组");
+        }
+
+        private void RegisterCurrentGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.Currentgrp.CurrentvalueGrpChaned += _form.Currentgrp_CurrentvalueGrpChaned;
+                OPCHelper.Currentgrp.Fresh();
+            }, "Current组");
+        }
+
+        private void RegisterTestConGroup()
+        {
+            SafeRegister(() =>
+            {
+                OPCHelper.TestCongrp.TestConGroupChanged += _form.TestCongrp_TestConGroupChanged;
+                OPCHelper.TestCongrp.Fresh();
+            }, "TestCon组");
+        }
+
+        private static void SafeRegister(Action registration, string groupName)
+        {
+            try
+            {
+                registration();
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"注册{groupName}事件失败:", ex);
+            }
+        }
+    }
+
+    static class Constants
+    {
+        public const string ReportsPath = @"reports\report.xlsx";
+        public const string ProcedurePath = @"\Procedure\";
+    }
+
+    sealed class ControlMappings
+    {
+        public Dictionary<int, Label> AnalogInputs { get; } = [];
+        public Dictionary<int, Label> TemperaturePoints { get; } = [];
+        public Dictionary<int, UISwitch> DigitalOutputs { get; } = [];
+        public Dictionary<int, UIButton> DigitalOutputButtons { get; } = [];
+        public Dictionary<int, Procedure.Controls.SwitchPictureBox> DigitalInputs { get; } = [];
+        public Dictionary<int, AntdUI.Button> NavigationButtons { get; } = [];
+
+        public void Clear()
+        {
+            AnalogInputs.Clear();
+            TemperaturePoints.Clear();
+            DigitalOutputs.Clear();
+            DigitalOutputButtons.Clear();
+            DigitalInputs.Clear();
+            NavigationButtons.Clear();
+        }
     }
 }
