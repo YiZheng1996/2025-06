@@ -23,6 +23,7 @@ namespace MainUI.CurrencyHelper
                     .Where(p => !string.IsNullOrEmpty(p.ControlName) &&
                                !string.IsNullOrEmpty(p.PermissionCode));
 
+                // 获取全部权限列表
                 foreach (var permission in permissions)
                 {
                     _controlPermissions[permission.ControlName] = permission.PermissionCode;

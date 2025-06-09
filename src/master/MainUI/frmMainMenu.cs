@@ -22,6 +22,10 @@ public partial class frmMainMenu : Form
         InitializeBasicSettings();
     }
 
+    #region 初始化
+    /// <summary>
+    /// 初始化基本设置
+    /// </summary>
     private void InitializeBasicSettings()
     {
         try
@@ -61,6 +65,9 @@ public partial class frmMainMenu : Form
         }
     }
 
+    /// <summary>
+    /// 初始化组件
+    /// </summary>
     private void InitializeComponents()
     {
         _hmi = new UcHMI { Dock = DockStyle.Fill };
@@ -69,6 +76,9 @@ public partial class frmMainMenu : Form
         _opcStatus = OPCHelper.opcStatus;
     }
 
+    /// <summary>
+    /// 初始化事件
+    /// </summary>
     private void InitializeEvents()
     {
         try
@@ -87,6 +97,9 @@ public partial class frmMainMenu : Form
         }
     }
 
+    /// <summary>
+    /// 初始化权限
+    /// </summary>
     private void InitializePermissions()
     {
         try
@@ -102,6 +115,9 @@ public partial class frmMainMenu : Form
         }
     }
 
+    /// <summary>
+    /// 初始化HMI
+    /// </summary>
     private void InitializeHMI()
     {
         try
@@ -116,6 +132,7 @@ public partial class frmMainMenu : Form
             throw;
         }
     }
+    #endregion
 
     #region 权限验证
     private bool CheckPermission(string permissionCode)
@@ -178,31 +195,93 @@ public partial class frmMainMenu : Form
         _hmi.sRefresh();
     }
 
+    /// <summary>
+    /// 配置主数据节点并根据权限显示
+    /// </summary>
     private void ConfigureMainDataNodes(frmSettingMain main)
     {
-        var nodes = new (string Name, UserControl Control, int Index)[]
+        try
         {
-            ("用户管理", new ucUserManager(), 0),
-            ("角色管理", new ucRole(), 6),
-            ("权限管理", new ucPermission(), 7),
-            ("权限分配", new ucPermissionAllocation(), 8),
-            ("类型管理", new ucKindManage(), 1),
-            ("型号管理", new ucModelManage(), 9),
-            ("模块注入", new ucModules(), 3),
-            ("项点管理", new ucItemManagerial(), 4),
-            ("项点配置", new ucItemConfiguration(), 5),
-            ("试验参数", new ucTestParams(), 2)
-        };
+            var nodes = GetMainDataNodes();
+            var permissionConfigs = GetPermissionConfigurations();
 
-        foreach (var node in nodes)
+            foreach (var node in nodes)
+            {
+                // 管理员默认拥有所有权限
+                if (NewUsers.NewUserInfo.ID == 1)
+                {
+                    main.AddNodes(node.Name, node.Control, node.Index);
+                    continue;
+                }
+                AddNodeWithPermissionCheck(main, node, permissionConfigs);
+            }
+        }
+        catch (Exception ex)
         {
-            main.AddNodes(node.Name, node.Control, node.Index);
+            NlogHelper.Default.Error($"配置主数据节点失败: {ex.Message}");
+            throw;
         }
     }
 
-    private void ShowDialog<T>(string permissionCode = null) where T : Form, new()
+    /// <summary>
+    /// 获取主数据节点配置
+    /// </summary>
+    private static (string Name, UserControl Control, int Index)[]
+        GetMainDataNodes() =>
+        [
+           ("用户管理", new ucUserManager(), 0),
+           ("角色管理", new ucRole(), 6),
+           ("权限管理", new ucPermission(), 7),
+           ("权限分配", new ucPermissionAllocation(), 8),
+           ("类型管理", new ucKindManage(), 1),
+           ("型号管理", new ucModelManage(), 9),
+           ("模块注入", new ucModules(), 3),
+           ("项点管理", new ucItemManagerial(), 4),
+           ("项点配置", new ucItemConfiguration(), 5),
+           ("试验参数", new ucTestParams(), 2)
+        ];
+
+    /// <summary>
+    /// 获取权限配置信息
+    /// </summary>
+    private Dictionary<string, string> GetPermissionConfigurations()
     {
-        if (permissionCode != null && !CheckPermission(permissionCode))
+        var permissionConfigBLL = new PermissionBLL();
+        return permissionConfigBLL.GetPermissions()
+            .Where(p => !string.IsNullOrEmpty(p.ControlName))
+            .ToDictionary(p => p.ControlName, p => p.PermissionCode);
+    }
+
+    /// <summary>
+    /// 添加带权限检查的节点
+    /// </summary>
+    private void AddNodeWithPermissionCheck(frmSettingMain main,
+        (string Name, UserControl Control, int Index) node,
+        Dictionary<string, string> permissionConfigs)
+    {
+        try
+        {
+            if (!permissionConfigs.TryGetValue(node.Control.Name, out var code))
+            {
+                NlogHelper.Default.Warn($"控件[{node.Control.Name}]未找到对应的权限配置");
+                return;
+            }
+
+            if (PermissionHelper.HasPermission(NewUsers.NewUserInfo.ID, code))
+            {
+                main.AddNodes(node.Name, node.Control, node.Index);
+            }
+        }
+        catch (Exception ex)
+        {
+            NlogHelper.Default.Error($"添加节点[{node.Name}]失败：{ex.Message}");
+        }
+    }
+
+    private void ShowDialog<T>(object sender = null) where T : Form, new()
+    {
+        var btn = sender as UIButton;
+        if (btn.Tag != null && !CheckPermission(btn.Tag.ToString()))
             return;
 
         using var form = new T();
@@ -210,28 +289,28 @@ public partial class frmMainMenu : Form
     }
 
     private void btnHardwareTest_Click(object sender, EventArgs e) =>
-        ShowDialog<frmHardWare>();
+        ShowDialog<frmHardWare>(sender);
 
     private void btnReports_Click(object sender, EventArgs e) =>
-        ShowDialog<frmDataManager>();
+        ShowDialog<frmDataManager>(sender);
 
     private void btnChangePwd_Click(object sender, EventArgs e) =>
-        ShowDialog<frmRemindEdit>();
+        ShowDialog<frmRemindEdit>(sender);
 
     private void btnNLog_Click(object sender, EventArgs e) =>
-        ShowDialog<frmNLogs>();
+        ShowDialog<frmNLogs>(sender);
 
     private void btnMeteringRemind_Click(object sender, EventArgs e) =>
-        ShowDialog<frmMeteringRemind>();
+        ShowDialog<frmMeteringRemind>(sender);
 
     private void btnDeviceDetection_Click(object sender, EventArgs e) =>
-        ShowDialog<frmDeviceInspect>();
+        ShowDialog<frmDeviceInspect>(sender);
 
     private void btnErrStatistics_Click(object sender, EventArgs e) =>
-        ShowDialog<frmErrStatistics>();
+        ShowDialog<frmErrStatistics>(sender);
 
     private void btnAboutDevice_Click(object sender, EventArgs e) =>
-        ShowDialog<frmAboutDevice>();
+        ShowDialog<frmAboutDevice>(sender);
     #endregion
 
     #region 系统操作
