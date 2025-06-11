@@ -176,11 +176,11 @@ namespace MainUI
             plus = new PictureBox();
             btnPageDown = new UISymbolButton();
             btnPageUp = new UISymbolButton();
-            btnPrint = new UISymbolButton();
-            btnSave = new UISymbolButton();
+            btnPrintReport = new UISymbolButton();
+            btnSaveReport = new UISymbolButton();
             ucGrid1 = new Report.UcGrid();
-            btnDetection = new AntdUI.Button();
-            btnCurve = new AntdUI.Button();
+            btnWorkmanshipForms = new AntdUI.Button();
+            btnReportForms = new AntdUI.Button();
             uiTitlePanel4 = new UITitlePanel();
             txtModel = new UITextBox();
             txtNumber = new UITextBox();
@@ -256,6 +256,7 @@ namespace MainUI
             TableItemPoint.Size = new Size(320, 468);
             TableItemPoint.TabIndex = 53;
             TableItemPoint.CheckedChanged += TableItemPoint_CheckedChanged;
+            TableItemPoint.SetRowStyle += TableItemPoint_SetRowStyle;
             // 
             // btnProductSelection
             // 
@@ -1025,7 +1026,6 @@ namespace MainUI
             btnWaterPump.Text = "水泵电机变频器";
             btnWaterPump.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
             btnWaterPump.TipsText = "1";
-            btnWaterPump.Click += btnWaterPump_Click;
             // 
             // btnTelescopingRight
             // 
@@ -2617,8 +2617,8 @@ namespace MainUI
             uiPanel6.Controls.Add(plus);
             uiPanel6.Controls.Add(btnPageDown);
             uiPanel6.Controls.Add(btnPageUp);
-            uiPanel6.Controls.Add(btnPrint);
-            uiPanel6.Controls.Add(btnSave);
+            uiPanel6.Controls.Add(btnPrintReport);
+            uiPanel6.Controls.Add(btnSaveReport);
             uiPanel6.FillColor = Color.White;
             uiPanel6.FillColor2 = Color.White;
             uiPanel6.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
@@ -2702,38 +2702,38 @@ namespace MainUI
             btnPageUp.TipsFont = new Font("宋体", 11F);
             btnPageUp.Click += btnPageUp_Click;
             // 
-            // btnPrint
+            // btnPrintReport
             // 
-            btnPrint.FillDisableColor = Color.FromArgb(80, 160, 255);
-            btnPrint.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnPrint.ForeDisableColor = Color.White;
-            btnPrint.Image = (Image)resources.GetObject("btnPrint.Image");
-            btnPrint.Location = new Point(17, 671);
-            btnPrint.MinimumSize = new Size(1, 1);
-            btnPrint.Name = "btnPrint";
-            btnPrint.RectDisableColor = Color.FromArgb(80, 160, 255);
-            btnPrint.Size = new Size(175, 37);
-            btnPrint.Symbol = 0;
-            btnPrint.TabIndex = 488;
-            btnPrint.Text = "打印报表";
-            btnPrint.TipsFont = new Font("宋体", 11F);
+            btnPrintReport.FillDisableColor = Color.FromArgb(80, 160, 255);
+            btnPrintReport.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            btnPrintReport.ForeDisableColor = Color.White;
+            btnPrintReport.Image = (Image)resources.GetObject("btnPrintReport.Image");
+            btnPrintReport.Location = new Point(17, 671);
+            btnPrintReport.MinimumSize = new Size(1, 1);
+            btnPrintReport.Name = "btnPrintReport";
+            btnPrintReport.RectDisableColor = Color.FromArgb(80, 160, 255);
+            btnPrintReport.Size = new Size(175, 37);
+            btnPrintReport.Symbol = 0;
+            btnPrintReport.TabIndex = 488;
+            btnPrintReport.Text = "打印报表";
+            btnPrintReport.TipsFont = new Font("宋体", 11F);
             // 
-            // btnSave
+            // btnSaveReport
             // 
-            btnSave.FillDisableColor = Color.FromArgb(80, 160, 255);
-            btnSave.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnSave.ForeDisableColor = Color.White;
-            btnSave.Image = (Image)resources.GetObject("btnSave.Image");
-            btnSave.Location = new Point(17, 617);
-            btnSave.MinimumSize = new Size(1, 1);
-            btnSave.Name = "btnSave";
-            btnSave.RectDisableColor = Color.FromArgb(80, 160, 255);
-            btnSave.Size = new Size(175, 37);
-            btnSave.Symbol = 0;
-            btnSave.TabIndex = 487;
-            btnSave.Text = "保存报表";
-            btnSave.TipsFont = new Font("宋体", 11F);
-            btnSave.Click += btnSave_Click;
+            btnSaveReport.FillDisableColor = Color.FromArgb(80, 160, 255);
+            btnSaveReport.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            btnSaveReport.ForeDisableColor = Color.White;
+            btnSaveReport.Image = (Image)resources.GetObject("btnSaveReport.Image");
+            btnSaveReport.Location = new Point(17, 617);
+            btnSaveReport.MinimumSize = new Size(1, 1);
+            btnSaveReport.Name = "btnSaveReport";
+            btnSaveReport.RectDisableColor = Color.FromArgb(80, 160, 255);
+            btnSaveReport.Size = new Size(175, 37);
+            btnSaveReport.Symbol = 0;
+            btnSaveReport.TabIndex = 487;
+            btnSaveReport.Text = "保存报表";
+            btnSaveReport.TipsFont = new Font("宋体", 11F);
+            btnSaveReport.Click += btnSave_Click;
             // 
             // ucGrid1
             // 
@@ -2744,39 +2744,39 @@ namespace MainUI
             ucGrid1.Size = new Size(1201, 902);
             ucGrid1.TabIndex = 0;
             // 
-            // btnDetection
+            // btnWorkmanshipForms
             // 
-            btnDetection.BackActive = Color.FromArgb(49, 54, 64);
-            btnDetection.BackColor = Color.White;
-            btnDetection.BorderWidth = 1F;
-            btnDetection.Font = new Font("微软雅黑", 14F, FontStyle.Bold);
-            btnDetection.ForeColor = Color.Black;
-            btnDetection.JoinRight = true;
-            btnDetection.Location = new Point(335, 0);
-            btnDetection.Name = "btnDetection";
-            btnDetection.Size = new Size(158, 35);
-            btnDetection.TabIndex = 493;
-            btnDetection.Text = "工艺界面";
-            btnDetection.Type = AntdUI.TTypeMini.Primary;
-            btnDetection.WaveSize = 1;
-            btnDetection.Click += btnTechnology_Click;
+            btnWorkmanshipForms.BackActive = Color.FromArgb(49, 54, 64);
+            btnWorkmanshipForms.BackColor = Color.White;
+            btnWorkmanshipForms.BorderWidth = 1F;
+            btnWorkmanshipForms.Font = new Font("微软雅黑", 14F, FontStyle.Bold);
+            btnWorkmanshipForms.ForeColor = Color.Black;
+            btnWorkmanshipForms.JoinRight = true;
+            btnWorkmanshipForms.Location = new Point(335, 0);
+            btnWorkmanshipForms.Name = "btnWorkmanshipForms";
+            btnWorkmanshipForms.Size = new Size(158, 35);
+            btnWorkmanshipForms.TabIndex = 493;
+            btnWorkmanshipForms.Text = "工艺界面";
+            btnWorkmanshipForms.Type = AntdUI.TTypeMini.Primary;
+            btnWorkmanshipForms.WaveSize = 1;
+            btnWorkmanshipForms.Click += btnTechnology_Click;
             // 
-            // btnCurve
+            // btnReportForms
             // 
-            btnCurve.BackActive = Color.FromArgb(196, 199, 204);
-            btnCurve.BackColor = Color.FromArgb(196, 199, 204);
-            btnCurve.BorderWidth = 1F;
-            btnCurve.Font = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            btnCurve.ForeColor = Color.White;
-            btnCurve.JoinLeft = true;
-            btnCurve.Location = new Point(494, 0);
-            btnCurve.Name = "btnCurve";
-            btnCurve.Size = new Size(158, 35);
-            btnCurve.TabIndex = 494;
-            btnCurve.Text = "报表界面";
-            btnCurve.Type = AntdUI.TTypeMini.Primary;
-            btnCurve.WaveSize = 1;
-            btnCurve.Click += btnCurve_Click;
+            btnReportForms.BackActive = Color.FromArgb(196, 199, 204);
+            btnReportForms.BackColor = Color.FromArgb(196, 199, 204);
+            btnReportForms.BorderWidth = 1F;
+            btnReportForms.Font = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            btnReportForms.ForeColor = Color.White;
+            btnReportForms.JoinLeft = true;
+            btnReportForms.Location = new Point(494, 0);
+            btnReportForms.Name = "btnReportForms";
+            btnReportForms.Size = new Size(158, 35);
+            btnReportForms.TabIndex = 494;
+            btnReportForms.Text = "报表界面";
+            btnReportForms.Type = AntdUI.TTypeMini.Primary;
+            btnReportForms.WaveSize = 1;
+            btnReportForms.Click += btnCurve_Click;
             // 
             // uiTitlePanel4
             // 
@@ -2903,17 +2903,16 @@ namespace MainUI
             Controls.Add(panelHand);
             Controls.Add(uiTitlePanel4);
             Controls.Add(tabs1);
-            Controls.Add(btnCurve);
+            Controls.Add(btnReportForms);
             Controls.Add(uiTitlePanel8);
             Controls.Add(uiTitlePanel3);
             Controls.Add(btnStopTest);
             Controls.Add(btnStartTest);
-            Controls.Add(btnDetection);
+            Controls.Add(btnWorkmanshipForms);
             Font = new Font("宋体", 11F);
             Margin = new System.Windows.Forms.Padding(4);
             Name = "UcHMI";
             Size = new Size(1759, 940);
-            Load += UcHMI_Load;
             uiTitlePanel3.ResumeLayout(false);
             uiTitlePanel8.ResumeLayout(false);
             tabs1.ResumeLayout(false);
@@ -2988,8 +2987,8 @@ namespace MainUI
         private AntdUI.TabPage tabPage3;
         private UIPanel panelChart;
         private AntdUI.TabPage tabPage1;
-        private AntdUI.Button btnDetection;
-        private AntdUI.Button btnCurve;
+        private AntdUI.Button btnWorkmanshipForms;
+        private AntdUI.Button btnReportForms;
         private UIPanel grpRainy;
         private AntdUI.Label label5;
         private UIPanel uiPanel1;
@@ -3007,8 +3006,8 @@ namespace MainUI
         private PictureBox plus;
         private UISymbolButton btnPageDown;
         private UISymbolButton btnPageUp;
-        private UISymbolButton btnPrint;
-        private UISymbolButton btnSave;
+        private UISymbolButton btnPrintReport;
+        private UISymbolButton btnSaveReport;
         private UIPanel uiPanel4;
         private AntdUI.Label label9;
         private UILabel uiLabel8;

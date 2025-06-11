@@ -32,11 +32,13 @@
             btnCancel = new UIButton();
             btnSubmit = new UIButton();
             uiPanel1 = new UIPanel();
+            txtDrawingNo = new UITextBox();
+            uiLabel4 = new UILabel();
+            uiLabel2 = new UILabel();
+            cboModelType = new UIComboBox();
             txtModelType = new UITextBox();
             txtMark = new UITextBox();
             uiLabel3 = new UILabel();
-            uiLabel2 = new UILabel();
-            cboModelType = new UIComboBox();
             uiPanel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -45,7 +47,7 @@
             uiLabel1.BackColor = Color.Transparent;
             uiLabel1.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel1.ForeColor = Color.FromArgb(43, 46, 57);
-            uiLabel1.Location = new Point(101, 86);
+            uiLabel1.Location = new Point(101, 91);
             uiLabel1.Name = "uiLabel1";
             uiLabel1.Size = new Size(88, 23);
             uiLabel1.TabIndex = 68;
@@ -58,7 +60,7 @@
             btnCancel.Cursor = Cursors.Hand;
             btnCancel.FillDisableColor = Color.FromArgb(80, 160, 255);
             btnCancel.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnCancel.Location = new Point(281, 241);
+            btnCancel.Location = new Point(281, 305);
             btnCancel.MinimumSize = new Size(1, 1);
             btnCancel.Name = "btnCancel";
             btnCancel.Radius = 10;
@@ -76,7 +78,7 @@
             btnSubmit.Cursor = Cursors.Hand;
             btnSubmit.FillDisableColor = Color.FromArgb(80, 160, 255);
             btnSubmit.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnSubmit.Location = new Point(117, 241);
+            btnSubmit.Location = new Point(117, 305);
             btnSubmit.MinimumSize = new Size(1, 1);
             btnSubmit.Name = "btnSubmit";
             btnSubmit.Radius = 10;
@@ -90,6 +92,8 @@
             // 
             // uiPanel1
             // 
+            uiPanel1.Controls.Add(txtDrawingNo);
+            uiPanel1.Controls.Add(uiLabel4);
             uiPanel1.Controls.Add(uiLabel2);
             uiPanel1.Controls.Add(cboModelType);
             uiPanel1.Controls.Add(txtModelType);
@@ -111,10 +115,92 @@
             uiPanel1.Radius = 15;
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
-            uiPanel1.Size = new Size(519, 294);
+            uiPanel1.Size = new Size(519, 375);
             uiPanel1.TabIndex = 408;
             uiPanel1.Text = null;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // txtDrawingNo
+            // 
+            txtDrawingNo.BackColor = Color.Transparent;
+            txtDrawingNo.Cursor = Cursors.IBeam;
+            txtDrawingNo.FillColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            txtDrawingNo.ForeColor = Color.Black;
+            txtDrawingNo.ForeDisableColor = Color.Black;
+            txtDrawingNo.ForeReadOnlyColor = Color.Black;
+            txtDrawingNo.Location = new Point(202, 144);
+            txtDrawingNo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtDrawingNo.MinimumSize = new Size(1, 16);
+            txtDrawingNo.Name = "txtDrawingNo";
+            txtDrawingNo.Padding = new System.Windows.Forms.Padding(5);
+            txtDrawingNo.Radius = 10;
+            txtDrawingNo.RectColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.ShowText = false;
+            txtDrawingNo.Size = new Size(210, 30);
+            txtDrawingNo.TabIndex = 413;
+            txtDrawingNo.TextAlignment = ContentAlignment.MiddleLeft;
+            txtDrawingNo.Watermark = "请输入";
+            // 
+            // uiLabel4
+            // 
+            uiLabel4.BackColor = Color.Transparent;
+            uiLabel4.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            uiLabel4.ForeColor = Color.FromArgb(43, 46, 57);
+            uiLabel4.Location = new Point(101, 145);
+            uiLabel4.Name = "uiLabel4";
+            uiLabel4.Size = new Size(88, 23);
+            uiLabel4.TabIndex = 412;
+            uiLabel4.Text = "产品图号";
+            uiLabel4.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // uiLabel2
+            // 
+            uiLabel2.AutoSize = true;
+            uiLabel2.BackColor = Color.Transparent;
+            uiLabel2.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            uiLabel2.ForeColor = Color.Black;
+            uiLabel2.Location = new Point(111, 36);
+            uiLabel2.Name = "uiLabel2";
+            uiLabel2.Size = new Size(78, 24);
+            uiLabel2.TabIndex = 411;
+            uiLabel2.Text = "产品类型";
+            uiLabel2.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // cboModelType
+            // 
+            cboModelType.BackColor = Color.Transparent;
+            cboModelType.DataSource = null;
+            cboModelType.DropDownStyle = UIDropDownStyle.DropDownList;
+            cboModelType.FillColor = Color.FromArgb(218, 220, 230);
+            cboModelType.FillColor2 = Color.FromArgb(218, 220, 230);
+            cboModelType.FillDisableColor = Color.White;
+            cboModelType.FilterMaxCount = 50;
+            cboModelType.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            cboModelType.ForeColor = Color.Black;
+            cboModelType.ForeDisableColor = Color.Black;
+            cboModelType.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cboModelType.Items.AddRange(new object[] { "系统管理员" });
+            cboModelType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cboModelType.Location = new Point(202, 34);
+            cboModelType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            cboModelType.MinimumSize = new Size(63, 0);
+            cboModelType.Name = "cboModelType";
+            cboModelType.Padding = new System.Windows.Forms.Padding(0, 0, 30, 2);
+            cboModelType.Radius = 10;
+            cboModelType.RectColor = Color.Gray;
+            cboModelType.RectDisableColor = Color.Gray;
+            cboModelType.RectSides = ToolStripStatusLabelBorderSides.None;
+            cboModelType.Size = new Size(210, 30);
+            cboModelType.SymbolSize = 24;
+            cboModelType.TabIndex = 410;
+            cboModelType.TextAlignment = ContentAlignment.MiddleLeft;
+            cboModelType.Watermark = "请选择";
             // 
             // txtModelType
             // 
@@ -128,7 +214,7 @@
             txtModelType.ForeColor = Color.Black;
             txtModelType.ForeDisableColor = Color.Black;
             txtModelType.ForeReadOnlyColor = Color.Black;
-            txtModelType.Location = new Point(202, 83);
+            txtModelType.Location = new Point(202, 89);
             txtModelType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtModelType.MinimumSize = new Size(1, 16);
             txtModelType.Name = "txtModelType";
@@ -155,7 +241,7 @@
             txtMark.ForeColor = Color.Black;
             txtMark.ForeDisableColor = Color.Black;
             txtMark.ForeReadOnlyColor = Color.Black;
-            txtMark.Location = new Point(202, 139);
+            txtMark.Location = new Point(202, 199);
             txtMark.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtMark.MinimumSize = new Size(1, 16);
             txtMark.Name = "txtMark";
@@ -176,61 +262,18 @@
             uiLabel3.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel3.ForeColor = Color.FromArgb(43, 46, 57);
             uiLabel3.ImeMode = ImeMode.NoControl;
-            uiLabel3.Location = new Point(30, 139);
+            uiLabel3.Location = new Point(30, 199);
             uiLabel3.Name = "uiLabel3";
             uiLabel3.Size = new Size(159, 23);
             uiLabel3.TabIndex = 74;
             uiLabel3.Text = "型号备注";
             uiLabel3.TextAlign = ContentAlignment.MiddleRight;
             // 
-            // uiLabel2
-            // 
-            uiLabel2.AutoSize = true;
-            uiLabel2.BackColor = Color.Transparent;
-            uiLabel2.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            uiLabel2.ForeColor = Color.Black;
-            uiLabel2.Location = new Point(111, 30);
-            uiLabel2.Name = "uiLabel2";
-            uiLabel2.Size = new Size(78, 24);
-            uiLabel2.TabIndex = 411;
-            uiLabel2.Text = "产品类型";
-            uiLabel2.TextAlign = ContentAlignment.MiddleRight;
-            // 
-            // cboModelType
-            // 
-            cboModelType.BackColor = Color.Transparent;
-            cboModelType.DataSource = null;
-            cboModelType.DropDownStyle = UIDropDownStyle.DropDownList;
-            cboModelType.FillColor = Color.FromArgb(218, 220, 230);
-            cboModelType.FillColor2 = Color.FromArgb(218, 220, 230);
-            cboModelType.FillDisableColor = Color.White;
-            cboModelType.FilterMaxCount = 50;
-            cboModelType.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            cboModelType.ForeColor = Color.Black;
-            cboModelType.ForeDisableColor = Color.Black;
-            cboModelType.ItemHoverColor = Color.FromArgb(155, 200, 255);
-            cboModelType.Items.AddRange(new object[] { "系统管理员" });
-            cboModelType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
-            cboModelType.Location = new Point(202, 28);
-            cboModelType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            cboModelType.MinimumSize = new Size(63, 0);
-            cboModelType.Name = "cboModelType";
-            cboModelType.Padding = new System.Windows.Forms.Padding(0, 0, 30, 2);
-            cboModelType.Radius = 10;
-            cboModelType.RectColor = Color.Gray;
-            cboModelType.RectDisableColor = Color.Gray;
-            cboModelType.RectSides = ToolStripStatusLabelBorderSides.None;
-            cboModelType.Size = new Size(210, 30);
-            cboModelType.SymbolSize = 24;
-            cboModelType.TabIndex = 410;
-            cboModelType.TextAlignment = ContentAlignment.MiddleLeft;
-            cboModelType.Watermark = "请选择";
-            // 
             // frmModelEdit
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
-            ClientSize = new Size(585, 360);
+            ClientSize = new Size(585, 467);
             ControlBox = false;
             Controls.Add(uiPanel1);
             Font = new Font("微软雅黑", 11F);
@@ -265,5 +308,7 @@
         private UITextBox txtModelType;
         private UILabel uiLabel2;
         private UIComboBox cboModelType;
+        private UITextBox txtDrawingNo;
+        private UILabel uiLabel4;
     }
 }

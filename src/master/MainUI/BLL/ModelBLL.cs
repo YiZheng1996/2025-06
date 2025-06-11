@@ -20,6 +20,8 @@
                 ModelName = models.ModelName,
                 TypeID = models.TypeID,
                 Mark = models.Mark,
+                DrawingNo = models.DrawingNo,
+                ReleaseTime = "未发布",
                 CreateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             }).ExecuteAffrows() > 0;
         }
@@ -39,7 +41,22 @@
             .Set(a => a.ModelName, models.ModelName)
             .Set(a => a.TypeID, models.TypeID)
             .Set(a => a.Mark, models.Mark)
+            .Set(a => a.DrawingNo, models.DrawingNo)
             .Set(a => a.UpdateTime, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
+            .Where(a => a.ID == models.ID)
+            .ExecuteAffrows() > 0;
+        }
+
+        /// <summary>
+        /// 修改型号为发布状态
+        /// </summary>
+        /// <param name="models"></param>
+        /// <returns></returns>
+        public bool IsRelease(Models models)
+        {
+            return VarHelper.fsql.Update<Models>()
+            .Set(a => a.IsRelease, true)
+            .Set(a => a.ReleaseTime, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
             .Where(a => a.ID == models.ID)
             .ExecuteAffrows() > 0;
         }
@@ -52,6 +69,7 @@
             if (s)
                 MoveStepPara(LX, newName);
         }
+
         public bool AddFileName(string newFile, bool isFile)
         {
             if (isFile && !System.IO.File.Exists(newFile))
@@ -66,11 +84,8 @@
 
             return true;
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="LX">类型</param>
-        /// <param name="filename">型号名称</param>
+
+
         void deleteFile(string LX, string filename)
         {
             string rootDirectory = Application.StartupPath + "\\proc\\" + LX + "\\";
@@ -107,9 +122,8 @@
                 Microsoft.VisualBasic.FileIO.FileSystem.RenameDirectory(path, filename);
 
         }
-        /// <summary>
-        /// 
-        /// </summary>
+
+
         void MoveStepPara(string LXname, string xhname)
         {
             string rootDirectory = Application.StartupPath + "\\proc\\" + LXname;
@@ -126,8 +140,8 @@
                 }
 
             }
-
         }
+
         public string SpecificSymbol(string gg)
         {
             while (true)

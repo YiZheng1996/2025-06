@@ -27,6 +27,7 @@
             {
                 string ModelName = txtModelType.Text.Trim();
                 string Mark = txtMark.Text.Trim();
+                string DrawingNo = txtDrawingNo.Text.Trim();
                 int TypeID = cboModelType.SelectedValue.ToInt32();
                 if (string.IsNullOrEmpty(ModelName))
                 {
@@ -43,6 +44,7 @@
                         TypeID = TypeID,
                         ModelName = ModelName,
                         Mark = Mark,
+                        DrawingNo = DrawingNo,
                     };
                     result = modelBLL.Add(newModel);
                 }
@@ -51,6 +53,7 @@
                     model.TypeID = TypeID;
                     model.ModelName = ModelName;
                     model.Mark = Mark;
+                    model.DrawingNo = DrawingNo;
                     result = modelBLL.Update(model);
                 }
 
@@ -83,6 +86,7 @@
                 cboModelType.SelectedValue = model.TypeID;
                 txtModelType.Text = model.ModelName;
                 txtMark.Text = model.Mark;
+                txtDrawingNo.Text = model.DrawingNo;
             }
         }
     }

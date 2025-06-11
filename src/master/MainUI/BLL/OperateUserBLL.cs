@@ -10,6 +10,16 @@
                   .ExecuteAffrows() > 0;
 
         // 根据ID获取用户信息
+        public OperateUserNewModel SelectUser(string username)
+        {
+            return VarHelper.fsql.Select<OperateUserModel, RoleModel>()
+                .LeftJoin((m, t) => m.Role_ID == t.ID)
+                .Where((m, t) => m.Username == username)
+                .ToList((m, t) => new OperateUserNewModel())
+                .FirstOrDefault();
+        }
+
+        // 根据ID获取用户信息
         public OperateUserNewModel SelectUser(OperateUserNewModel model)
         {
             return VarHelper.fsql.Select<OperateUserModel, RoleModel>()

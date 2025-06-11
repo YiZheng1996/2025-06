@@ -140,6 +140,7 @@
             Tables.SwitchSize = 25;
             Tables.TabIndex = 411;
             Tables.CellClick += Tables_CellClick;
+            Tables.CellButtonClick += Tables_CellButtonClick;
             Tables.CellDoubleClick += Tables_CellDoubleClick;
             // 
             // uiLine1

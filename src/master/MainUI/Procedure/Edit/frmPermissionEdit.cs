@@ -17,18 +17,11 @@ namespace MainUI
         {
             try
             {
-                int PermissionType = CboPermissionType.SelectedIndex;
                 string PermissionName = txtPermissionName.Text.Trim();
                 string PermissionNotes = txtPermissionNotes.Text.Trim();
                 string PermissionCode = txtPermissionCode.Text.Trim();
                 string ControlName = txtControlName.Text.Trim();
 
-                if (PermissionType == -1)
-                {
-                    MessageHelper.MessageOK(this, "未选择类型！");
-                    CboPermissionType.Focus();
-                    return;
-                }
                 if (string.IsNullOrEmpty(PermissionName))
                 {
                     MessageHelper.MessageOK(this, "未输入名称！");

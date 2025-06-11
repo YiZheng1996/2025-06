@@ -39,8 +39,8 @@
             txtPermissionNotes = new UIRichTextBox();
             uiLabel5 = new UILabel();
             txtPermissionName = new UITextBox();
-            CboPermissionType = new UIComboBox();
             uiLabel3 = new UILabel();
+            CboPermissionType = new UIComboBox();
             uiPanel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -49,12 +49,13 @@
             uiLabel1.BackColor = Color.Transparent;
             uiLabel1.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel1.ForeColor = Color.FromArgb(43, 46, 57);
-            uiLabel1.Location = new Point(101, 35);
+            uiLabel1.Location = new Point(112, 457);
             uiLabel1.Name = "uiLabel1";
             uiLabel1.Size = new Size(88, 23);
             uiLabel1.TabIndex = 68;
             uiLabel1.Text = "权限类型";
             uiLabel1.TextAlign = ContentAlignment.MiddleRight;
+            uiLabel1.Visible = false;
             // 
             // btnCancel
             // 
@@ -62,7 +63,7 @@
             btnCancel.Cursor = Cursors.Hand;
             btnCancel.FillDisableColor = Color.FromArgb(80, 160, 255);
             btnCancel.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnCancel.Location = new Point(284, 378);
+            btnCancel.Location = new Point(293, 331);
             btnCancel.MinimumSize = new Size(1, 1);
             btnCancel.Name = "btnCancel";
             btnCancel.Radius = 10;
@@ -80,7 +81,7 @@
             btnSubmit.Cursor = Cursors.Hand;
             btnSubmit.FillDisableColor = Color.FromArgb(80, 160, 255);
             btnSubmit.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            btnSubmit.Location = new Point(120, 378);
+            btnSubmit.Location = new Point(129, 331);
             btnSubmit.MinimumSize = new Size(1, 1);
             btnSubmit.Name = "btnSubmit";
             btnSubmit.Radius = 10;
@@ -101,8 +102,6 @@
             uiPanel1.Controls.Add(txtPermissionNotes);
             uiPanel1.Controls.Add(uiLabel5);
             uiPanel1.Controls.Add(txtPermissionName);
-            uiPanel1.Controls.Add(CboPermissionType);
-            uiPanel1.Controls.Add(uiLabel1);
             uiPanel1.Controls.Add(btnCancel);
             uiPanel1.Controls.Add(btnSubmit);
             uiPanel1.Controls.Add(uiLabel3);
@@ -119,7 +118,7 @@
             uiPanel1.Radius = 15;
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
-            uiPanel1.Size = new Size(519, 445);
+            uiPanel1.Size = new Size(519, 406);
             uiPanel1.TabIndex = 408;
             uiPanel1.Text = null;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
@@ -136,7 +135,7 @@
             txtControlName.ForeColor = Color.Black;
             txtControlName.ForeDisableColor = Color.Black;
             txtControlName.ForeReadOnlyColor = Color.Black;
-            txtControlName.Location = new Point(202, 192);
+            txtControlName.Location = new Point(211, 145);
             txtControlName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtControlName.MinimumSize = new Size(1, 16);
             txtControlName.Name = "txtControlName";
@@ -157,7 +156,7 @@
             uiLabel4.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel4.ForeColor = Color.FromArgb(43, 46, 57);
             uiLabel4.ImeMode = ImeMode.NoControl;
-            uiLabel4.Location = new Point(30, 193);
+            uiLabel4.Location = new Point(39, 146);
             uiLabel4.Name = "uiLabel4";
             uiLabel4.Size = new Size(159, 23);
             uiLabel4.TabIndex = 413;
@@ -176,7 +175,7 @@
             txtPermissionCode.ForeColor = Color.Black;
             txtPermissionCode.ForeDisableColor = Color.Black;
             txtPermissionCode.ForeReadOnlyColor = Color.Black;
-            txtPermissionCode.Location = new Point(202, 139);
+            txtPermissionCode.Location = new Point(211, 92);
             txtPermissionCode.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtPermissionCode.MinimumSize = new Size(1, 16);
             txtPermissionCode.Name = "txtPermissionCode";
@@ -197,7 +196,7 @@
             uiLabel2.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel2.ForeColor = Color.FromArgb(43, 46, 57);
             uiLabel2.ImeMode = ImeMode.NoControl;
-            uiLabel2.Location = new Point(30, 141);
+            uiLabel2.Location = new Point(39, 94);
             uiLabel2.Name = "uiLabel2";
             uiLabel2.Size = new Size(159, 23);
             uiLabel2.TabIndex = 411;
@@ -213,7 +212,7 @@
             txtPermissionNotes.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             txtPermissionNotes.ForeColor = Color.Black;
             txtPermissionNotes.ForeDisableColor = Color.Black;
-            txtPermissionNotes.Location = new Point(202, 245);
+            txtPermissionNotes.Location = new Point(211, 198);
             txtPermissionNotes.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtPermissionNotes.MinimumSize = new Size(1, 1);
             txtPermissionNotes.Name = "txtPermissionNotes";
@@ -232,7 +231,7 @@
             uiLabel5.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiLabel5.ForeColor = Color.FromArgb(43, 46, 57);
             uiLabel5.ImeMode = ImeMode.NoControl;
-            uiLabel5.Location = new Point(46, 245);
+            uiLabel5.Location = new Point(55, 198);
             uiLabel5.Name = "uiLabel5";
             uiLabel5.Size = new Size(143, 23);
             uiLabel5.TabIndex = 409;
@@ -251,7 +250,7 @@
             txtPermissionName.ForeColor = Color.Black;
             txtPermissionName.ForeDisableColor = Color.Black;
             txtPermissionName.ForeReadOnlyColor = Color.Black;
-            txtPermissionName.Location = new Point(202, 86);
+            txtPermissionName.Location = new Point(211, 39);
             txtPermissionName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtPermissionName.MinimumSize = new Size(1, 16);
             txtPermissionName.Name = "txtPermissionName";
@@ -266,6 +265,19 @@
             txtPermissionName.TextAlignment = ContentAlignment.MiddleLeft;
             txtPermissionName.Watermark = "请输入";
             // 
+            // uiLabel3
+            // 
+            uiLabel3.BackColor = Color.Transparent;
+            uiLabel3.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
+            uiLabel3.ForeColor = Color.FromArgb(43, 46, 57);
+            uiLabel3.ImeMode = ImeMode.NoControl;
+            uiLabel3.Location = new Point(39, 42);
+            uiLabel3.Name = "uiLabel3";
+            uiLabel3.Size = new Size(159, 23);
+            uiLabel3.TabIndex = 74;
+            uiLabel3.Text = "权限名称";
+            uiLabel3.TextAlign = ContentAlignment.MiddleRight;
+            // 
             // CboPermissionType
             // 
             CboPermissionType.BackColor = Color.Transparent;
@@ -278,7 +290,7 @@
             CboPermissionType.ItemHoverColor = Color.FromArgb(155, 200, 255);
             CboPermissionType.Items.AddRange(new object[] { "查看", "删除", "编辑", "新增" });
             CboPermissionType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
-            CboPermissionType.Location = new Point(202, 32);
+            CboPermissionType.Location = new Point(213, 454);
             CboPermissionType.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             CboPermissionType.MinimumSize = new Size(63, 0);
             CboPermissionType.Name = "CboPermissionType";
@@ -291,28 +303,18 @@
             CboPermissionType.SymbolSize = 24;
             CboPermissionType.TabIndex = 399;
             CboPermissionType.TextAlignment = ContentAlignment.MiddleLeft;
+            CboPermissionType.Visible = false;
             CboPermissionType.Watermark = "请选择";
-            // 
-            // uiLabel3
-            // 
-            uiLabel3.BackColor = Color.Transparent;
-            uiLabel3.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
-            uiLabel3.ForeColor = Color.FromArgb(43, 46, 57);
-            uiLabel3.ImeMode = ImeMode.NoControl;
-            uiLabel3.Location = new Point(30, 89);
-            uiLabel3.Name = "uiLabel3";
-            uiLabel3.Size = new Size(159, 23);
-            uiLabel3.TabIndex = 74;
-            uiLabel3.Text = "权限名称";
-            uiLabel3.TextAlign = ContentAlignment.MiddleRight;
             // 
             // frmPermissionEdit
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
-            ClientSize = new Size(585, 534);
+            ClientSize = new Size(585, 494);
             ControlBox = false;
             Controls.Add(uiPanel1);
+            Controls.Add(CboPermissionType);
+            Controls.Add(uiLabel1);
             Font = new Font("微软雅黑", 11F);
             ForeColor = Color.FromArgb(236, 236, 236);
             Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

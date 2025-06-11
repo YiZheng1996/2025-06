@@ -1,4 +1,6 @@
 ﻿using MainUI.Procedure.DSL;
+using MainUI.Service;
+using Timer = System.Windows.Forms.Timer;
 
 namespace MainUI;
 public partial class frmMainMenu : Form
@@ -16,10 +18,14 @@ public partial class frmMainMenu : Form
     public const int SC_MOVE = 0xF010;
     public const int HTCAPTION = 0x0002;
 
+    private readonly TimeTrackingService _timeTrackingService;
+    private Timer _uptimeTimer;
+
     public frmMainMenu()
     {
         InitializeComponent();
         InitializeBasicSettings();
+        _timeTrackingService = new TimeTrackingService();
     }
 
     #region 初始化
@@ -192,29 +198,25 @@ public partial class frmMainMenu : Form
         using var main = new frmSettingMain();
         ConfigureMainDataNodes(main);
         VarHelper.ShowDialogWithOverlay(this, main);
-        _hmi.sRefresh();
+        _hmi.ParaRefresh();
     }
 
     /// <summary>
-    /// 配置主数据节点并根据权限显示
+    /// 配置主数据节点设置
     /// </summary>
+    /// <param name="main">主设置窗体实例</param>
     private void ConfigureMainDataNodes(frmSettingMain main)
     {
+        ArgumentNullException.ThrowIfNull(main);
         try
         {
-            var nodes = GetMainDataNodes();
-            var permissionConfigs = GetPermissionConfigurations();
-
-            foreach (var node in nodes)
+            var userId = NewUsers.NewUserInfo.ID;
+            if (IsAdminUser(userId))
             {
-                // 管理员默认拥有所有权限
-                if (NewUsers.NewUserInfo.ID == 1)
-                {
-                    main.AddNodes(node.Name, node.Control, node.Index);
-                    continue;
-                }
-                AddNodeWithPermissionCheck(main, node, permissionConfigs);
+                ConfigureAdminNodes(main);
+                return;
             }
+            ConfigureRegularUserNodes(main, userId);
         }
         catch (Exception ex)
         {
@@ -224,46 +226,95 @@ public partial class frmMainMenu : Form
     }
 
     /// <summary>
-    /// 获取主数据节点配置
+    /// 节点配置列表
     /// </summary>
+    /// <returns></returns>
     private static (string Name, UserControl Control, int Index)[]
-        GetMainDataNodes() =>
-        [
-           ("用户管理", new ucUserManager(), 0),
-           ("角色管理", new ucRole(), 6),
-           ("权限管理", new ucPermission(), 7),
-           ("权限分配", new ucPermissionAllocation(), 8),
-           ("类型管理", new ucKindManage(), 1),
-           ("型号管理", new ucModelManage(), 9),
-           ("模块注入", new ucModules(), 3),
-           ("项点管理", new ucItemManagerial(), 4),
-           ("项点配置", new ucItemConfiguration(), 5),
-           ("试验参数", new ucTestParams(), 2)
-        ];
+      GetMainDataNodes() =>
+      [
+         ("用户管理", new ucUserManager(), 0),
+         ("角色管理", new ucRole(), 6),
+         ("权限管理", new ucPermission(), 7),
+         ("权限分配", new ucPermissionAllocation(), 8),
+         ("类型管理", new ucKindManage(), 1),
+         ("型号管理", new ucModelManage(), 9),
+         ("模块注入", new ucModules(), 3),
+         ("项点管理", new ucItemManagerial(), 4),
+         ("项点配置", new ucItemConfiguration(), 5),
+         ("试验参数", new ucTestParams(), 2)
+      ];
+
+    /// <summary>
+    /// 检查是否为管理员用户
+    /// </summary>
+    private static bool IsAdminUser(int userId) => userId == 1;
+
+    /// <summary>
+    /// 配置管理员节点
+    /// </summary>
+    private static void ConfigureAdminNodes(frmSettingMain main)
+    {
+        foreach (var node in GetMainDataNodes())
+        {
+            main.AddNodes(node.Name, node.Control, node.Index);
+        }
+    }
+
+    /// <summary>
+    /// 配置普通用户节点
+    /// </summary>
+    private void ConfigureRegularUserNodes(frmSettingMain main, int userId)
+    {
+        var permissionConfigs = GetPermissionConfigurations();
+        var nodes = GetMainDataNodes()
+            .Where(node => !IsRestrictedNode(node.Name));
+
+        foreach (var node in nodes)
+        {
+            AddNodeWithPermissionCheck(main, node, permissionConfigs);
+        }
+    }
+
+    /// <summary>
+    /// 检查是否为受限节点
+    /// </summary>
+    private static bool IsRestrictedNode(string nodeName) => 
+        nodeName is "权限管理" or "权限分配";
 
     /// <summary>
     /// 获取权限配置信息
     /// </summary>
     private Dictionary<string, string> GetPermissionConfigurations()
     {
-        var permissionConfigBLL = new PermissionBLL();
-        return permissionConfigBLL.GetPermissions()
-            .Where(p => !string.IsNullOrEmpty(p.ControlName))
-            .ToDictionary(p => p.ControlName, p => p.PermissionCode);
+        try
+        {
+            var permissionConfigBLL = new PermissionBLL();
+            return permissionConfigBLL.GetPermissions()
+                .Where(p => !string.IsNullOrEmpty(p.ControlName))
+                .ToDictionary(
+                    p => p.ControlName,
+                    p => p.PermissionCode,
+                    StringComparer.OrdinalIgnoreCase); //大小写
+        }
+        catch (Exception ex)
+        {
+            NlogHelper.Default.Error($"获取权限配置失败: {ex.Message}");
+            throw;
+        }
     }
 
     /// <summary>
     /// 添加带权限检查的节点
     /// </summary>
-    private void AddNodeWithPermissionCheck(frmSettingMain main,
+    private void AddNodeWithPermissionCheck(
+        frmSettingMain main,
         (string Name, UserControl Control, int Index) node,
         Dictionary<string, string> permissionConfigs)
     {
         try
         {
-            if (!permissionConfigs.TryGetValue(node.Control.Name, out var code))
+            if (!TryGetPermissionCode(node.Control.Name, permissionConfigs, out var code))
             {
-                NlogHelper.Default.Warn($"控件[{node.Control.Name}]未找到对应的权限配置");
                 return;
             }
 
@@ -276,6 +327,22 @@ public partial class frmMainMenu : Form
         {
             NlogHelper.Default.Error($"添加节点[{node.Name}]失败：{ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 尝试获取权限代码
+    /// </summary>
+    private bool TryGetPermissionCode(
+        string controlName,
+        Dictionary<string, string> permissionConfigs,
+        out string code)
+    {
+        if (!permissionConfigs.TryGetValue(controlName, out code))
+        {
+            NlogHelper.Default.Warn($"控件[{controlName}]未找到对应的权限配置");
+            return false;
+        }
+        return true;
     }
 
     private void ShowDialog<T>(object sender = null) where T : Form, new()
@@ -340,6 +407,7 @@ public partial class frmMainMenu : Form
     #endregion
 
     #region 定时器事件
+
     private void timerPLC_Tick(object sender, EventArgs e)
     {
         try
@@ -369,6 +437,15 @@ public partial class frmMainMenu : Form
         {
             tslblPLC.Text += " 仿真模式 ";
         }
+
+        //var SysTime = $"系统运行时间：{TimeTrackingService.FormatTimeSpan(_timeTrackingService.GetSystemUptime())}";
+        //var RunTime = $"软件运行时间：{TimeTrackingService.FormatTimeSpan(_timeTrackingService.GetApplicationUptime())}";
+    }
+
+    private void frmMainMenu_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        _uptimeTimer?.Stop();
+        _uptimeTimer?.Dispose();
     }
     #endregion
 }

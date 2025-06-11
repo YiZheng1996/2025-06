@@ -7,7 +7,6 @@
                    .Update<TestRecordModel>()
                    .Set(a => a.KindID, model.KindID)
                    .Set(a => a.ModelID, model.ModelID)
-                   .Set(a => a.Driver, model.Driver)
                    .Set(a => a.TestID, model.TestID)
                    .Set(a => a.Tester, model.Tester)
                    .Set(a => a.TestTime, model.TestTime)

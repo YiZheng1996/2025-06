@@ -22,11 +22,6 @@ namespace MainUI.Model
         public int ModelID { get; set; }
 
         /// <summary>
-        /// ？？？
-        /// </summary>
-        public string Driver { get; set; }
-
-        /// <summary>
         /// 车型车号编号
         /// </summary>
         public string TestID { get; set; }

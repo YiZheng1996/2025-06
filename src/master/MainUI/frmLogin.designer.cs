@@ -102,7 +102,6 @@
             // 
             cboUserName.BackColor = Color.Transparent;
             cboUserName.DataSource = null;
-            cboUserName.DropDownStyle = UIDropDownStyle.DropDownList;
             cboUserName.FillColor = Color.FromArgb(218, 220, 230);
             cboUserName.FillColor2 = Color.FromArgb(218, 220, 230);
             cboUserName.FillDisableColor = Color.FromArgb(218, 220, 230);

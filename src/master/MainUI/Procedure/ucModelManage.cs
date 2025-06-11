@@ -35,7 +35,10 @@ namespace MainUI.Procedure
                 new Column("ID","ID"){ Align = ColumnAlign.Center , Visible = false },
                 new Column("TypeID","类型ID"){ Align = ColumnAlign.Center , Width="auto", Visible = false },
                 new Column("ModelName","型号名称"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("DrawingNo","产品图号"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("ReleaseTime","发布时间"){ Align = ColumnAlign.Center , Width="auto" },
                 new Column("Mark","型号描述"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("Buttns","操作",ColumnAlign.Center){ Width = "70"}
            ];
             Tables.DataSource = bModelType
                 .GetNewModels(cboModelType.SelectedValue.ToInt32());
@@ -86,6 +89,31 @@ namespace MainUI.Procedure
         private void Tables_CellDoubleClick(object sender, TableClickEventArgs e)
         {
             LoadData(model);
+        }
+
+        private void Tables_CellButtonClick(object sender, TableButtonEventArgs e)
+        {
+            try
+            {
+                if (e.Record is NewModels data)
+                {
+                    if (e.Btn.Id == "Release")
+                    {
+                        if (DialogResult.OK == MessageHelper.MessageYes($"确认发布型号{data.ModelName}吗？"))
+                        {
+                            if (modelBLL.IsRelease(data))
+                            {
+                                LoadData();
+                                MessageHelper.MessageOK($"发布成功！");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageHelper.MessageOK("发布错误：" + ex.Message);
+            }
         }
     }
 }

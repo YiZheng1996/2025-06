@@ -587,6 +587,7 @@ namespace MainUI
             MinimizeBox = false;
             Name = "frmMainMenu";
             StartPosition = FormStartPosition.CenterScreen;
+            FormClosing += frmMainMenu_FormClosing;
             panel1.ResumeLayout(false);
             lblTitle.ResumeLayout(false);
             lblTitle.PerformLayout();
