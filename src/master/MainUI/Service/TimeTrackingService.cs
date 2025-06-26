@@ -42,6 +42,12 @@ namespace MainUI.Service
             return DateTime.Now - _systemBootTime;
         }
 
+        // 获取系统开机时间
+        public DateTime GetSystemOnTime()
+        {
+            return _systemBootTime;
+        }
+
         // 获取应用程序运行时间
         public TimeSpan GetApplicationUptime()
         {

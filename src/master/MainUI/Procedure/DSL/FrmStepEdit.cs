@@ -1,17 +1,16 @@
-﻿using MainUI.CurrencyHelper;
-using System.Text;
+﻿using System.Text;
 
 namespace MainUI.Procedure.DSL
 {
     public partial class FrmStepEdit : UIForm
     {
         private readonly string Path;
-        public FrmStepEdit(string Path, string ModelName, string ProcessName)
+        public FrmStepEdit(string Path, string ModelType, string ModelName, string ProcessName)
         {
             InitializeComponent();
             this.Path = Path;
-            Text = $"当前型号：{ModelName}，项点名称：{ProcessName}";
-            CreateFile(ModelName, ProcessName);
+            Text = $"产品类型：{ModelType}，产品型号：{ModelName}，项点名称：{ProcessName}";
+            CreateFile(ModelType, ModelName, ProcessName);
         }
 
         private void FrmStepEdit_Load(object sender, EventArgs e)
@@ -58,11 +57,11 @@ namespace MainUI.Procedure.DSL
         /// </summary>
         /// <param name="ModelName">型号</param>
         /// <param name="ProcessName">试验项点名称</param>
-        private static void CreateFile(string ModelName, string ProcessName)
+        private static void CreateFile(string ModelType, string ModelName, string ProcessName)
         {
             try
             {
-                string ModelNamePath = $"{Application.StartupPath}Procedure\\{ModelName}";
+                string ModelNamePath = $"{Application.StartupPath}Procedure\\{ModelType}\\{ModelName}";
                 string DSLNamePath = $"{ModelNamePath}\\{ProcessName}.rw1";
                 if (!Directory.Exists(ModelNamePath))
                     Directory.CreateDirectory(ModelNamePath);

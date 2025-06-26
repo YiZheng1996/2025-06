@@ -58,10 +58,11 @@ namespace MainUI.Service
                 ["参数"] = paraConfig
             };
 
+            string modelType = VarHelper.TestViewModel.ModelTypeName;
             string modelName = VarHelper.TestViewModel.ModelName;
             foreach (var testItem in testItems)
             {
-                LoadSingleProcedure(testItem, modelName, moduleParameters, visitor);
+                LoadSingleProcedure(testItem, modelType, modelName, moduleParameters, visitor);
             }
         }
 
@@ -72,11 +73,11 @@ namespace MainUI.Service
         /// <param name="modelName">DSL名称</param>
         /// <param name="moduleParameters">自定义模块集合</param>
         /// <param name="visitor"></param>
-        private void LoadSingleProcedure(TestStepNewModel testItem, string modelName,
+        private void LoadSingleProcedure(TestStepNewModel testItem, string modelType, string modelName,
             Dictionary<string, object> moduleParameters, object visitor = null)
         {
             string processName = testItem.ProcessName;
-            string dslFilePath = Application.StartupPath + Path.Combine(dslPath, modelName, $"{processName}.rw1");
+            string dslFilePath = Application.StartupPath + Path.Combine(dslPath, modelType, modelName, $"{processName}.rw1");
 
             if (!File.Exists(dslFilePath))
             {

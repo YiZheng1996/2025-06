@@ -125,8 +125,8 @@
             // 
             // uiUpDownRate
             // 
-            uiUpDownRate.ButtonFillColor = Color.FromArgb(65, 100, 204);
-            uiUpDownRate.ButtonRectColor = Color.FromArgb(65, 100, 204);
+            //uiUpDownRate.ButtonFillColor = Color.FromArgb(65, 100, 204);
+            //uiUpDownRate.ButtonRectColor = Color.FromArgb(65, 100, 204);
             uiUpDownRate.Font = new Font("思源黑体 CN Bold", 13F, FontStyle.Bold);
             uiUpDownRate.ForeColor = Color.FromArgb(46, 46, 46);
             uiUpDownRate.Location = new Point(865, 24);

@@ -6,6 +6,7 @@ namespace MainUI.Procedure.User
     {
         private PermissionModel PermissionModel = new();
         private readonly PermissionBLL permissionBLL = new();
+        private readonly PermissionAllocationBLL allocationBLL = new();
         public ucPermission()
         {
             InitializeComponent();
@@ -19,7 +20,7 @@ namespace MainUI.Procedure.User
                 new Column("PermissionName","权限名称"){ Align = ColumnAlign.Center , Width="auto" },
                 new Column("PermissionCode","权限代码"){ Align = ColumnAlign.Center , Width="auto" , Visible = false},
                 new Column("ControlName","控件名称"){ Align = ColumnAlign.Center , Width="auto" },
-               
+
                 new Column("PermissionNotes","备注"){ Align = ColumnAlign.Center , Width="auto" },
            ];
             Tables.DataSource = permissionBLL.GetPermissions();
@@ -47,7 +48,8 @@ namespace MainUI.Procedure.User
             var DialogResult = MessageHelper.MessageYes("是否删除选中记录？", TType.Warn);
             if (DialogResult == DialogResult.OK)
             {
-                if (permissionBLL.DelPermission(PermissionModel.ID))
+                if (permissionBLL.DelPermission(PermissionModel.ID) &&
+                    allocationBLL.DelUserPermission(PermissionModel.ID))
                 {
                     MessageHelper.MessageOK("删除成功！");
                 }

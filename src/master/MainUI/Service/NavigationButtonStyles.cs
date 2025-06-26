@@ -18,7 +18,6 @@
             ForeColor = Color.White
         };
 
-
         public record ButtonStyle
         {
             public Color BackColor { get; init; }

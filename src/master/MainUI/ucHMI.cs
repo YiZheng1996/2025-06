@@ -515,6 +515,7 @@ namespace MainUI
             if (frmSpec.DialogResult == DialogResult.OK)
             {
                 txtModel.Text = VarHelper.TestViewModel.ModelName;
+                txtDrawingNo.Text = VarHelper.TestViewModel.DrawingNo;
                 ParaRefresh();
             }
         }

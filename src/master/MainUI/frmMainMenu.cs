@@ -17,9 +17,7 @@ public partial class frmMainMenu : Form
     public const int WM_SYSCOMMAND = 0x0112;
     public const int SC_MOVE = 0xF010;
     public const int HTCAPTION = 0x0002;
-
     private readonly TimeTrackingService _timeTrackingService;
-    private Timer _uptimeTimer;
 
     public frmMainMenu()
     {
@@ -444,8 +442,7 @@ public partial class frmMainMenu : Form
 
     private void frmMainMenu_FormClosing(object sender, FormClosingEventArgs e)
     {
-        _uptimeTimer?.Stop();
-        _uptimeTimer?.Dispose();
+   
     }
     #endregion
 }

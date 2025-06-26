@@ -332,7 +332,7 @@ namespace MainUI.Procedure.DSL
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "FrmSetParameter";
-            RectColor = Color.FromArgb(236, 236, 236);
+            RectColor = Color.FromArgb(65, 100, 204);
             ShowIcon = false;
             Text = "参数更改";
             TitleColor = Color.FromArgb(65, 100, 204);

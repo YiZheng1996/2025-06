@@ -620,11 +620,8 @@ namespace MainUI
         private UIPanel PanelHmi;
         private UISymbolButton btnMainData;
         private AntdUI.Label label5;
-        //[RequirePermission("device.management")]
         private UISymbolButton btnReports;
-        //[RequirePermission("device.inspect")]
         private UISymbolButton btnHardwareTest;
-        //[RequirePermission(PermissionCheckMode.Any, "system.management", "data.edit")]
         private UISymbolButton btnNLog;
         private UISymbolButton btnMeteringRemind;
         private UISymbolButton btnErrStatistics;

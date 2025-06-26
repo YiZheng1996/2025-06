@@ -1,4 +1,4 @@
-﻿using MainUI.Model;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
 using System.Reflection;
 
 namespace MainUI.Procedure.DSL
@@ -138,14 +138,15 @@ namespace MainUI.Procedure.DSL
                 if (cboModel.Items.Count > 0 & lstbox.Items.Count > 0)
                 {
                     TestProcessBLL bll = new();
+                    string ModelType = cboType.SelectedText;
                     string ModelName = cboModel.SelectedText;
                     string LstName = lstbox.SelectedItem.ToString();
                     string LstIndex = lstbox.SelectedIndex.ToString();
-                    string TestPath = $"{Application.StartupPath}\\Procedure\\{ModelName}\\{LstName}.rw1";
+                    string TestPath = $"{Application.StartupPath}Procedure\\{ModelType}\\{ModelName}\\{LstName}.json";
                     Debug.WriteLine($"选择型号：{ModelName},选择下标：{LstIndex},选择项点：{LstName}，路径：{TestPath}");
 
-                    ShowFormWithInterface<ICompressorType>(LstName);
-                    FrmStepEdit stopedit = new(TestPath, ModelName, LstName);
+                    //FrmStepEdit stopedit = new(TestPath, ModelType, ModelName, LstName);
+                    frmLogicalConfiguration stopedit = new(TestPath, ModelType,ModelName, LstName);
                     stopedit.ShowDialog();
                 }
             }

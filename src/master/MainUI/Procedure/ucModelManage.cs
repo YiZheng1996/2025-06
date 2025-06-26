@@ -41,7 +41,7 @@ namespace MainUI.Procedure
                 new Column("Buttns","操作",ColumnAlign.Center){ Width = "70"}
            ];
             Tables.DataSource = bModelType
-                .GetNewModels(cboModelType.SelectedValue.ToInt32());
+                .GetNewModels(cboModelType.SelectedValue.ToInt32(), true);
         }
 
         private void LoadData(Models model)

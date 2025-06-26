@@ -30,7 +30,7 @@ namespace MainUI
         /// </summary>
         private void InitializeComponent()
         {
-            AntdUI.Tabs.StyleLine styleLine1 = new AntdUI.Tabs.StyleLine();
+            AntdUI.Tabs.StyleLine styleLine2 = new AntdUI.Tabs.StyleLine();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UcHMI));
             uiTitlePanel3 = new UITitlePanel();
             TableItemPoint = new AntdUI.Table();
@@ -183,10 +183,12 @@ namespace MainUI
             btnReportForms = new AntdUI.Button();
             uiTitlePanel4 = new UITitlePanel();
             txtModel = new UITextBox();
-            txtNumber = new UITextBox();
+            txtDrawingNo = new UITextBox();
             RadioHand = new UIRadioButton();
             RadioAuto = new UIRadioButton();
             panelHand = new UIPanel();
+            txtNumber = new UITextBox();
+            uiLabel7 = new UILabel();
             uiTitlePanel3.SuspendLayout();
             uiTitlePanel8.SuspendLayout();
             tabs1.SuspendLayout();
@@ -227,7 +229,7 @@ namespace MainUI
             uiTitlePanel3.FillColor2 = Color.FromArgb(236, 236, 236);
             uiTitlePanel3.FillDisableColor = Color.FromArgb(49, 54, 64);
             uiTitlePanel3.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
-            uiTitlePanel3.Location = new Point(0, 197);
+            uiTitlePanel3.Location = new Point(0, 239);
             uiTitlePanel3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             uiTitlePanel3.MinimumSize = new Size(1, 1);
             uiTitlePanel3.Name = "uiTitlePanel3";
@@ -236,7 +238,7 @@ namespace MainUI
             uiTitlePanel3.RectColor = Color.FromArgb(236, 236, 236);
             uiTitlePanel3.RectDisableColor = Color.FromArgb(236, 236, 236);
             uiTitlePanel3.ShowText = false;
-            uiTitlePanel3.Size = new Size(322, 501);
+            uiTitlePanel3.Size = new Size(322, 462);
             uiTitlePanel3.TabIndex = 398;
             uiTitlePanel3.Text = "试验项点";
             uiTitlePanel3.TextAlignment = ContentAlignment.MiddleCenter;
@@ -250,10 +252,10 @@ namespace MainUI
             TableItemPoint.Dock = DockStyle.Bottom;
             TableItemPoint.Font = new Font("微软雅黑", 12F);
             TableItemPoint.ForeColor = Color.Black;
-            TableItemPoint.Location = new Point(1, 32);
+            TableItemPoint.Location = new Point(1, 30);
             TableItemPoint.Name = "TableItemPoint";
             TableItemPoint.RowSelectedBg = Color.Transparent;
-            TableItemPoint.Size = new Size(320, 468);
+            TableItemPoint.Size = new Size(320, 431);
             TableItemPoint.TabIndex = 53;
             TableItemPoint.CheckedChanged += TableItemPoint_CheckedChanged;
             TableItemPoint.SetRowStyle += TableItemPoint_SetRowStyle;
@@ -559,11 +561,11 @@ namespace MainUI
             uiLabel3.BackColor = Color.Transparent;
             uiLabel3.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
             uiLabel3.ForeColor = Color.FromArgb(65, 100, 204);
-            uiLabel3.Location = new Point(9, 139);
+            uiLabel3.Location = new Point(9, 141);
             uiLabel3.Name = "uiLabel3";
             uiLabel3.Size = new Size(91, 23);
             uiLabel3.TabIndex = 65;
-            uiLabel3.Text = "车型车号:";
+            uiLabel3.Text = "车型图号:";
             uiLabel3.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // uiLabel2
@@ -692,7 +694,7 @@ namespace MainUI
             tabs1.Pages.Add(tabPage1);
             tabs1.ScrollForeHover = SystemColors.ActiveBorder;
             tabs1.Size = new Size(1425, 910);
-            tabs1.Style = styleLine1;
+            tabs1.Style = styleLine2;
             tabs1.TabIndex = 405;
             tabs1.TabMenuVisible = false;
             // 
@@ -2781,9 +2783,11 @@ namespace MainUI
             // uiTitlePanel4
             // 
             uiTitlePanel4.BackColor = Color.FromArgb(236, 236, 236);
+            uiTitlePanel4.Controls.Add(txtNumber);
+            uiTitlePanel4.Controls.Add(uiLabel7);
             uiTitlePanel4.Controls.Add(btnProductSelection);
             uiTitlePanel4.Controls.Add(txtModel);
-            uiTitlePanel4.Controls.Add(txtNumber);
+            uiTitlePanel4.Controls.Add(txtDrawingNo);
             uiTitlePanel4.Controls.Add(uiLabel3);
             uiTitlePanel4.Controls.Add(uiLabel2);
             uiTitlePanel4.FillColor = Color.White;
@@ -2799,7 +2803,7 @@ namespace MainUI
             uiTitlePanel4.RectColor = Color.White;
             uiTitlePanel4.RectDisableColor = Color.White;
             uiTitlePanel4.ShowText = false;
-            uiTitlePanel4.Size = new Size(322, 187);
+            uiTitlePanel4.Size = new Size(322, 232);
             uiTitlePanel4.TabIndex = 497;
             uiTitlePanel4.Text = "信息录入";
             uiTitlePanel4.TextAlignment = ContentAlignment.MiddleCenter;
@@ -2829,28 +2833,28 @@ namespace MainUI
             txtModel.TextAlignment = ContentAlignment.MiddleLeft;
             txtModel.Watermark = "请选择";
             // 
-            // txtNumber
+            // txtDrawingNo
             // 
-            txtNumber.BackColor = Color.Transparent;
-            txtNumber.FillColor = Color.FromArgb(218, 220, 230);
-            txtNumber.FillColor2 = Color.FromArgb(218, 220, 230);
-            txtNumber.FillDisableColor = Color.FromArgb(218, 220, 230);
-            txtNumber.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
-            txtNumber.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
-            txtNumber.Location = new Point(102, 138);
-            txtNumber.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            txtNumber.MinimumSize = new Size(1, 16);
-            txtNumber.Name = "txtNumber";
-            txtNumber.Padding = new System.Windows.Forms.Padding(5);
-            txtNumber.Radius = 15;
-            txtNumber.RectColor = Color.FromArgb(218, 220, 230);
-            txtNumber.RectDisableColor = Color.FromArgb(218, 220, 230);
-            txtNumber.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
-            txtNumber.ShowText = false;
-            txtNumber.Size = new Size(198, 32);
-            txtNumber.TabIndex = 0;
-            txtNumber.TextAlignment = ContentAlignment.MiddleLeft;
-            txtNumber.Watermark = "请输入";
+            txtDrawingNo.BackColor = Color.Transparent;
+            txtDrawingNo.FillColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            txtDrawingNo.Location = new Point(102, 137);
+            txtDrawingNo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtDrawingNo.MinimumSize = new Size(1, 16);
+            txtDrawingNo.Name = "txtDrawingNo";
+            txtDrawingNo.Padding = new System.Windows.Forms.Padding(5);
+            txtDrawingNo.Radius = 15;
+            txtDrawingNo.RectColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDrawingNo.ShowText = false;
+            txtDrawingNo.Size = new Size(198, 32);
+            txtDrawingNo.TabIndex = 0;
+            txtDrawingNo.TextAlignment = ContentAlignment.MiddleLeft;
+            txtDrawingNo.Watermark = "请输入";
             // 
             // RadioHand
             // 
@@ -2895,6 +2899,41 @@ namespace MainUI
             panelHand.TabIndex = 71;
             panelHand.Text = null;
             panelHand.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // txtNumber
+            // 
+            txtNumber.BackColor = Color.Transparent;
+            txtNumber.FillColor = Color.FromArgb(218, 220, 230);
+            txtNumber.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtNumber.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtNumber.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtNumber.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            txtNumber.Location = new Point(102, 184);
+            txtNumber.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtNumber.MinimumSize = new Size(1, 16);
+            txtNumber.Name = "txtNumber";
+            txtNumber.Padding = new System.Windows.Forms.Padding(5);
+            txtNumber.Radius = 15;
+            txtNumber.RectColor = Color.FromArgb(218, 220, 230);
+            txtNumber.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtNumber.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtNumber.ShowText = false;
+            txtNumber.Size = new Size(198, 32);
+            txtNumber.TabIndex = 66;
+            txtNumber.TextAlignment = ContentAlignment.MiddleLeft;
+            txtNumber.Watermark = "请输入";
+            // 
+            // uiLabel7
+            // 
+            uiLabel7.BackColor = Color.Transparent;
+            uiLabel7.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            uiLabel7.ForeColor = Color.FromArgb(65, 100, 204);
+            uiLabel7.Location = new Point(9, 188);
+            uiLabel7.Name = "uiLabel7";
+            uiLabel7.Size = new Size(91, 23);
+            uiLabel7.TabIndex = 67;
+            uiLabel7.Text = "车型车号:";
+            uiLabel7.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // UcHMI
             // 
@@ -2995,7 +3034,7 @@ namespace MainUI
         private UILabel LabAI01;
         private UILabel uiLabel4;
         private UITitlePanel uiTitlePanel4;
-        private UITextBox txtNumber;
+        private UITextBox txtDrawingNo;
         private UITextBox txtModel;
         private UIPanel grpDO;
         private UIPanel LabTestTime;
@@ -3119,5 +3158,7 @@ namespace MainUI
         private UIButton btnWaterPumpStart;
         private AntdUI.Table TableItemPoint;
         private UIButton btnGasPath;
+        private UITextBox txtNumber;
+        private UILabel uiLabel7;
     }
 }

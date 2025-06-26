@@ -79,13 +79,20 @@
         /// </summary>
         /// <param name="UserId"></param>
         /// <returns></returns>
-        public List<User_permissionModel> GetPermissionChecks(int UserId)
-        {
-            return VarHelper.fsql
-                .Select<User_permissionModel>()
+        public List<User_permissionModel> GetPermissionChecks(int UserId) =>
+           _fsql.Select<User_permissionModel>()
                 .Where(x => x.User_id == UserId && x.IsDelete == 0)
                 .ToList();
-        }
+
+        /// <summary>
+        /// 当删除权限时，删除对应的用户权限关联
+        /// </summary>
+        /// <param name="Permission_id"></param>
+        /// <returns></returns>
+        public bool DelUserPermission(int Permission_id) =>
+            _fsql.Delete<User_permissionModel>()
+                 .Where(x => x.Permission_id == Permission_id)
+                 .ExecuteAffrows() > 0;
     }
 
     /// <summary>
@@ -148,74 +155,6 @@
                   .Set(x => x.DeleteTime, DateTime.Now)
                   .Where(x => x.ID == id)
                   .ExecuteAffrows() > 0);
-
-        #endregion
-
-        #region 控件权限管理
-
-        /// <summary>
-        /// 获取控件权限配置
-        /// </summary>
-        public Dictionary<string, string> GetControlPermissions()
-        {
-            try
-            {
-                return _fsql.Select<PermissionModel>()
-                    .Where(x => x.IsDelete == 0 &&
-                               !string.IsNullOrEmpty(x.ControlName))
-                    .ToList()
-                    .ToDictionary(
-                        x => x.ControlName,
-                        x => x.PermissionCode
-                    );
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"获取控件权限配置失败：{ex.Message}");
-                return [];
-            }
-        }
-
-        /// <summary>
-        /// 根据控件名称获取权限
-        /// </summary>
-        public PermissionModel GetPermissionByControlName(string controlName) =>
-            _fsql.Select<PermissionModel>()
-                .Where(x => x.ControlName == controlName &&
-                           x.IsDelete == 0)
-                .First();
-
-        #endregion
-
-        #region 权限验证
-
-        /// <summary>
-        /// 验证用户权限
-        /// </summary>
-        public bool CheckPermission(int userId, string permissionCode)
-        {
-            try
-            {
-                return _fsql.Select<OperateUserModel, RoleModel,
-                                 User_permissionModel, PermissionModel>()
-                    .LeftJoin((u, r, up, p) => u.Role_ID == r.ID)
-                    .LeftJoin((u, r, up, p) => r.ID == up.User_id)
-                    .LeftJoin((u, r, up, p) => up.Permission_id == p.ID)
-                    .Where((u, r, up, p) =>
-                        u.ID == userId &&
-                        r.IsDelete == 0 &&
-                        up.IsDelete == 0 &&
-                        p.IsDelete == 0 &&
-                        p.PermissionCode == permissionCode)
-                    .Any();
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"验证权限失败：{ex.Message}");
-                return false;
-            }
-        }
-
         #endregion
     }
 
