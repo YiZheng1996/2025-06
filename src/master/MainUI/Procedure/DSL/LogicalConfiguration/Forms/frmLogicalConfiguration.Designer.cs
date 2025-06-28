@@ -1,6 +1,6 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    partial class frmLogicalConfiguration
+    partial class FrmLogicalConfiguration
     {
         /// <summary>
         /// Required designer variable.
@@ -41,9 +41,12 @@
             uiContextMenuStrip1 = new UIContextMenuStrip();
             toolDeleteStep = new ToolStripMenuItem();
             uiLine2 = new UILine();
-            btnSave = new UIButton();
-            BtnClose = new UIButton();
             uiPanel1 = new UIPanel();
+            btnExecute = new UISymbolButton();
+            BtnClose = new UISymbolButton();
+            btnSave = new UISymbolButton();
+            uiLine3 = new UILine();
+            TreeViewPLC = new UITreeView();
             ((System.ComponentModel.ISupportInitialize)ProcessDataGridView).BeginInit();
             uiContextMenuStrip1.SuspendLayout();
             uiPanel1.SuspendLayout();
@@ -55,7 +58,7 @@
             ToolTreeView.FillColor = Color.White;
             ToolTreeView.FillColor2 = Color.White;
             ToolTreeView.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            ToolTreeView.Location = new Point(26, 87);
+            ToolTreeView.Location = new Point(29, 87);
             ToolTreeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             ToolTreeView.MinimumSize = new Size(1, 1);
             ToolTreeView.Name = "ToolTreeView";
@@ -78,7 +81,7 @@
             uiLine1.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
             uiLine1.ForeColor = Color.FromArgb(48, 48, 48);
             uiLine1.LineColor = Color.White;
-            uiLine1.Location = new Point(26, 50);
+            uiLine1.Location = new Point(29, 50);
             uiLine1.MinimumSize = new Size(1, 1);
             uiLine1.Name = "uiLine1";
             uiLine1.Size = new Size(321, 29);
@@ -118,7 +121,7 @@
             ProcessDataGridView.EnableHeadersVisualStyles = false;
             ProcessDataGridView.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             ProcessDataGridView.GridColor = Color.Black;
-            ProcessDataGridView.Location = new Point(376, 87);
+            ProcessDataGridView.Location = new Point(379, 87);
             ProcessDataGridView.Name = "ProcessDataGridView";
             ProcessDataGridView.ReadOnly = true;
             ProcessDataGridView.RectColor = Color.White;
@@ -137,7 +140,7 @@
             ProcessDataGridView.RowTemplate.Height = 35;
             ProcessDataGridView.SelectedIndex = -1;
             ProcessDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            ProcessDataGridView.Size = new Size(585, 714);
+            ProcessDataGridView.Size = new Size(345, 714);
             ProcessDataGridView.StripeOddColor = Color.FromArgb(235, 243, 255);
             ProcessDataGridView.TabIndex = 2;
             // 
@@ -177,69 +180,142 @@
             uiLine2.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
             uiLine2.ForeColor = Color.FromArgb(48, 48, 48);
             uiLine2.LineColor = Color.White;
-            uiLine2.Location = new Point(376, 50);
+            uiLine2.Location = new Point(379, 50);
             uiLine2.MinimumSize = new Size(1, 1);
             uiLine2.Name = "uiLine2";
-            uiLine2.Size = new Size(585, 29);
+            uiLine2.Size = new Size(345, 29);
             uiLine2.TabIndex = 3;
             uiLine2.Text = "当前流程";
             uiLine2.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // btnSave
-            // 
-            btnSave.Cursor = Cursors.Hand;
-            btnSave.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
-            btnSave.Location = new Point(222, 9);
-            btnSave.MinimumSize = new Size(1, 1);
-            btnSave.Name = "btnSave";
-            btnSave.RectDisableColor = Color.FromArgb(80, 160, 255);
-            btnSave.Size = new Size(147, 37);
-            btnSave.TabIndex = 435;
-            btnSave.Text = "保 存";
-            btnSave.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            btnSave.TipsText = "1";
-            btnSave.Click += btnSave_Click;
-            // 
-            // BtnClose
-            // 
-            BtnClose.Cursor = Cursors.Hand;
-            BtnClose.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
-            BtnClose.Location = new Point(565, 9);
-            BtnClose.MinimumSize = new Size(1, 1);
-            BtnClose.Name = "BtnClose";
-            BtnClose.RectDisableColor = Color.FromArgb(80, 160, 255);
-            BtnClose.Size = new Size(147, 37);
-            BtnClose.TabIndex = 436;
-            BtnClose.Text = "取 消";
-            BtnClose.TipsFont = new Font("微软雅黑", 9F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            BtnClose.TipsText = "1";
-            BtnClose.Click += BtnClose_Click;
-            // 
             // uiPanel1
             // 
-            uiPanel1.Controls.Add(btnSave);
+            uiPanel1.Controls.Add(btnExecute);
             uiPanel1.Controls.Add(BtnClose);
+            uiPanel1.Controls.Add(btnSave);
             uiPanel1.FillColor = Color.White;
             uiPanel1.FillColor2 = Color.White;
             uiPanel1.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiPanel1.Location = new Point(26, 809);
+            uiPanel1.Location = new Point(29, 809);
             uiPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             uiPanel1.MinimumSize = new Size(1, 1);
             uiPanel1.Name = "uiPanel1";
             uiPanel1.Radius = 10;
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
-            uiPanel1.Size = new Size(935, 57);
+            uiPanel1.Size = new Size(1045, 57);
             uiPanel1.TabIndex = 437;
             uiPanel1.Text = null;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
             // 
-            // frmLogicalConfiguration
+            // btnExecute
+            // 
+            btnExecute.Cursor = Cursors.Hand;
+            btnExecute.FillColor = Color.DodgerBlue;
+            btnExecute.FillColor2 = Color.DodgerBlue;
+            btnExecute.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
+            btnExecute.LightColor = Color.FromArgb(248, 248, 248);
+            btnExecute.Location = new Point(590, 12);
+            btnExecute.MinimumSize = new Size(1, 1);
+            btnExecute.Name = "btnExecute";
+            btnExecute.RectColor = Color.DodgerBlue;
+            btnExecute.RectDisableColor = Color.DodgerBlue;
+            btnExecute.Size = new Size(147, 37);
+            btnExecute.Style = UIStyle.Custom;
+            btnExecute.Symbol = 61515;
+            btnExecute.SymbolSize = 32;
+            btnExecute.TabIndex = 442;
+            btnExecute.Text = "执行";
+            btnExecute.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            btnExecute.Click += btnExecute_Click;
+            // 
+            // BtnClose
+            // 
+            BtnClose.Cursor = Cursors.Hand;
+            BtnClose.FillColor = Color.DodgerBlue;
+            BtnClose.FillColor2 = Color.DodgerBlue;
+            BtnClose.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
+            BtnClose.LightColor = Color.FromArgb(248, 248, 248);
+            BtnClose.Location = new Point(317, 12);
+            BtnClose.MinimumSize = new Size(1, 1);
+            BtnClose.Name = "BtnClose";
+            BtnClose.RectColor = Color.DodgerBlue;
+            BtnClose.RectDisableColor = Color.DodgerBlue;
+            BtnClose.Size = new Size(147, 37);
+            BtnClose.Style = UIStyle.Custom;
+            BtnClose.Symbol = 61457;
+            BtnClose.SymbolSize = 32;
+            BtnClose.TabIndex = 441;
+            BtnClose.Text = "退 出";
+            BtnClose.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            BtnClose.Click += BtnClose_Click;
+            // 
+            // btnSave
+            // 
+            btnSave.Cursor = Cursors.Hand;
+            btnSave.FillColor = Color.DodgerBlue;
+            btnSave.FillColor2 = Color.DodgerBlue;
+            btnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
+            btnSave.LightColor = Color.FromArgb(248, 248, 248);
+            btnSave.Location = new Point(113, 12);
+            btnSave.MinimumSize = new Size(1, 1);
+            btnSave.Name = "btnSave";
+            btnSave.RectColor = Color.DodgerBlue;
+            btnSave.RectDisableColor = Color.DodgerBlue;
+            btnSave.Size = new Size(147, 37);
+            btnSave.Style = UIStyle.Custom;
+            btnSave.Symbol = 61639;
+            btnSave.SymbolSize = 32;
+            btnSave.TabIndex = 440;
+            btnSave.Text = "保 存";
+            btnSave.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            btnSave.Click += BtnSave_Click;
+            // 
+            // uiLine3
+            // 
+            uiLine3.BackColor = Color.Transparent;
+            uiLine3.EndCap = UILineCap.Circle;
+            uiLine3.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            uiLine3.ForeColor = Color.FromArgb(48, 48, 48);
+            uiLine3.LineColor = Color.White;
+            uiLine3.Location = new Point(753, 50);
+            uiLine3.MinimumSize = new Size(1, 1);
+            uiLine3.Name = "uiLine3";
+            uiLine3.Size = new Size(321, 29);
+            uiLine3.TabIndex = 439;
+            uiLine3.Text = "PLC点位";
+            uiLine3.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // TreeViewPLC
+            // 
+            TreeViewPLC.BackColor = Color.Transparent;
+            TreeViewPLC.FillColor = Color.White;
+            TreeViewPLC.FillColor2 = Color.White;
+            TreeViewPLC.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            TreeViewPLC.Location = new Point(753, 87);
+            TreeViewPLC.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            TreeViewPLC.MinimumSize = new Size(1, 1);
+            TreeViewPLC.Name = "TreeViewPLC";
+            TreeViewPLC.Radius = 10;
+            TreeViewPLC.RectColor = Color.White;
+            TreeViewPLC.RectDisableColor = Color.White;
+            TreeViewPLC.ScrollBarStyleInherited = false;
+            TreeViewPLC.ShowLines = true;
+            TreeViewPLC.ShowNodeToolTips = true;
+            TreeViewPLC.ShowText = false;
+            TreeViewPLC.Size = new Size(321, 714);
+            TreeViewPLC.TabIndex = 438;
+            TreeViewPLC.Text = null;
+            TreeViewPLC.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // FrmLogicalConfiguration
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
-            ClientSize = new Size(986, 878);
+            ClientSize = new Size(1102, 878);
             ControlBox = false;
+            Controls.Add(uiLine3);
+            Controls.Add(TreeViewPLC);
             Controls.Add(uiPanel1);
             Controls.Add(uiLine2);
             Controls.Add(ProcessDataGridView);
@@ -247,7 +323,7 @@
             Controls.Add(ToolTreeView);
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "frmLogicalConfiguration";
+            Name = "FrmLogicalConfiguration";
             RectColor = Color.FromArgb(65, 100, 204);
             ShowIcon = false;
             Text = "试验逻辑配置";
@@ -267,11 +343,14 @@
         private UILine uiLine2;
         private UIDataGridView ProcessDataGridView;
         private DataGridViewTextBoxColumn ColProcessName;
-        private UIButton btnSave;
-        private UIButton BtnClose;
         private UIPanel uiPanel1;
         private DataGridViewTextBoxColumn ColStepNum;
         private UIContextMenuStrip uiContextMenuStrip1;
         private ToolStripMenuItem toolDeleteStep;
+        private UILine uiLine3;
+        private UITreeView TreeViewPLC;
+        private UISymbolButton btnSave;
+        private UISymbolButton BtnClose;
+        private UISymbolButton btnExecute;
     }
 }

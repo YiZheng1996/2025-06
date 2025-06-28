@@ -146,7 +146,7 @@ namespace MainUI.Procedure.DSL
                     Debug.WriteLine($"选择型号：{ModelName},选择下标：{LstIndex},选择项点：{LstName}，路径：{TestPath}");
 
                     //FrmStepEdit stopedit = new(TestPath, ModelType, ModelName, LstName);
-                    frmLogicalConfiguration stopedit = new(TestPath, ModelType,ModelName, LstName);
+                    FrmLogicalConfiguration stopedit = new(TestPath, ModelType,ModelName, LstName);
                     stopedit.ShowDialog();
                 }
             }

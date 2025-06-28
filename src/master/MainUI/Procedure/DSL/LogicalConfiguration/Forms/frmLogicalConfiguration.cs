@@ -1,17 +1,16 @@
 ﻿using AntdUI;
-using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Menu;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    public partial class frmLogicalConfiguration : UIForm
+    public partial class FrmLogicalConfiguration : UIForm
     {
         private SingletonStatus _singletonStatus;
-        private readonly JsonManager _jsonManager = new();
         private readonly DataGridViewManager _gridManager;
+        private StepExecutionManager _executionManager;
+        private bool _isExecuting;
 
         #region 构造函数
-        public frmLogicalConfiguration(string path, string modelType, string modelName, string processName)
+        public FrmLogicalConfiguration(string path, string modelType, string modelName, string processName)
         {
             InitializeComponent();
 
@@ -21,13 +20,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // 加载工具箱
             InitializeToolbox();
 
+            // 加载PLC所有点位
+            InitializePointLocationPLC();
+
             // 初始化DataGridView管理器
-            _gridManager = new(ProcessDataGridView);
+            _gridManager = new(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
 
             // 设置事件处理程序
             RegisterEventHandlers();
         }
 
+        // 初始化配置
         private void InitializeConfiguration(string path, string modelType, string modelName, string processName)
         {
             // 设置JSON文件路径
@@ -61,21 +64,39 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         // 加载已存在的Json数据到DataGridView控件中
         private async void LoadStepsToGrid()
         {
-            var config = await JsonManager.GetOrCreateConfigAsync();
-            // 找到当前项点的 Parent
-            var parent = config.Form.FirstOrDefault(p =>
-                p.ModelTypeName == _singletonStatus.ModelTypeName &&
-                p.ModelName == _singletonStatus.ModelName &&
-                p.ItemName == _singletonStatus.ItemName);
-
-            if (parent?.ChildSteps != null)
+            try
             {
-                ProcessDataGridView.Rows.Clear();
-                foreach (var step in parent.ChildSteps)
+                var config = await JsonManager.GetOrCreateConfigAsync();
+                // 找到当前项点的 Parent
+                var parent = config.Form.FirstOrDefault(p =>
+                    p.ModelTypeName == _singletonStatus.ModelTypeName &&
+                    p.ModelName == _singletonStatus.ModelName &&
+                    p.ItemName == _singletonStatus.ItemName);
+
+                if (parent?.ChildSteps != null)
                 {
-                    // 假设DataGridView列顺序：步骤名称、步骤号、参数
-                    ProcessDataGridView.Rows.Add(step.StepName, step.StepNum);
+                    // 清空临时数据和网格
+                    SingletonStatus.Instance.IempSteps.Clear();
+                    ProcessDataGridView.Rows.Clear();
+
+                    // 加载数据到临时存储和网格
+                    foreach (var step in parent.ChildSteps)
+                    {
+                        SingletonStatus.Instance.IempSteps.Add(new ChildModel
+                        {
+                            StepName = step.StepName,
+                            Status = step.Status,
+                            StepNum = step.StepNum,
+                            StepParameter = step.StepParameter
+                        });
+                        ProcessDataGridView.Rows.Add(step.StepName, step.StepNum);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("加载步骤数据错误", ex);
+                MessageHelper.MessageOK($"加载步骤数据错误：{ex.Message}", TType.Error);
             }
         }
         #endregion
@@ -121,25 +142,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <returns></returns>
         private static TreeNode BuildSystemToolNode()
         {
-            return new TreeNode("系统设置",
+            return new TreeNode("通用参数(双击查看参数)",
             [
-                new("延时工具"),
-                new("系统提示")
+                new("变量定义"),
+                new("试验参数"),
             ]);
         }
 
         /// <summary>
-        /// 创建计算工具节点
+        /// 创建常用工具节点
         /// </summary>
         /// <returns></returns>
         private static TreeNode BuildCalculationToolNode()
         {
-            return new TreeNode("计算工具",
+            return new TreeNode("常用工具",
             [
-                new("变量定义"),
                 new("条件判断"),
                 new("变量赋值"),
                 new("循环控制"),
+                new("提示窗体"),
+                new("延时工具"),
+                new("提示工具"),
+                new("PLC写入"),
                 new("变量计算")
             ]);
         }
@@ -158,9 +182,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
             if (!File.Exists(jsonPath))
             {
-                // 如果文件不存在，创建默认配置
+                // 如果文件不存在，创建默认配置及格式
                 var config = BuildDefaultConfig(modelType, modelName, processName);
-                JsonManager.FilePath = jsonPath;
+
                 // 保存默认配置到JSON文件
                 await JsonManager.UpdateConfigAsync(async c =>
                 {
@@ -253,7 +277,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         // DataGridView拖放事件处理
-        private async void ProcessDataGridView_DragDrop(object sender, DragEventArgs e)
+        private void ProcessDataGridView_DragDrop(object sender, DragEventArgs e)
         {
             try
             {
@@ -262,8 +286,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     var node = (TreeNode)e.Data.GetData(typeof(TreeNode));
                     if (node?.Parent != null)
                     {
-                        _gridManager.AddRow(node.Text);
-                        await AddStepToForm(node.Text, ProcessDataGridView.Rows.Count);
+                        AddStepToForm(node.Text, ProcessDataGridView.Rows.Count);
                     }
                 }
             }
@@ -285,39 +308,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #region 步骤操作
 
         // 将步骤临时添加到表单中
-        private async Task AddStepToForm(string stepName, int stepNumber)
+        private void AddStepToForm(string stepName, int stepNumber)
         {
             try
             {
-                await JsonManager.UpdateConfigAsync(async config =>
+                // 只添加到临时存储和网格
+                var newStep = new ChildModel
                 {
-                    // 确保 Form 列表包含足够的元素
-                    if (config.Form.Count == 0)
-                    {
-                        config.Form.Add(new Parent
-                        {
-                            ModelTypeName = _singletonStatus.ModelTypeName,
-                            ModelName = _singletonStatus.ModelName,
-                            ItemName = _singletonStatus.ItemName,
-                            ChildSteps = []
-                        });
-                    }
+                    StepName = stepName,
+                    Status = 0,
+                    StepNum = stepNumber,
+                    StepParameter = 0
+                };
 
-                    // 添加新的步骤
-                    config.Form[0].ChildSteps.Add(new ChildModel
-                    {
-                        StepName = stepName,
-                        Status = 1,
-                        StepNum = stepNumber,
-                        StepParameter = 0
-                    });
-                    await Task.CompletedTask;
-                });
+                SingletonStatus.Instance.IempSteps.Add(newStep);
+                _gridManager.AddRow(stepName);
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("添加步骤到配置文件错误", ex);
-                MessageHelper.MessageOK($"添加步骤到配置文件错误：{ex.Message}", TType.Error);
+                NlogHelper.Default.Error("添加步骤错误", ex);
+                MessageHelper.MessageOK($"添加步骤错误：{ex.Message}", TType.Error);
             }
         }
 
@@ -334,7 +344,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     {
                         SingletonStatus.Instance.StepNum = e.RowIndex;
                         SingletonStatus.Instance.StepName = stepName;
-                        FormSet.OpenFormByName(stepName);
+                        FormSet.OpenFormByName(stepName, this);
                     }
                 }
             }
@@ -355,13 +365,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         // 退出界面
         private void BtnClose_Click(object sender, EventArgs e) => Close();
 
-        private async void btnSave_Click(object sender, EventArgs e)
+        private async void BtnSave_Click(object sender, EventArgs e)
         {
             try
             {
                 await JsonManager.UpdateConfigAsync(async config =>
                 {
-                    // 清空原有步骤
+                    // 确保配置中有表单
                     if (config.Form.Count == 0)
                     {
                         config.Form.Add(new Parent
@@ -372,31 +382,20 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                             ChildSteps = []
                         });
                     }
-                    else
-                    {
-                        config.Form[0].ChildSteps.Clear();
-                    }
 
-                    // 遍历DataGridView，将所有行写入ChildSteps
-                    foreach (DataGridViewRow row in ProcessDataGridView.Rows)
-                    {
-                        if (row.IsNewRow) continue;
-                        var stepName = row.Cells[0].Value?.ToString();
-                        var stepNum = row.Index + 1;
-                        if (!string.IsNullOrEmpty(stepName))
-                        {
-                            config.Form[0].ChildSteps.Add(new ChildModel
-                            {
-                                StepName = stepName,
-                                Status = 1,
-                                StepNum = stepNum,
-                                StepParameter = 0
-                            });
-                        }
-                    }
+                    // 清空并写入自定义参数
+                    config.Variable.Clear();
+                    config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem>());
+
+                    // 清空并写入所有步骤
+                    config.Form[0].ChildSteps.Clear();
+                    config.Form[0].ChildSteps.AddRange(SingletonStatus.Instance.IempSteps);
+
                     await Task.CompletedTask;
                 });
+
                 MessageHelper.MessageOK("保存成功！", TType.Success);
+                Close();
             }
             catch (Exception ex)
             {
@@ -405,13 +404,105 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        #region PLC点位
+        /// <summary>
+        /// 加载全部PLC点位
+        /// </summary>
+        private void InitializePointLocationPLC()
+        {
+            TreeViewPLC.Nodes.Clear();
+            var PLCData = PointLocationPLC.Instance.DicModelsContent;
+            foreach (var kvp in PLCData)
+            {
+                // 创建主节点(Key)
+                TreeNode parentNode = new(kvp.Key);
+
+                // 添加子节点(Value)
+                foreach (var value in kvp.Value)
+                {
+                    if (value.Key != "ServerName")
+                        parentNode.Nodes.Add(value.Key);
+                }
+                TreeViewPLC.Nodes.Add(parentNode);
+            }
+            // 默认全部展开
+            TreeViewPLC.ExpandAll();
+        }
+        #endregion
+
+        #region 执行和停止操作
+
+        // 添加执行和停止按钮的事件处理
+        private async void btnExecute_Click(object sender, EventArgs e)
+        {
+            if (_isExecuting)
+            {
+                _executionManager?.Stop();
+                return;
+            }
+
+            try
+            {
+                _isExecuting = true;
+                btnExecute.Text = "停止";
+                btnExecute.Symbol = 61516;
+
+                // 创建执行管理器
+                _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
+
+                // 注册状态改变事件
+                _executionManager.StepStatusChanged += UpdateStepStatus;
+
+                // 开始执行
+                await _executionManager.StartExecutionAsync();
+            }
+            finally
+            {
+                _isExecuting = false;
+                btnExecute.Text = "执行";
+                btnExecute.Symbol = 61515;
+                _executionManager.StepStatusChanged -= UpdateStepStatus;
+            }
+        }
+
+        // 更新步骤状态显示
+        private void UpdateStepStatus(ChildModel step, int index)
+        {
+            if (ProcessDataGridView.InvokeRequired)
+            {
+                ProcessDataGridView.Invoke(() => UpdateStepStatus(step, index));
+                return;
+            }
+
+            var row = ProcessDataGridView.Rows[index];
+
+            // 更新状态显示（可以用不同颜色表示不同状态）
+            switch (step.Status)
+            {
+                case 0: // 未执行
+                    row.DefaultCellStyle.BackColor = Color.White;
+                    break;
+                case 1: // 执行中
+                    row.DefaultCellStyle.BackColor = Color.Yellow;
+                    break;
+                case 2: // 成功
+                    row.DefaultCellStyle.BackColor = Color.LightGreen;
+                    break;
+                case 3: // 失败
+                    row.DefaultCellStyle.BackColor = Color.LightPink;
+                    break;
+            }
+        }
+        #endregion
+
     }
 
     /// <summary>
     /// DataGridView管理器类
     /// </summary>
-    internal class DataGridViewManager(DataGridView grid)
+    internal class DataGridViewManager(DataGridView grid, List<ChildModel> tempSteps)
     {
+
         /// <summary>
         /// 添加行数据到DataGridView
         /// </summary>
@@ -429,7 +520,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             if (grid.SelectedRows.Count > 0)
             {
                 var selectedRow = grid.SelectedRows[0];
+                int index = selectedRow.Index;
+
+                // 从临时存储中删除
+                tempSteps.RemoveAt(index);
+
+                // 从网格中删除
                 grid.Rows.Remove(selectedRow);
+
+                // 重新排序
                 ReorderRows();
             }
         }
@@ -439,12 +538,19 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// </summary>
         private void ReorderRows()
         {
+            // 更新网格中的步骤号
             for (int i = 0; i < grid.Rows.Count; i++)
             {
                 if (grid.Rows[i].Cells["ColStepNum"] != null)
                 {
                     grid.Rows[i].Cells["ColStepNum"].Value = i + 1;
                 }
+            }
+
+            // 更新临时存储中的步骤号
+            for (int i = 0; i < tempSteps.Count; i++)
+            {
+                tempSteps[i].StepNum = i + 1;
             }
         }
     }

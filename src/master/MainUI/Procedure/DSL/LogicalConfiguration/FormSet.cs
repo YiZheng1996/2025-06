@@ -4,7 +4,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
 {
     internal class FormSet
     {
-        public static void OpenFormByName(string formText)
+        public static void OpenFormByName(string formText, Form form1)
         {
             try
             {
@@ -55,10 +55,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                         form = (Form)Activator.CreateInstance(formType, parameters);
                     }
 
-                    if (form != null)
-                    {
-                        form.ShowDialog();
-                    }
+                    VarHelper.ShowDialogWithOverlay(form1, form);
                 }
                 catch (Exception ex)
                 {

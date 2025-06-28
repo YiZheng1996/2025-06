@@ -1,4 +1,3 @@
-using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -7,14 +6,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
     /// <summary>
     /// JSON数据访问管理器
     /// </summary>
-    internal class JsonManager
+    public class JsonManager
     {
+        // Json设置
         private static readonly JsonSerializerSettings _jsonSettings = new()
         {
             Formatting = Formatting.Indented,
             NullValueHandling = NullValueHandling.Ignore
         };
 
+        // Json文件路径
         public static string FilePath { get; set; }
 
         /// <summary>
@@ -75,7 +76,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                     FileAccess.Write, FileShare.None);
                 using var writer = new StreamWriter(stream, new UTF8Encoding(true)); 
                 await writer.WriteAsync(json);
-                //await writer.FlushAsync();
             }
             catch (Exception ex)
             {

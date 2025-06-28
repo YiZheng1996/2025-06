@@ -1,11 +1,4 @@
-﻿using RW.Modules;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MainUI.Config
+﻿namespace MainUI.Config
 {
     internal class ModuleParameterConfig : IniConfig
     {

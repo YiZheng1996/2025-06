@@ -1,6 +1,6 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration
 {
-    internal class Parent
+    public class Parent
     {
         /// <summary>
         /// 产品类型名称，用于区分不同的产品或模型

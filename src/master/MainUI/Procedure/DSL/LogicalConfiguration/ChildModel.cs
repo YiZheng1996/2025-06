@@ -5,7 +5,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
     /// <summary>
     /// 子节点模型类，用于描述每个步骤的详细信息
     /// </summary>
-    internal class ChildModel
+    public class ChildModel
     {
         /// <summary>
         /// 步骤号

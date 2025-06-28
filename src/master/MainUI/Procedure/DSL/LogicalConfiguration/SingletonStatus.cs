@@ -65,7 +65,15 @@
         /// </summary>
         public string StepName { get; set; }
 
+        /// <summary>
+        /// 自定义变量列表
+        /// </summary>
         public List<object> Obj { get; set; }
+
+        /// <summary>
+        /// Json序列化的步骤参数
+        /// </summary>
+        public List<ChildModel> IempSteps { get; set; } = [];
 
         // 私有构造函数，防止外部类实例化
         private SingletonStatus()

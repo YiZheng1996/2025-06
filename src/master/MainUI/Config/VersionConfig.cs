@@ -1,12 +1,12 @@
 ﻿namespace MainUI.Config
 {
-    public class VersionConfig : IniConfig
+    public class AAConfig : IniConfig
     {
-        public VersionConfig()
+        public AAConfig()
           : base(Application.StartupPath + "\\config\\Version.ini")
         {
         }
-        public VersionConfig(string sectionName)
+        public AAConfig(string sectionName)
             : base(Application.StartupPath + "\\config\\Version.ini")
         {
             this.SetSectionName(sectionName);
