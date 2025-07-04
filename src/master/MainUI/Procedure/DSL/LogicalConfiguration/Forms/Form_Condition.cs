@@ -17,5 +17,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             DialogResult = DialogResult.OK;
         }
+
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

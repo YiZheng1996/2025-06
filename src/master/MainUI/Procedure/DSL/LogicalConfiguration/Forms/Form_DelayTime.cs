@@ -1,80 +1,144 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using System.Text.Json;
+﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using Newtonsoft.Json;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
+    /// <summary>
+    /// 延时配置表单
+    /// </summary>
     public partial class Form_DelayTime : UIForm
     {
+        private const double DEFAULT_DELAY_TIME = 1000.0;
+        private readonly SingletonStatus _status;
+
+        /// <summary>
+        /// 默认构造函数
+        /// </summary>
         public Form_DelayTime()
         {
             InitializeComponent();
-            InitForm();
+            _status = SingletonStatus.Instance;
+            LoadDelayParameters();
         }
 
-        // 带参数构造函数
-        public Form_DelayTime(SingletonStatus Status)
+        /// <summary>
+        /// 带参数构造函数
+        /// </summary>
+        /// <param name="status">单例状态实例</param>
+        public Form_DelayTime(SingletonStatus status)
         {
             InitializeComponent();
-            InitForm();
+            _status = status;
+            LoadDelayParameters();
         }
 
-        // 加载参数（只读内存临时步骤）
-        private void InitForm()
+        /// <summary>
+        /// 加载延时参数
+        /// </summary>
+        private void LoadDelayParameters()
         {
-            var steps = SingletonStatus.Instance.IempSteps;
-            int idx = SingletonStatus.Instance.StepNum;
-            if (steps != null && idx >= 0 && idx < steps.Count)
+            try
             {
-                var paramObj = steps[idx].StepParameter;
-                if (paramObj is Parameter_DelayTime param)
+                var currentStep = GetCurrentStep();
+                if (currentStep?.StepParameter is null)
                 {
-                    txtTime.Text = param.T.ToString();
+                    SetDefaultDelayTime();
+                    return;
                 }
-                else if (paramObj is not null)
-                {
-                    try
-                    {
-                        var p = JsonSerializer.Deserialize<Parameter_DelayTime>(paramObj.ToString());
-                        txtTime.Text = p?.T.ToString() ?? "200";
-                    }
-                    catch
-                    {
-                        txtTime.Text = "200";
-                    }
-                }
-                else
-                {
-                    txtTime.Text = "200";
-                }
+
+                var delayTime = ExtractDelayTime(currentStep.StepParameter);
+                txtTime.Text = delayTime.ToString();
             }
-            else
+            catch (Exception ex)
             {
-                txtTime.Text = "200";
+                NlogHelper.Default.Error("加载延时参数失败", ex);
+                SetDefaultDelayTime();
             }
         }
 
-        // 保存参数（只改内存临时步骤）
+        /// <summary>
+        /// 获取当前步骤
+        /// </summary>
+        private ChildModel GetCurrentStep()
+        {
+            var steps = _status.IempSteps;
+            var idx = _status.StepNum;
+
+            return (steps != null && idx >= 0 && idx < steps.Count) ? steps[idx] : null;
+        }
+
+        /// <summary>
+        /// 提取延时时间
+        /// </summary>
+        private static double ExtractDelayTime(object paramObj)
+        {
+            if (paramObj is Parameter_DelayTime param)
+            {
+                return param.T;
+            }
+
+            try
+            {
+                var deserializedParam = JsonConvert.DeserializeObject<Parameter_DelayTime>(paramObj.ToString() ?? "");
+                return deserializedParam?.T ?? DEFAULT_DELAY_TIME;
+            }
+            catch
+            {
+                return DEFAULT_DELAY_TIME;
+            }
+        }
+
+        /// <summary>
+        /// 设置默认延时时间
+        /// </summary>
+        private void SetDefaultDelayTime()
+        {
+            txtTime.Text = DEFAULT_DELAY_TIME.ToString();
+        }
+
+        /// <summary>
+        /// 保存参数按钮点击事件
+        /// </summary>
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            var steps = SingletonStatus.Instance.IempSteps;
-            int idx = SingletonStatus.Instance.StepNum;
-            if (steps != null && idx >= 0 && idx < steps.Count)
+            try
             {
-                if (double.TryParse(txtTime.Text, out double t))
+                var currentStep = GetCurrentStep();
+                if (currentStep is null)
                 {
-                    steps[idx].StepParameter = new Parameter_DelayTime { T = t };
-                    MessageHelper.MessageOK("参数已暂存，主界面点击保存后才会写入文件。", AntdUI.TType.Info);
-                    Close();
+                    MessageHelper.MessageOK("步骤索引无效，无法保存参数。", TType.Error);
+                    return;
                 }
-                else
+
+                if (!ValidateAndSaveDelayTime(currentStep))
                 {
-                    MessageHelper.MessageOK("请输入有效的延时时间。", AntdUI.TType.Warn);
+                    return;
                 }
+
+                MessageHelper.MessageOK("参数已暂存，主界面点击保存后才会写入文件。", TType.Info);
+                Close();
             }
-            else
+            catch (Exception ex)
             {
-                MessageHelper.MessageOK("步骤索引无效，无法保存参数。", AntdUI.TType.Error);
+                NlogHelper.Default.Error("保存延时参数失败", ex);
+                MessageHelper.MessageOK($"保存参数失败：{ex.Message}", TType.Error);
             }
+        }
+
+        /// <summary>
+        /// 验证并保存延时时间
+        /// </summary>
+        private bool ValidateAndSaveDelayTime(ChildModel step)
+        {
+            if (!double.TryParse(txtTime.Text, out double delayTime))
+            {
+                MessageHelper.MessageOK("请输入有效的延时时间。", TType.Warn);
+                return false;
+            }
+
+            step.StepParameter = new Parameter_DelayTime { T = delayTime };
+            return true;
         }
     }
 }

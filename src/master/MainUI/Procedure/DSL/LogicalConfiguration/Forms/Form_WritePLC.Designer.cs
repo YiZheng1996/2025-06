@@ -36,7 +36,6 @@
             DataGridViewPLCList = new UIDataGridView();
             ColPCLName = new DataGridViewTextBoxColumn();
             ColConstant = new DataGridViewTextBoxColumn();
-            ColVariable = new DataGridViewComboBoxColumn();
             TreeViewPLC = new UITreeView();
             BtnDelete = new UISymbolButton();
             BtnSave = new UISymbolButton();
@@ -64,7 +63,7 @@
             DataGridViewPLCList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DataGridViewPLCList.ColumnHeadersHeight = 35;
             DataGridViewPLCList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            DataGridViewPLCList.Columns.AddRange(new DataGridViewColumn[] { ColPCLName, ColConstant, ColVariable });
+            DataGridViewPLCList.Columns.AddRange(new DataGridViewColumn[] { ColPCLName, ColConstant });
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("宋体", 13F);
@@ -76,7 +75,7 @@
             DataGridViewPLCList.EnableHeadersVisualStyles = false;
             DataGridViewPLCList.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             DataGridViewPLCList.GridColor = Color.FromArgb(64, 64, 64);
-            DataGridViewPLCList.Location = new Point(305, 80);
+            DataGridViewPLCList.Location = new Point(303, 80);
             DataGridViewPLCList.MultiSelect = false;
             DataGridViewPLCList.Name = "DataGridViewPLCList";
             DataGridViewPLCList.RectColor = Color.White;
@@ -95,12 +94,12 @@
             DataGridViewPLCList.RowTemplate.Height = 30;
             DataGridViewPLCList.SelectedIndex = -1;
             DataGridViewPLCList.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            DataGridViewPLCList.Size = new Size(610, 534);
+            DataGridViewPLCList.Size = new Size(460, 534);
             DataGridViewPLCList.StripeOddColor = Color.FromArgb(235, 243, 255);
             DataGridViewPLCList.Style = UIStyle.Custom;
             DataGridViewPLCList.TabIndex = 12;
             DataGridViewPLCList.DragDrop += DataGridViewPLCList_DragDrop;
-            DataGridViewPLCList.DragEnter += DataGridViewPLCList_DragEnter_1;
+            DataGridViewPLCList.DragEnter += DataGridViewPLCList_DragEnter;
             // 
             // ColPCLName
             // 
@@ -114,22 +113,13 @@
             ColConstant.Name = "ColConstant";
             ColConstant.Width = 130;
             // 
-            // ColVariable
-            // 
-            ColVariable.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
-            ColVariable.HeaderText = "绑定变量";
-            ColVariable.Name = "ColVariable";
-            ColVariable.Resizable = DataGridViewTriState.True;
-            ColVariable.SortMode = DataGridViewColumnSortMode.Automatic;
-            ColVariable.Width = 150;
-            // 
             // TreeViewPLC
             // 
             TreeViewPLC.BackColor = Color.Transparent;
             TreeViewPLC.FillColor = Color.White;
             TreeViewPLC.FillColor2 = Color.White;
             TreeViewPLC.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            TreeViewPLC.Location = new Point(19, 80);
+            TreeViewPLC.Location = new Point(17, 80);
             TreeViewPLC.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             TreeViewPLC.MinimumSize = new Size(1, 1);
             TreeViewPLC.Name = "TreeViewPLC";
@@ -153,7 +143,7 @@
             BtnDelete.FillColor2 = Color.DodgerBlue;
             BtnDelete.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             BtnDelete.LightColor = Color.FromArgb(248, 248, 248);
-            BtnDelete.Location = new Point(288, 9);
+            BtnDelete.Location = new Point(213, 9);
             BtnDelete.MinimumSize = new Size(1, 1);
             BtnDelete.Name = "BtnDelete";
             BtnDelete.RectColor = Color.DodgerBlue;
@@ -166,6 +156,7 @@
             BtnDelete.TabIndex = 441;
             BtnDelete.Text = "删除";
             BtnDelete.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            BtnDelete.Click += BtnDelete_Click;
             // 
             // BtnSave
             // 
@@ -174,7 +165,7 @@
             BtnSave.FillColor2 = Color.DodgerBlue;
             BtnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             BtnSave.LightColor = Color.FromArgb(248, 248, 248);
-            BtnSave.Location = new Point(477, 9);
+            BtnSave.Location = new Point(402, 9);
             BtnSave.MinimumSize = new Size(1, 1);
             BtnSave.Name = "BtnSave";
             BtnSave.RectColor = Color.DodgerBlue;
@@ -186,6 +177,7 @@
             BtnSave.TabIndex = 440;
             BtnSave.Text = "保存";
             BtnSave.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            BtnSave.Click += BtnSave_Click;
             // 
             // uiPanel1
             // 
@@ -194,14 +186,14 @@
             uiPanel1.FillColor = Color.White;
             uiPanel1.FillColor2 = Color.White;
             uiPanel1.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            uiPanel1.Location = new Point(19, 622);
+            uiPanel1.Location = new Point(17, 622);
             uiPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             uiPanel1.MinimumSize = new Size(1, 1);
             uiPanel1.Name = "uiPanel1";
             uiPanel1.Radius = 10;
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
-            uiPanel1.Size = new Size(896, 57);
+            uiPanel1.Size = new Size(746, 57);
             uiPanel1.TabIndex = 442;
             uiPanel1.Text = null;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
@@ -213,7 +205,7 @@
             uiLine2.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
             uiLine2.ForeColor = Color.FromArgb(48, 48, 48);
             uiLine2.LineColor = Color.White;
-            uiLine2.Location = new Point(19, 43);
+            uiLine2.Location = new Point(17, 43);
             uiLine2.MinimumSize = new Size(1, 1);
             uiLine2.Name = "uiLine2";
             uiLine2.Size = new Size(279, 29);
@@ -228,7 +220,7 @@
             uiLine1.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
             uiLine1.ForeColor = Color.FromArgb(48, 48, 48);
             uiLine1.LineColor = Color.White;
-            uiLine1.Location = new Point(305, 43);
+            uiLine1.Location = new Point(303, 43);
             uiLine1.MinimumSize = new Size(1, 1);
             uiLine1.Name = "uiLine1";
             uiLine1.Size = new Size(460, 29);
@@ -240,7 +232,7 @@
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
-            ClientSize = new Size(934, 690);
+            ClientSize = new Size(781, 690);
             ControlBoxFillHoverColor = Color.FromArgb(163, 163, 163);
             Controls.Add(uiLine1);
             Controls.Add(uiLine2);
@@ -274,6 +266,5 @@
         private UILine uiLine1;
         private DataGridViewTextBoxColumn ColPCLName;
         private DataGridViewTextBoxColumn ColConstant;
-        private DataGridViewComboBoxColumn ColVariable;
     }
 }

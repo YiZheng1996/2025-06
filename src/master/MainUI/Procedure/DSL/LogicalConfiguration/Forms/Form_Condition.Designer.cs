@@ -34,13 +34,13 @@
             DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             DataGridViewDefineVar = new UIDataGridView();
-            BtnDelete = new UISymbolButton();
-            BtnSave = new UISymbolButton();
             ColVarName = new DataGridViewTextBoxColumn();
             ColOperator = new DataGridViewComboBoxColumn();
             ColValue = new DataGridViewTextBoxColumn();
             ColTrueStepIndex = new DataGridViewTextBoxColumn();
             ColFalseStepIndex = new DataGridViewTextBoxColumn();
+            BtnDelete = new UISymbolButton();
+            BtnSave = new UISymbolButton();
             ((System.ComponentModel.ISupportInitialize)DataGridViewDefineVar).BeginInit();
             SuspendLayout();
             // 
@@ -96,48 +96,6 @@
             DataGridViewDefineVar.Style = UIStyle.Custom;
             DataGridViewDefineVar.TabIndex = 6;
             // 
-            // BtnDelete
-            // 
-            BtnDelete.Cursor = Cursors.Hand;
-            BtnDelete.FillColor = Color.DodgerBlue;
-            BtnDelete.FillColor2 = Color.DodgerBlue;
-            BtnDelete.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
-            BtnDelete.LightColor = Color.FromArgb(248, 248, 248);
-            BtnDelete.Location = new Point(297, 588);
-            BtnDelete.MinimumSize = new Size(1, 1);
-            BtnDelete.Name = "BtnDelete";
-            BtnDelete.RectColor = Color.DodgerBlue;
-            BtnDelete.RectDisableColor = Color.DodgerBlue;
-            BtnDelete.RectHoverColor = Color.FromArgb(64, 128, 204);
-            BtnDelete.Size = new Size(132, 39);
-            BtnDelete.Style = UIStyle.Custom;
-            BtnDelete.Symbol = 561695;
-            BtnDelete.SymbolSize = 32;
-            BtnDelete.TabIndex = 9;
-            BtnDelete.Text = "删除";
-            BtnDelete.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            // 
-            // BtnSave
-            // 
-            BtnSave.Cursor = Cursors.Hand;
-            BtnSave.FillColor = Color.DodgerBlue;
-            BtnSave.FillColor2 = Color.DodgerBlue;
-            BtnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
-            BtnSave.LightColor = Color.FromArgb(248, 248, 248);
-            BtnSave.Location = new Point(531, 588);
-            BtnSave.MinimumSize = new Size(1, 1);
-            BtnSave.Name = "BtnSave";
-            BtnSave.RectColor = Color.DodgerBlue;
-            BtnSave.RectDisableColor = Color.DodgerBlue;
-            BtnSave.Size = new Size(132, 39);
-            BtnSave.Style = UIStyle.Custom;
-            BtnSave.Symbol = 61639;
-            BtnSave.SymbolSize = 32;
-            BtnSave.TabIndex = 8;
-            BtnSave.Text = "保存";
-            BtnSave.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            BtnSave.Click += BtnSave_Click;
-            // 
             // ColVarName
             // 
             ColVarName.HeaderText = "变量名称";
@@ -171,6 +129,49 @@
             ColFalseStepIndex.HeaderText = "False步骤号";
             ColFalseStepIndex.Name = "ColFalseStepIndex";
             ColFalseStepIndex.Width = 130;
+            // 
+            // BtnDelete
+            // 
+            BtnDelete.Cursor = Cursors.Hand;
+            BtnDelete.FillColor = Color.DodgerBlue;
+            BtnDelete.FillColor2 = Color.DodgerBlue;
+            BtnDelete.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
+            BtnDelete.LightColor = Color.FromArgb(248, 248, 248);
+            BtnDelete.Location = new Point(297, 588);
+            BtnDelete.MinimumSize = new Size(1, 1);
+            BtnDelete.Name = "BtnDelete";
+            BtnDelete.RectColor = Color.DodgerBlue;
+            BtnDelete.RectDisableColor = Color.DodgerBlue;
+            BtnDelete.RectHoverColor = Color.FromArgb(64, 128, 204);
+            BtnDelete.Size = new Size(132, 39);
+            BtnDelete.Style = UIStyle.Custom;
+            BtnDelete.Symbol = 561695;
+            BtnDelete.SymbolSize = 32;
+            BtnDelete.TabIndex = 9;
+            BtnDelete.Text = "删除";
+            BtnDelete.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            BtnDelete.Click += BtnDelete_Click;
+            // 
+            // BtnSave
+            // 
+            BtnSave.Cursor = Cursors.Hand;
+            BtnSave.FillColor = Color.DodgerBlue;
+            BtnSave.FillColor2 = Color.DodgerBlue;
+            BtnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
+            BtnSave.LightColor = Color.FromArgb(248, 248, 248);
+            BtnSave.Location = new Point(531, 588);
+            BtnSave.MinimumSize = new Size(1, 1);
+            BtnSave.Name = "BtnSave";
+            BtnSave.RectColor = Color.DodgerBlue;
+            BtnSave.RectDisableColor = Color.DodgerBlue;
+            BtnSave.Size = new Size(132, 39);
+            BtnSave.Style = UIStyle.Custom;
+            BtnSave.Symbol = 61639;
+            BtnSave.SymbolSize = 32;
+            BtnSave.TabIndex = 8;
+            BtnSave.Text = "保存";
+            BtnSave.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            BtnSave.Click += BtnSave_Click;
             // 
             // Form_Condition
             // 
