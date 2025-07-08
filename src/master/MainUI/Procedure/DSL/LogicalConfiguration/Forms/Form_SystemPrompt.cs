@@ -24,7 +24,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     var paramObj = steps[idx].StepParameter;
                     if (paramObj is Parameter_SystemPrompt param)
                     {
-                        txtPromptContent.Text = param.Content;
+                        txtPromptContent.Text = param.Message;
                     }
                     else if (paramObj is not null)
                     {
@@ -32,7 +32,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         {
                             var jsonObject = JObject.Parse(paramObj.ToString());
                             var p = jsonObject.ToObject<Parameter_SystemPrompt>();
-                            txtPromptContent.Text = p?.Content ?? "请输入";
+                            txtPromptContent.Text = p?.Message ?? "请输入";
                         }
                         catch
                         {
@@ -61,7 +61,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 int idx = SingletonStatus.Instance.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
-                    steps[idx].StepParameter = new Parameter_SystemPrompt { Content = txtPromptContent.Text };
+                    steps[idx].StepParameter = new Parameter_SystemPrompt { Message = txtPromptContent.Text };
                     MessageHelper.MessageOK("参数已暂存，主界面点击保存后才会写入文件。", AntdUI.TType.Info);
                     Close();
                 }

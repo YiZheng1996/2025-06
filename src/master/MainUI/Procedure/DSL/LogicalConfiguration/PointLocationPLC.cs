@@ -141,7 +141,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// </summary>
         /// <param name="section">区段名称</param>
         /// <returns>区段配置字典</returns>
-        public Dictionary<string, string>? GetSectionContent(string section)
+        public Dictionary<string, string> GetSectionContent(string section)
         {
             return _dicModelsContent.TryGetValue(section, out var content) ? content : null;
         }

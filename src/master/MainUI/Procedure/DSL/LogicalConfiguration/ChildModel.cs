@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace MainUI.Procedure.DSL.LogicalConfiguration
+﻿namespace MainUI.Procedure.DSL.LogicalConfiguration
 {
     /// <summary>
     /// 子节点模型类，用于描述每个步骤的详细信息
