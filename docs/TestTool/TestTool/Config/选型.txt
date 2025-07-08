@@ -1,0 +1,10 @@
+相机
+MV-CU200-20GM
+2000万像素网口面阵相机，AR2020，黑白
+https://www.hikrobotics.com/cn/machinevision/productdetail?id=11537
+
+
+镜头
+MVL-KF3524M-25MP
+35mm，F2.4，1.2"，2500万分辨率，C接口镜头
+https://www.hikrobotics.com/cn/machinevision/productdetail/?id=7472
