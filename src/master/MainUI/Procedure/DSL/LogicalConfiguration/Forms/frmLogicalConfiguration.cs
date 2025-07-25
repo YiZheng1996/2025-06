@@ -159,11 +159,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             [
                 new("条件判断"),
                 new("变量赋值"),
-                new("循环控制"),
+                new("循环开始"),
+                new("循环结束"),
                 new("延时工具"),
                 new("提示工具"),
                 new("PLC写入"),
-                new("变量计算")
+                new("变量计算"),
+                new("检测工具"),
             ]);
         }
         #endregion
