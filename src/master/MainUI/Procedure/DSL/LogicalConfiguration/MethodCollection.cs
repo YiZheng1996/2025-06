@@ -22,7 +22,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 NlogHelper.Default.Info($"开始延时 {param.T} 秒");
 
                 // 执行延时
-                await Task.Delay(TimeSpan.FromSeconds(param.T));
+                await Task.Delay(TimeSpan.FromMilliseconds(param.T));
 
                 // 记录完成日志
                 NlogHelper.Default.Info($"延时 {param.T} 秒完成");
@@ -45,26 +45,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             try
             {
                 var singleton = SingletonStatus.Instance;
+                var variables = GetVariables();
 
                 // 检查变量是否已存在
-                var existingVar = singleton.Obj.FirstOrDefault(v => v.VarName == param.VarName);
+                var existingVar = variables.FirstOrDefault(v => v.VarName == param.VarName);
                 if (existingVar != null)
                 {
                     // 更新现有变量
-                    existingVar.VarValue = param.VarValue;
+                    existingVar.VarName = param.VarName;
                     existingVar.VarType = param.VarType;
                     NlogHelper.Default.Info($"更新变量: {param.VarName} = {param.VarValue} ({param.VarType})");
                 }
                 else
                 {
                     // 添加新变量
-                    singleton.Obj.Add(new VarItem
+                    var newVar = new VarItem
                     {
                         VarName = param.VarName,
-                        //VarValue = param.VarValue,
+                        VarValue = param.VarValue,
                         VarType = param.VarType
-                    });
-                    NlogHelper.Default.Info($"定义新变量: {param.VarName}");
+                    };
+                    singleton.Obj.Add(newVar);
+                    NlogHelper.Default.Info($"定义新变量: {param.VarName} = {param.VarValue} ({param.VarType})");
                 }
 
                 await Task.CompletedTask; // 保持异步接口一致性
@@ -84,8 +86,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         {
             try
             {
-                var singleton = SingletonStatus.Instance;
-                var targetVar = singleton.Obj.FirstOrDefault(v => v.VarName == param.TargetVarName);
+                var targetVar = FindVariable(param.TargetVarName);
 
                 if (targetVar == null)
                 {
@@ -94,10 +95,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 }
 
                 // 解析赋值表达式
-                object newValue = await EvaluateExpression(param.Expression, singleton.Obj);
+                object newValue = await EvaluateExpression(param.Expression, GetVariables());
 
                 // 类型转换和赋值
-                targetVar.VarValue = ConvertValue(newValue, targetVar.VarType);
+                targetVar.VarValue = ConvertValue(newValue, targetVar.VarType).ToString();
 
                 NlogHelper.Default.Info($"变量赋值: {param.TargetVarName} = {targetVar.VarValue}");
                 return true;
@@ -114,81 +115,86 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// PLC读取方法
         /// </summary>
-        public static Task<bool> Method_ReadPLC(Parameter_ReadPLC param)
-        {
-            try
-            {
-                //// 获取PLC通信客户端 (需要根据您的实际PLC库调整)
-                //var plcClient = PLCManager.GetClient(param.PLCAddress);
-                //if (plcClient == null)
-                //{
-                //    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
-                //    return false;
-                //}
+        //public static Task<bool> Method_ReadPLC(Parameter_ReadPLC param)
+        //{
+        //    try
+        //    {
+        //        //// 获取PLC通信客户端 (需要根据您的实际PLC库调整)
+        //        //var plcClient = PLCManager.GetClient(param.PLCAddress);
+        //        //if (plcClient == null)
+        //        //{
+        //        //    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
+        //        //    return false;
+        //        //}
 
-                //// 读取PLC数据
-                //var result = await plcClient.ReadAsync(param.RegisterAddress, param.DataType);
-                //if (!result.IsSuccess)
-                //{
-                //    NlogHelper.Default.Error($"PLC读取失败: {result.ErrorMessage}");
-                //    return false;
-                //}
+        //        //// 读取PLC数据
+        //        //var result = await plcClient.ReadAsync(param.RegisterAddress, param.DataType);
+        //        //if (!result.IsSuccess)
+        //        //{
+        //        //    NlogHelper.Default.Error($"PLC读取失败: {result.ErrorMessage}");
+        //        //    return false;
+        //        //}
 
-                //// 将读取的值保存到变量中
-                //if (!string.IsNullOrEmpty(param.SaveToVariable))
-                //{
-                //    var singleton = SingletonStatus.Instance;
-                //    var targetVar = singleton.Obj.FirstOrDefault(v => v.VarName == param.SaveToVariable);
-                //    if (targetVar != null)
-                //    {
-                //        targetVar.VarValue = result.Value;
-                //        NlogHelper.Default.Info($"PLC读取成功: {param.RegisterAddress} = {result.Value}, 保存到变量: {param.SaveToVariable}");
-                //    }
-                //}
+        //        //// 将读取的值保存到变量中
+        //        //if (!string.IsNullOrEmpty(param.SaveToVariable))
+        //        //{
+        //        //    var singleton = SingletonStatus.Instance;
+        //        //    var variables = singleton.Obj.OfType<VarItem>().ToList();
+        //        //    var targetVar = variables.FirstOrDefault(v => v.VarName == param.SaveToVariable);
+        //        //    if (targetVar != null)
+        //        //    {
+        //        //        targetVar.VarValue = result.Value;
+        //        //        NlogHelper.Default.Info($"PLC读取成功: {param.RegisterAddress} = {result.Value}, 保存到变量: {param.SaveToVariable}");
+        //        //    }
+        //        //    else
+        //        //    {
+        //        //        NlogHelper.Default.Error($"目标变量 {param.SaveToVariable} 不存在，无法保存PLC读取值");
+        //        //    }
+        //        //}
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"PLC读取异常: {ex.Message}", ex);
-                return false;
-            }
-        }
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        NlogHelper.Default.Error($"PLC读取异常: {ex.Message}", ex);
+        //        return false;
+        //    }
+        //}
 
         /// <summary>
         /// PLC写入方法
         /// </summary>
-        public static async Task<bool> Method_WritePLC(Parameter_WritePLC param)
-        {
-            try
-            {
-                var plcClient = PLCManager.GetClient(param.PLCAddress);
-                if (plcClient == null)
-                {
-                    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
-                    return false;
-                }
+        //public static Task<bool> Method_WritePLC(Parameter_WritePLC param)
+        //{
+        //    try
+        //    {
+        //        var plcClient = PLCManager.GetClient(param.PLCAddress);
+        //        if (plcClient == null)
+        //        {
+        //            NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
+        //            return false;
+        //        }
 
-                // 解析要写入的值（可能是变量引用或直接值）
-                object writeValue = ResolveValue(param.WriteValue);
+        //        // 解析要写入的值（可能是变量引用或直接值）
+        //        object writeValue = await ResolveValue(param.WriteValue);
 
-                // 写入PLC
-                var result = await plcClient.WriteAsync(param.RegisterAddress, writeValue, param.DataType);
-                if (!result.IsSuccess)
-                {
-                    NlogHelper.Default.Error($"PLC写入失败: {result.ErrorMessage}");
-                    return false;
-                }
+        //        // 写入PLC
+        //        var result = await plcClient.WriteAsync(param.RegisterAddress, writeValue, param.DataType);
+        //        if (!result.IsSuccess)
+        //        {
+        //            NlogHelper.Default.Error($"PLC写入失败: {result.ErrorMessage}");
+        //            return false;
+        //        }
 
-                NlogHelper.Default.Info($"PLC写入成功: {param.RegisterAddress} = {writeValue}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"PLC写入异常: {ex.Message}", ex);
-                return false;
-            }
-        }
+        //        NlogHelper.Default.Info($"PLC写入成功: {param.RegisterAddress} = {writeValue}");
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        NlogHelper.Default.Error($"PLC写入异常: {ex.Message}", ex);
+        //        return false;
+        //    }
+        //}
         #endregion
 
         #region 4. 条件判断 - 流程控制核心
@@ -201,7 +207,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             {
                 // 获取变量值
                 var singleton = SingletonStatus.Instance;
-                var variable = singleton.Obj.FirstOrDefault(v => v.VarName == param.VarName);
+                var variables = singleton.Obj.OfType<VarItem>().ToList();
+                var variable = variables.FirstOrDefault(v => v.VarName == param.VarName);
+
                 if (variable == null)
                 {
                     NlogHelper.Default.Error($"条件判断失败: 变量 {param.VarName} 不存在");
@@ -227,14 +235,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
 
         #region 5. 系统提示
         /// <summary>
-        /// 系统提示方法
+        /// 提示窗体方法
         /// </summary>
         public static async Task<bool> Method_SystemPrompt(Parameter_SystemPrompt param)
         {
             try
             {
                 // 解析提示内容中的变量引用
-                string resolvedMessage = ResolveVariablesInText(param.Message);
+                string resolvedMessage = await ResolveVariablesInText(param.Message);
 
                 // 显示提示信息
                 var result = MessageHelper.MessageYes(resolvedMessage);
@@ -260,15 +268,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
 
         #region 辅助方法
         /// <summary>
+        /// 安全获取变量列表
+        /// </summary>
+        private static List<VarItem> GetVariables()
+        {
+            return [.. SingletonStatus.Instance.Obj.OfType<VarItem>()];
+        }
+
+        /// <summary>
+        /// 根据名称查找变量
+        /// </summary>
+        private static VarItem FindVariable(string varName)
+        {
+            return GetVariables().FirstOrDefault(v => v.VarName == varName);
+        }
+
+        /// <summary>
         /// 表达式求值 - 支持简单的数学运算和变量引用
         /// </summary>
-        private static Task<object> EvaluateExpression(string expression, List<VarItem> variables)
+        private static async Task<object> EvaluateExpression(string expression, List<VarItem> variables)
         {
             // 简单实现 - 可以扩展支持更复杂的表达式
             expression = expression.Trim();
 
             // 如果是变量引用 (格式: {变量名})
-            if (expression.StartsWith(value: "{") && expression.EndsWith("}"))
+            if (expression.StartsWith("{") && expression.EndsWith("}"))
             {
                 string varName = expression.Substring(1, expression.Length - 2);
                 var variable = variables.FirstOrDefault(v => v.VarName == varName);
@@ -286,7 +310,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// 条件比较评估
         /// </summary>
-        private static  Task<bool> EvaluateCondition(object leftValue, string operatorStr, string rightValue)
+        private static async Task<bool> EvaluateCondition(object leftValue, string operatorStr, string rightValue)
         {
             // 类型转换
             double leftNum = Convert.ToDouble(leftValue);
@@ -307,7 +331,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// 解析值 - 支持变量引用和直接值
         /// </summary>
-        private static object ResolveValue(string valueExpression)
+        private static async Task<object> ResolveValue(string valueExpression)
         {
             if (string.IsNullOrEmpty(valueExpression))
                 return null;
@@ -316,7 +340,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             if (valueExpression.StartsWith("{") && valueExpression.EndsWith("}"))
             {
                 string varName = valueExpression.Substring(1, valueExpression.Length - 2);
-                var variable = SingletonStatus.Instance.Obj.FirstOrDefault(v => v.VarName == varName);
+                var variable = FindVariable(varName);
                 return variable?.VarValue;
             }
 
@@ -327,13 +351,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// 解析文本中的变量引用
         /// </summary>
-        private static string ResolveVariablesInText(string text)
+        private static async Task<string> ResolveVariablesInText(string text)
         {
             if (string.IsNullOrEmpty(text))
                 return text;
 
             string result = text;
-            var variables = SingletonStatus.Instance.Obj;
+            var variables = GetVariables();
 
             foreach (var variable in variables)
             {

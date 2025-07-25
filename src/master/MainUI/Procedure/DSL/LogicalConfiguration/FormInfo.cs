@@ -15,11 +15,11 @@
             new("写入单元格","Form_WriteCells","MethodCollection.","Parameter_WriteCells"),
 
             // 通用工具
-            new("提示窗体","Form_SystemPrompt","MethodCollection.","Parameter_SystemPrompt"),
-            new("延时工具","Form_DelayTime","MethodCollection.","Parameter_DelayTime"),
+            new("提示工具","Form_SystemPrompt","MethodCollection.Method_SystemPrompt","Parameter_SystemPrompt"),
+            new("延时工具","Form_DelayTime","MethodCollection.Method_DelayTime","Parameter_DelayTime"),
             new("PLC读取","Form_ReadPLC","MethodCollection.Method_ReadPLC","Parameter_ReadPLC"),
             new("PLC写入","Form_WritePLC","MethodCollection.Method_WritePLC","Parameter_WritePLC"),
-            new("变量赋值","Form_VariableAssignment","MethodCollection.Mathod_VariableAssignment"
+            new("变量赋值","Form_VariableAssignment","MethodCollection.Method_VariableAssignment"
                 ,"Parameter_VariableAssignment")
         ];
 

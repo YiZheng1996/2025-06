@@ -18,7 +18,7 @@ namespace MainUI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             frmLogin login = new();
-            login.lblSoftName.Text = "深蓝模板1920";
+            login.lblSoftName.Text = "软件通用平台";
             login.Icon = new Icon("ico.ico");
             var files = Directory.GetFiles(Application.StartupPath, "ico.*");
             var f = files.Where(x => !x.Contains("ico.ico")).FirstOrDefault();

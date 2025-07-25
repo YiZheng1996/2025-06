@@ -13,6 +13,11 @@
         public string VarType { get; set; }
 
         /// <summary>
+        /// 自定义变量值
+        /// </summary>
+        public string VarValue { get; set; }
+
+        /// <summary>
         /// 自定义变量文本
         /// </summary>
         public string VarText { get; set; }

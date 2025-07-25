@@ -1,11 +1,29 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
+﻿using System.ComponentModel;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
     public class Parameter_SystemPrompt
     {
+        /// <summary>
+        /// 提示标题
+        /// </summary>
         public string Title { get; set; }           // 提示标题
-        public string Message { get; set; }         // 提示内容
+
+        /// <summary>
+        /// 提示内容
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
+        /// 提示类型
+        /// </summary>
         //public MessageType MessageType { get; set; } // 提示类型
-        public bool WaitForResponse { get; set; }   // 是否等待用户响应
+
+        /// <summary>
+        /// 是否等待用户响应
+        /// </summary>
+        [DefaultValue(value: true)]
+        public bool WaitForResponse { get; set; }
     }
 
     public enum MessageType

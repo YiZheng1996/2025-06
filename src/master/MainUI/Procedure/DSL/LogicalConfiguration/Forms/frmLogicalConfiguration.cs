@@ -160,7 +160,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 new("条件判断"),
                 new("变量赋值"),
                 new("循环控制"),
-                new("提示窗体"),
                 new("延时工具"),
                 new("提示工具"),
                 new("PLC写入"),

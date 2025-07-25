@@ -118,12 +118,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         public string FormName { get; set; } = name;
 
         /// <summary>
-        /// 窗体方法
+        /// 窗体方法，自动试验使用
         /// </summary>
         public string FormMethod { get; set; } = method;
 
         /// <summary>
-        /// 窗体参数
+        /// 窗体参数，参数文件夹Parameter实体使用
         /// </summary>
         public string FormParameter { get; set; } = parameter;
     }
