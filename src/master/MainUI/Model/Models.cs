@@ -1,5 +1,6 @@
 ﻿using AntdUI;
 using FreeSql.DataAnnotations;
+using OpenTK.Input;
 using System.ComponentModel;
 
 namespace MainUI.Model
@@ -8,7 +9,7 @@ namespace MainUI.Model
     /// 模型类型表
     /// </summary>
     [Table(Name = "ModelTypeTable")]
-    public class ModelsType
+    public class ModelsType : NotifyProperty
     {
         [Column(IsIdentity = true, IsPrimary = true)]
         public int ID { get; set; }
@@ -22,6 +23,21 @@ namespace MainUI.Model
         /// 备注
         /// </summary>
         public string Mark { get; set; }
+
+        /// <summary>
+        /// 产品型号集合
+        /// </summary>
+        private NewModels[] _newmodels;
+        [Column(IsIgnore = true)]
+        public NewModels[] NewModels
+        {
+            get => _newmodels;
+            set
+            {
+                _newmodels = value;
+                OnPropertyChanged(nameof(NewModels));
+            }
+        }
     }
     /// <summary>
     /// 产品型号表

@@ -85,6 +85,7 @@
             Tables.Size = new Size(665, 570);
             Tables.SwitchSize = 25;
             Tables.TabIndex = 406;
+            Tables.TreeButtonSize = 25;
             Tables.CellClick += Tables_CellClick;
             Tables.CellDoubleClick += Tables_CellDoubleClick;
             // 

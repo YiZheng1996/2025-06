@@ -3,20 +3,33 @@ namespace MainUI.Procedure
 {
     public partial class ucKindManage : ucBaseManagerUI
     {
+        private readonly ModelBLL modelBLL = new();
+        private System.ComponentModel.BindingList<ModelsType> NewModels;
+
         private ModelsType modelsType = new();
-        private readonly ModelTypeBLL modelBLL = new();
+        private readonly ModelTypeBLL modelTypeBLL = new();
         public ucKindManage() => InitializeComponent();
 
         private void ucModelManage_Load(object sender, EventArgs e) => LoadData();
 
         private void LoadData()
         {
+            NewModels = [];
+            Tables.TreeArrowStyle = TableTreeStyle.Button;
             Tables.Columns = [
-                new Column("ID","ID"){ Align = ColumnAlign.Center , Visible = false },
-                new Column("ModelTypeName","类型名称"){ Align = ColumnAlign.Center , Width="auto" },
+                new Column("ID","ID"){ Align = ColumnAlign.Center,KeyTree="" , Visible = false },
+                new Column("ModelTypeName","类型名称"){ Align = ColumnAlign.Center, KeyTree="NewModels" },
                 new Column("Mark","类型备注"){ Align = ColumnAlign.Center , Width="auto" },
-           ];
-            Tables.DataSource = modelBLL.GetAllModelType();
+            ];
+            IList<ModelsType> ListModelsType = modelTypeBLL.GetAllModelType();
+            foreach (var item in ListModelsType)
+            {
+                NewModels.Add(item);
+            }
+
+            IList<NewModels> allModels = modelTypeBLL.GetNewModels(1);
+            NewModels[1].NewModels = [.. allModels];
+            Tables.Binding(NewModels);
         }
 
         private void LoadData(ModelsType model)
@@ -54,7 +67,7 @@ namespace MainUI.Procedure
             var DialogResult = MessageHelper.MessageYes("是否删除选中记录？", TType.Warn);
             if (DialogResult == DialogResult.OK)
             {
-                if (modelBLL.Delete(modelsType.ID))
+                if (modelTypeBLL.Delete(modelsType.ID))
                 {
                     MessageHelper.MessageOK("删除成功！");
                 }

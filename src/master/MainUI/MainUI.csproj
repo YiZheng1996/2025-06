@@ -125,7 +125,7 @@
     <Content Include="readMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AntdUI" Version="1.9.0" />
+    <PackageReference Include="AntdUI" Version="2.0.17" />
     <PackageReference Include="Costura.Fody" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <!--<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
