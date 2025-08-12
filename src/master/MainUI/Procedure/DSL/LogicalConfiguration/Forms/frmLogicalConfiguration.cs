@@ -12,43 +12,59 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #region 构造函数
         public FrmLogicalConfiguration(string path, string modelType, string modelName, string processName)
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
 
-            // 初始化配置
-            InitializeConfiguration(path, modelType, modelName, processName);
+                // 初始化配置
+                InitializeConfiguration(path, modelType, modelName, processName);
 
-            // 加载工具箱
-            InitializeToolbox();
+                // 加载工具箱
+                InitializeToolbox();
 
-            // 加载PLC所有点位
-            InitializePointLocationPLC();
+                // 加载PLC所有点位
+                InitializePointLocationPLC();
 
-            // 初始化DataGridView管理器
-            _gridManager = new(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
+                // 初始化DataGridView管理器
+                _gridManager = new(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
 
-            // 设置事件处理程序
-            RegisterEventHandlers();
+                // 设置事件处理程序
+                RegisterEventHandlers();
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("构造函数加载数据错误", ex);
+                MessageHelper.MessageOK($"构造函数加载数据错误：{ex.Message}", TType.Error);
+            }
         }
 
         // 初始化配置
         private void InitializeConfiguration(string path, string modelType, string modelName, string processName)
         {
-            // 设置JSON文件路径
-            JsonManager.FilePath = path;
+            try
+            {
+                // 设置JSON文件路径
+                JsonManager.FilePath = path;
 
-            // 更新窗体标题
-            Text = $"产品类型：{modelType}，产品型号：{modelName}，项点名称：{processName}";
+                // 更新窗体标题
+                Text = $"产品类型：{modelType}，产品型号：{modelName}，项点名称：{processName}";
 
-            // 创建配置文件
-            CreateJsonFileAsync(modelType, modelName, processName).Wait();
+                // 创建配置文件
+                CreateJsonFileAsync(modelType, modelName, processName).Wait();
 
-            // 初始化变量
-            InitializeVariables();
+                // 初始化变量
+                InitializeVariables();
 
-            // 初始化实验步骤
-            LoadStepsToGrid();
+                // 初始化实验步骤
+                LoadStepsToGrid();
 
-            _singletonStatus = SingletonStatus.Instance;
+                _singletonStatus = SingletonStatus.Instance;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("初始化配置错误", ex);
+                MessageHelper.MessageOK($"初始化配置错误：{ex.Message}", TType.Error);
+            }
         }
 
         // 注册事件处理程序
@@ -287,7 +303,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     var node = (TreeNode)e.Data.GetData(typeof(TreeNode));
                     if (node?.Parent != null)
                     {
-                        AddStepToForm(node.Text, ProcessDataGridView.Rows.Count);
+                        AddStepToForm(node.Text, ProcessDataGridView.Rows.Count + 1);
                     }
                 }
             }
@@ -436,67 +452,85 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         // 添加执行和停止按钮的事件处理
         private async void btnExecute_Click(object sender, EventArgs e)
         {
-            if (_isExecuting)
-            {
-                _executionManager?.Stop();
-                return;
-            }
-
             try
             {
-                _isExecuting = true;
-                btnExecute.Text = "停止";
-                btnExecute.Symbol = 61516;
+                if (_isExecuting)
+                {
+                    _executionManager?.Stop();
+                    return;
+                }
 
-                // 创建执行管理器
-                _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
+                try
+                {
+                    _isExecuting = true;
+                    btnExecute.Text = "停止";
+                    btnExecute.Symbol = 61516;
 
-                // 注册状态改变事件
-                _executionManager.StepStatusChanged += UpdateStepStatus;
+                    // 创建执行管理器
+                    _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
 
-                // 开始执行
-                await _executionManager.StartExecutionAsync();
+                    // 注册状态改变事件
+                    _executionManager.StepStatusChanged += UpdateStepStatus;
+
+                    // 开始执行
+                    await _executionManager.StartExecutionAsync();
+                }
+                finally
+                {
+                    _isExecuting = false;
+                    btnExecute.Text = "执行";
+                    btnExecute.Symbol = 61515;
+                    _executionManager.StepStatusChanged -= UpdateStepStatus;
+                }
             }
-            finally
+            catch (Exception ex)
             {
-                _isExecuting = false;
-                btnExecute.Text = "执行";
-                btnExecute.Symbol = 61515;
-                _executionManager.StepStatusChanged -= UpdateStepStatus;
+                NlogHelper.Default.Error("开始执行步骤错误", ex);
+                MessageHelper.MessageOK($"开始执行步骤错误：{ex.Message}", TType.Error);
             }
+
         }
 
         // 更新步骤状态显示
         private void UpdateStepStatus(ChildModel step, int index)
         {
-            if (ProcessDataGridView.InvokeRequired)
+            try
             {
-                ProcessDataGridView.Invoke(() => UpdateStepStatus(step, index));
-                return;
+                if (ProcessDataGridView.InvokeRequired)
+                {
+                    ProcessDataGridView.Invoke(() => UpdateStepStatus(step, index));
+                    return;
+                }
+
+                if (index >= ProcessDataGridView.Rows.Count) return;
+          
+                var row = ProcessDataGridView.Rows[index];
+
+                // 更新状态显示（可以用不同颜色表示不同状态）
+                switch (step.Status)
+                {
+                    case 0: // 未执行
+                        row.DefaultCellStyle.BackColor = Color.White;
+                        break;
+                    case 1: // 执行中
+                        row.DefaultCellStyle.BackColor = Color.Yellow;
+                        break;
+                    case 2: // 成功
+                        row.DefaultCellStyle.BackColor = Color.LightGreen;
+                        break;
+                    case 3: // 失败
+                        row.DefaultCellStyle.BackColor = Color.LightPink;
+                        break;
+                }
             }
-
-            var row = ProcessDataGridView.Rows[index];
-
-            // 更新状态显示（可以用不同颜色表示不同状态）
-            switch (step.Status)
+            catch (Exception ex)
             {
-                case 0: // 未执行
-                    row.DefaultCellStyle.BackColor = Color.White;
-                    break;
-                case 1: // 执行中
-                    row.DefaultCellStyle.BackColor = Color.Yellow;
-                    break;
-                case 2: // 成功
-                    row.DefaultCellStyle.BackColor = Color.LightGreen;
-                    break;
-                case 3: // 失败
-                    row.DefaultCellStyle.BackColor = Color.LightPink;
-                    break;
+                NlogHelper.Default.Error("更新步骤状态显示错误", ex);
+                MessageHelper.MessageOK($"更新步骤状态显示错误：{ex.Message}", TType.Error);
             }
         }
-        #endregion
-
     }
+    #endregion
 
     /// <summary>
     /// DataGridView管理器类

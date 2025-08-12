@@ -34,14 +34,15 @@
             DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             DataGridViewPLCList = new UIDataGridView();
-            ColPCLName = new DataGridViewTextBoxColumn();
-            ColConstant = new DataGridViewTextBoxColumn();
             TreeViewPLC = new UITreeView();
             BtnDelete = new UISymbolButton();
             BtnSave = new UISymbolButton();
             uiPanel1 = new UIPanel();
             uiLine2 = new UILine();
             uiLine1 = new UILine();
+            ColPCLModelName = new DataGridViewTextBoxColumn();
+            ColPCLKeyName = new DataGridViewTextBoxColumn();
+            ColConstant = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)DataGridViewPLCList).BeginInit();
             uiPanel1.SuspendLayout();
             SuspendLayout();
@@ -63,7 +64,7 @@
             DataGridViewPLCList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             DataGridViewPLCList.ColumnHeadersHeight = 35;
             DataGridViewPLCList.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            DataGridViewPLCList.Columns.AddRange(new DataGridViewColumn[] { ColPCLName, ColConstant });
+            DataGridViewPLCList.Columns.AddRange(new DataGridViewColumn[] { ColPCLModelName, ColPCLKeyName, ColConstant });
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = Color.White;
             dataGridViewCellStyle3.Font = new Font("宋体", 13F);
@@ -94,24 +95,12 @@
             DataGridViewPLCList.RowTemplate.Height = 30;
             DataGridViewPLCList.SelectedIndex = -1;
             DataGridViewPLCList.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            DataGridViewPLCList.Size = new Size(460, 534);
+            DataGridViewPLCList.Size = new Size(640, 534);
             DataGridViewPLCList.StripeOddColor = Color.FromArgb(235, 243, 255);
             DataGridViewPLCList.Style = UIStyle.Custom;
             DataGridViewPLCList.TabIndex = 12;
             DataGridViewPLCList.DragDrop += DataGridViewPLCList_DragDrop;
             DataGridViewPLCList.DragEnter += DataGridViewPLCList_DragEnter;
-            // 
-            // ColPCLName
-            // 
-            ColPCLName.HeaderText = "PLC名称";
-            ColPCLName.Name = "ColPCLName";
-            ColPCLName.Width = 300;
-            // 
-            // ColConstant
-            // 
-            ColConstant.HeaderText = "常数";
-            ColConstant.Name = "ColConstant";
-            ColConstant.Width = 130;
             // 
             // TreeViewPLC
             // 
@@ -143,7 +132,7 @@
             BtnDelete.FillColor2 = Color.DodgerBlue;
             BtnDelete.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             BtnDelete.LightColor = Color.FromArgb(248, 248, 248);
-            BtnDelete.Location = new Point(213, 9);
+            BtnDelete.Location = new Point(303, 9);
             BtnDelete.MinimumSize = new Size(1, 1);
             BtnDelete.Name = "BtnDelete";
             BtnDelete.RectColor = Color.DodgerBlue;
@@ -165,7 +154,7 @@
             BtnSave.FillColor2 = Color.DodgerBlue;
             BtnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             BtnSave.LightColor = Color.FromArgb(248, 248, 248);
-            BtnSave.Location = new Point(402, 9);
+            BtnSave.Location = new Point(492, 9);
             BtnSave.MinimumSize = new Size(1, 1);
             BtnSave.Name = "BtnSave";
             BtnSave.RectColor = Color.DodgerBlue;
@@ -193,7 +182,7 @@
             uiPanel1.Radius = 10;
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
-            uiPanel1.Size = new Size(746, 57);
+            uiPanel1.Size = new Size(926, 57);
             uiPanel1.TabIndex = 442;
             uiPanel1.Text = null;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
@@ -223,16 +212,34 @@
             uiLine1.Location = new Point(303, 43);
             uiLine1.MinimumSize = new Size(1, 1);
             uiLine1.Name = "uiLine1";
-            uiLine1.Size = new Size(460, 29);
+            uiLine1.Size = new Size(640, 29);
             uiLine1.TabIndex = 443;
             uiLine1.Text = "写入数据";
             uiLine1.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // ColPCLModelName
+            // 
+            ColPCLModelName.HeaderText = "PLC模块名称";
+            ColPCLModelName.Name = "ColPCLModelName";
+            ColPCLModelName.Width = 240;
+            // 
+            // ColPCLKeyName
+            // 
+            ColPCLKeyName.HeaderText = "PLC点位名称";
+            ColPCLKeyName.Name = "ColPCLKeyName";
+            ColPCLKeyName.Width = 240;
+            // 
+            // ColConstant
+            // 
+            ColConstant.HeaderText = "常数";
+            ColConstant.Name = "ColConstant";
+            ColConstant.Width = 130;
             // 
             // Form_WritePLC
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(236, 236, 236);
-            ClientSize = new Size(781, 690);
+            ClientSize = new Size(956, 690);
             ControlBoxFillHoverColor = Color.FromArgb(163, 163, 163);
             Controls.Add(uiLine1);
             Controls.Add(uiLine2);
@@ -264,7 +271,8 @@
         private UIPanel uiPanel1;
         private UILine uiLine2;
         private UILine uiLine1;
-        private DataGridViewTextBoxColumn ColPCLName;
+        private DataGridViewTextBoxColumn ColPCLModelName;
+        private DataGridViewTextBoxColumn ColPCLKeyName;
         private DataGridViewTextBoxColumn ColConstant;
     }
 }

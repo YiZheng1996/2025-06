@@ -52,9 +52,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     {
                         foreach (var item in param.Items)
                         {
-                            if (!string.IsNullOrWhiteSpace(item.PlcName))
+                            if (!string.IsNullOrWhiteSpace(item.PlcKeyName))
                             {
-                                DataGridViewPLCList.Rows.Add(item.PlcName, item.PlcValue);
+                                DataGridViewPLCList.Rows.Add(item.PlcModuleName, item.PlcKeyName, item.PlcValue);
                             }
                         }
                     }
@@ -113,7 +113,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     var node = (TreeNode)e.Data.GetData(typeof(TreeNode));
                     if (node?.Parent != null)
                     {
-                        DataGridViewPLCList.Rows.Add($"{node?.Parent.Text}.{node.Text}");
+                        DataGridViewPLCList.Rows.Add($"{node?.Parent.Text}", $"{node.Text}");
                     }
                 }
             }
@@ -130,6 +130,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                DragDropEffects.Copy : DragDropEffects.None;
         }
 
+
+        // 保存数据到当前步骤
         private void BtnSave_Click(object sender, EventArgs e)
         {
             try
@@ -147,14 +149,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     {
                         if (row.IsNewRow) continue;
 
-                        string plcName = row.Cells["ColPCLName"].Value?.ToString()?.Trim() ?? "";
+                        string plcModelName = row.Cells["ColPCLModelName"].Value?.ToString()?.Trim() ?? "";
+                        string plcKeyName = row.Cells["ColPCLKeyName"].Value?.ToString()?.Trim() ?? "";
                         string plcValue = row.Cells["ColConstant"].Value?.ToString()?.Trim() ?? "";
 
-                        if (string.IsNullOrEmpty(plcName)) continue;
+                        if (string.IsNullOrEmpty(plcModelName)) continue;
 
-                        if (plcItems.Any(p => p.PlcName.Equals(plcName, StringComparison.OrdinalIgnoreCase)))
+                        if (plcItems.Any(p => p.PlcKeyName.Equals(plcModelName, StringComparison.OrdinalIgnoreCase)))
                         {
-                            MessageHelper.MessageOK($"PLC名称\"{plcName}\"重复。", TType.Warn);
+                            MessageHelper.MessageOK($"PLC名称\"{plcModelName}.{plcKeyName}\"重复。", TType.Warn);
                             return;
                         }
 
@@ -163,7 +166,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                             hasEmptyConstant = true;
                         }
 
-                        plcItems.Add(new PlcWriteItem { PlcName = plcName, PlcValue = plcValue });
+                        plcItems.Add(new PlcWriteItem
+                        {
+                            PlcModuleName = plcModelName,
+                            PlcKeyName = plcKeyName,
+                            PlcValue = plcValue
+                        });
                     }
 
                     if (hasEmptyConstant)
@@ -246,7 +254,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         try
                         {
                             param = JsonConvert.DeserializeObject<Parameter_WritePLC>(
-                                currentStep.StepParameter is string s ? s : 
+                                currentStep.StepParameter is string s ? s :
                                 JsonConvert.SerializeObject(currentStep.StepParameter)
                             );
                         }
@@ -262,9 +270,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     }
 
                     // 获取要删除的PLC名称
-                    string plcName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLName"].Value?.ToString();
+                    string plcName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
                     // 在集合中查找并移除
-                    var toRemove = param.Items.FirstOrDefault(x => x.PlcName == plcName);
+                    var toRemove = param.Items.FirstOrDefault(x => x.PlcKeyName == plcName);
                     if (toRemove != null)
                     {
                         param.Items.Remove(toRemove);

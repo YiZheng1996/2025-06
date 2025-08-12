@@ -154,6 +154,21 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                     return CreateDefaultParameter(parameterTypeName);
                 }
 
+                // 处理字符串类型的参数
+                if (stepParameter is string strParameter)
+                {
+                    try
+                    {
+                        var obj = JObject.Parse(strParameter);
+                        stepParameter = obj;
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        NlogHelper.Default.Info($"JSON解析失败: {ex.Message}");
+                        return null;
+                    }
+                }
+
                 // 如果是JObject，需要转换为具体类型
                 if (stepParameter is JObject jObject)
                 {

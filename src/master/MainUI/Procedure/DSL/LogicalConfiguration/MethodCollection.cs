@@ -1,4 +1,5 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using RW.Modules;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -164,37 +165,45 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// PLC写入方法
         /// </summary>
-        //public static Task<bool> Method_WritePLC(Parameter_WritePLC param)
-        //{
-        //    try
-        //    {
-        //        var plcClient = PLCManager.GetClient(param.PLCAddress);
-        //        if (plcClient == null)
-        //        {
-        //            NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
-        //            return false;
-        //        }
+        public static Task<bool> Method_WritePLC(Parameter_WritePLC param)
+        {
+            try
+            {
+                ModuleComponent.Instance.Init();
+                Dictionary<string, BaseModule> DicPLC = ModuleComponent.Instance.GetList();
 
-        //        // 解析要写入的值（可能是变量引用或直接值）
-        //        object writeValue = await ResolveValue(param.WriteValue);
+                // 解析写入值 (支持变量引用或直接值)
+                var plcClient = param.Items;
+                if (plcClient == null || plcClient.Count == 0)
+                {
+                    NlogHelper.Default.Error("PLC写入参数为空或未指定PLC项");
+                    return Task.FromResult(false);
+                }
 
-        //        // 写入PLC
-        //        var result = await plcClient.WriteAsync(param.RegisterAddress, writeValue, param.DataType);
-        //        if (!result.IsSuccess)
-        //        {
-        //            NlogHelper.Default.Error($"PLC写入失败: {result.ErrorMessage}");
-        //            return false;
-        //        }
+                // 写入PLC
+                foreach (var plc in plcClient)
+                {
+                    if (DicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                    {
+                        DicPLC[plc.PlcModuleName].Write(plc.PlcKeyName, plc.PlcValue);
+                        var writeValue = ResolveValue(plc.PlcValue).Result;
+                        NlogHelper.Default.Info($"PLC写入成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {writeValue}");
+                    }
+                    else
+                    {
+                        NlogHelper.Default.Error($"未找到指定的PLC模块: {plc.PlcModuleName}");
+                        return Task.FromResult(false);
+                    }
+                }
 
-        //        NlogHelper.Default.Info($"PLC写入成功: {param.RegisterAddress} = {writeValue}");
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NlogHelper.Default.Error($"PLC写入异常: {ex.Message}", ex);
-        //        return false;
-        //    }
-        //}
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"PLC写入异常: {ex.Message}", ex);
+                return Task.FromResult(false);
+            }
+        }
         #endregion
 
         #region 4. 条件判断 - 流程控制核心

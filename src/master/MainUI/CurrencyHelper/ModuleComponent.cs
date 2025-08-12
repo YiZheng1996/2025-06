@@ -1,7 +1,9 @@
 ﻿using RW.DSL.Modules;
 using RW.Log;
 using RW.Modules;
+using System.Reflection;
 using System.Text;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace MainUI.CurrencyHelper
 {
@@ -33,7 +35,7 @@ namespace MainUI.CurrencyHelper
                 //Encoding.RegisterProvider 方法来注册自定义编码提供程序
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 Encoding encoding = Encoding.GetEncoding("GB2312");
-                
+
                 if (string.IsNullOrEmpty(ConfigPath))
                     ConfigPath = configPath;
                 var full = ConfigPath;

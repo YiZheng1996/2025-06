@@ -7,7 +7,10 @@
 
     public class PlcWriteItem
     {
-        public string PlcName { get; set; }
+        public string PlcModuleName { get; set; }
+
+        public string PlcKeyName { get; set; }
+
         public string PlcValue { get; set; }
 
         //public string PLCAddress { get; set; }      // PLC地址
