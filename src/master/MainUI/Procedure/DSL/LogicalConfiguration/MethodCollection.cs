@@ -116,51 +116,51 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// PLC读取方法
         /// </summary>
-        //public static Task<bool> Method_ReadPLC(Parameter_ReadPLC param)
-        //{
-        //    try
-        //    {
-        //        //// 获取PLC通信客户端 (需要根据您的实际PLC库调整)
-        //        //var plcClient = PLCManager.GetClient(param.PLCAddress);
-        //        //if (plcClient == null)
-        //        //{
-        //        //    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
-        //        //    return false;
-        //        //}
+        public static Task<bool> Method_ReadPLC(Parameter_ReadPLC param)
+        {
+            try
+            {
+                //// 获取PLC通信客户端 (需要根据您的实际PLC库调整)
+                //var plcClient = PLCManager.GetClient(param.PLCAddress);
+                //if (plcClient == null)
+                //{
+                //    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
+                //    return false;
+                //}
 
-        //        //// 读取PLC数据
-        //        //var result = await plcClient.ReadAsync(param.RegisterAddress, param.DataType);
-        //        //if (!result.IsSuccess)
-        //        //{
-        //        //    NlogHelper.Default.Error($"PLC读取失败: {result.ErrorMessage}");
-        //        //    return false;
-        //        //}
+                //// 读取PLC数据
+                //var result = await plcClient.ReadAsync(param.RegisterAddress, param.DataType);
+                //if (!result.IsSuccess)
+                //{
+                //    NlogHelper.Default.Error($"PLC读取失败: {result.ErrorMessage}");
+                //    return false;
+                //}
 
-        //        //// 将读取的值保存到变量中
-        //        //if (!string.IsNullOrEmpty(param.SaveToVariable))
-        //        //{
-        //        //    var singleton = SingletonStatus.Instance;
-        //        //    var variables = singleton.Obj.OfType<VarItem>().ToList();
-        //        //    var targetVar = variables.FirstOrDefault(v => v.VarName == param.SaveToVariable);
-        //        //    if (targetVar != null)
-        //        //    {
-        //        //        targetVar.VarValue = result.Value;
-        //        //        NlogHelper.Default.Info($"PLC读取成功: {param.RegisterAddress} = {result.Value}, 保存到变量: {param.SaveToVariable}");
-        //        //    }
-        //        //    else
-        //        //    {
-        //        //        NlogHelper.Default.Error($"目标变量 {param.SaveToVariable} 不存在，无法保存PLC读取值");
-        //        //    }
-        //        //}
+                //// 将读取的值保存到变量中
+                //if (!string.IsNullOrEmpty(param.SaveToVariable))
+                //{
+                //    var singleton = SingletonStatus.Instance;
+                //    var variables = singleton.Obj.OfType<VarItem>().ToList();
+                //    var targetVar = variables.FirstOrDefault(v => v.VarName == param.SaveToVariable);
+                //    if (targetVar != null)
+                //    {
+                //        targetVar.VarValue = result.Value;
+                //        NlogHelper.Default.Info($"PLC读取成功: {param.RegisterAddress} = {result.Value}, 保存到变量: {param.SaveToVariable}");
+                //    }
+                //    else
+                //    {
+                //        NlogHelper.Default.Error($"目标变量 {param.SaveToVariable} 不存在，无法保存PLC读取值");
+                //    }
+                //}
 
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        NlogHelper.Default.Error($"PLC读取异常: {ex.Message}", ex);
-        //        return false;
-        //    }
-        //}
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"PLC读取异常: {ex.Message}", ex);
+                return Task.FromResult(false);
+            }
+        }
 
         /// <summary>
         /// PLC写入方法
@@ -273,6 +273,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 return false;
             }
         }
+        #endregion
+
+        #region 循环工具 - 支持简单的循环逻辑
+
         #endregion
 
         #region 辅助方法

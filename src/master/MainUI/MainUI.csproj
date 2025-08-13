@@ -70,6 +70,9 @@
     <Compile Update="Modules\DOGrp.cs" />
     <Compile Update="Modules\OpcStatusGrp.cs" />
     <Compile Update="Modules\PLCCalibration.cs" />
+    <Compile Update="Procedure\DSL\LogicalConfiguration\Forms\Form_ReadPLC.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Procedure\Edit\frmModelEdit.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -179,6 +179,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 new("循环结束"),
                 new("延时工具"),
                 new("提示工具"),
+                new("PLC读取"),
                 new("PLC写入"),
                 new("变量计算"),
                 new("检测工具"),

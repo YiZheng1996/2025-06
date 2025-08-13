@@ -1,9 +1,28 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
-    // 变量赋值参数
+    /// <summary>
+    /// 项点变量赋值参数
+    /// </summary>
     public class Parameter_VariableAssignment
     {
-        public string TargetVarName { get; set; }  // 目标变量名
-        public string Expression { get; set; }     // 赋值表达式
+        /// <summary>
+        /// 变量名称
+        /// </summary>
+        public string TargetVarName { get; set; }
+
+        /// <summary>
+        /// 赋值表达式
+        /// </summary>
+        public string Expression { get; set; } 
+
+        /// <summary>
+        /// 是否赋值
+        /// </summary>
+        public bool IsAssignment { get; set; }
+
+        /// <summary>
+        /// 赋值表单名称
+        /// </summary>
+        public string AssignmentForm { get; set; }
     }
 }

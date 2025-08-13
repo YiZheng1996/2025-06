@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
+﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
+    /// <summary>
+    /// PLC读取参数集合类
+    /// </summary>
     public class Parameter_ReadPLC
     {
-        public string PLCAddress { get; set; }      // PLC地址
-        public string RegisterAddress { get; set; } // 寄存器地址
-        public string DataType { get; set; }        // 数据类型
-        public string SaveToVariable { get; set; }  // 保存到变量名
+        public List<PlcReadItem> Items { get; set; } = [];
+    }
+
+    public class PlcReadItem
+    {
+        public string PlcModuleName { get; set; }   // PLC模块名称
+
+        public string PlcKeyName { get; set; }      // PLC键名称
+
+        public string TargetVarName { get; set; }        // PLC值
     }
 }
