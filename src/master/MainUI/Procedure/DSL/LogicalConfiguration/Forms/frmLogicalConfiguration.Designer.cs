@@ -215,7 +215,7 @@
             btnExecute.FillColor2 = Color.DodgerBlue;
             btnExecute.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             btnExecute.LightColor = Color.FromArgb(248, 248, 248);
-            btnExecute.Location = new Point(590, 12);
+            btnExecute.Location = new Point(687, 12);
             btnExecute.MinimumSize = new Size(1, 1);
             btnExecute.Name = "btnExecute";
             btnExecute.RectColor = Color.DodgerBlue;
@@ -236,7 +236,7 @@
             BtnClose.FillColor2 = Color.DodgerBlue;
             BtnClose.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             BtnClose.LightColor = Color.FromArgb(248, 248, 248);
-            BtnClose.Location = new Point(317, 12);
+            BtnClose.Location = new Point(414, 12);
             BtnClose.MinimumSize = new Size(1, 1);
             BtnClose.Name = "BtnClose";
             BtnClose.RectColor = Color.DodgerBlue;
@@ -257,7 +257,7 @@
             btnSave.FillColor2 = Color.DodgerBlue;
             btnSave.Font = new Font("微软雅黑", 12F, FontStyle.Bold);
             btnSave.LightColor = Color.FromArgb(248, 248, 248);
-            btnSave.Location = new Point(113, 12);
+            btnSave.Location = new Point(210, 12);
             btnSave.MinimumSize = new Size(1, 1);
             btnSave.Name = "btnSave";
             btnSave.RectColor = Color.DodgerBlue;

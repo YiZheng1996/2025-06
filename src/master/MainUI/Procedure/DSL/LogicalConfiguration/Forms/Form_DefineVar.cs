@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_DefineVar : UIForm
@@ -74,7 +75,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
-        private void Save_Click(object sender, EventArgs e)
+        private async void Save_Click(object sender, EventArgs e)
         {
             try
             {
@@ -97,8 +98,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 检查变量名是否重复（只在本次循环内）
                     if (SingletonStatus.Instance.Obj.OfType<VarItem>().Any(v => v.VarName.Equals(varName, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MessageHelper.MessageOK($"变量名称“{varName}”重复，已自动跳过。", TType.Warn);
-                        continue;
+                        MessageHelper.MessageOK($"变量名称“{varName}”重复，无法保存。", TType.Warn);
+                        return;
                     }
 
                     SingletonStatus.Instance.Obj.Add(new VarItem
@@ -107,10 +108,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         VarType = varType,
                         VarText = varText
                     });
+                    await JsonManager.UpdateConfigAsync(config =>
+                    {
+                        // 清空并写入自定义参数
+                        config.Variable.Clear();
+                        config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem>());
+                        return Task.CompletedTask;
+                    });
                 }
 
                 LoadVariables();
-                MessageHelper.MessageOK("保存成功！变量将在主界面保存时写入配置文件。", TType.Success);
+                MessageHelper.MessageOK("保存成功！", TType.Success);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
@@ -72,6 +73,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             // 拖放事件
             ToolTreeView.ItemDrag += ToolTreeView_ItemDrag;
+            ToolTreeView.NodeMouseDoubleClick += ToolTreeView_NodeMouseDoubleClick;
             ProcessDataGridView.DragEnter += ProcessDataGridView_DragEnter;
             ProcessDataGridView.DragDrop += ProcessDataGridView_DragDrop;
             ProcessDataGridView.CellDoubleClick += ProcessDataGridView_CellDoubleClick;
@@ -132,8 +134,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <returns></returns>
         private static TreeNode[] BuildToolboxNodes() =>
             [
-                BuildReportToolNode(),
                 BuildSystemToolNode(),
+                BuildReportToolNode(),
                 BuildCalculationToolNode()
             ];
 
@@ -187,6 +189,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
+        #region 事件
+        private void ToolTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node != null) // 确保节点非空
+            {
+                FormSet.OpenFormByName(e.Node.Text, this);
+            }
+        }
+        #endregion
+
         #region JSON文件处理
         // 创建JSON文件，如果不存在则创建并写入默认结构
         private static async Task CreateJsonFileAsync(string modelType, string modelName, string processName)
@@ -231,7 +243,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 System = new JsonManager.JsonConfig.SystemInfo
                 {
                     CreateTime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
-                    ProjectName = "深蓝模板1920"
+                    ProjectName = "软件通用平台"
                 },
                 // 初始化默认表单结构
                 Form =
@@ -380,6 +392,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
+        #region 按钮操作
         // 退出界面
         private void BtnClose_Click(object sender, EventArgs e) => Close();
 
@@ -421,6 +434,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 MessageHelper.MessageOK($"保存步骤到配置文件错误：{ex.Message}", TType.Error);
             }
         }
+        #endregion
 
         #region PLC点位
         /// <summary>
@@ -504,7 +518,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 }
 
                 if (index >= ProcessDataGridView.Rows.Count) return;
-          
+
                 var row = ProcessDataGridView.Rows[index];
 
                 // 更新状态显示（可以用不同颜色表示不同状态）
@@ -532,62 +546,4 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
     }
     #endregion
-
-    /// <summary>
-    /// DataGridView管理器类
-    /// </summary>
-    internal class DataGridViewManager(DataGridView grid, List<ChildModel> tempSteps)
-    {
-
-        /// <summary>
-        /// 添加行数据到DataGridView
-        /// </summary>
-        /// <param name="stepName"></param>
-        public void AddRow(string stepName)
-        {
-            grid.Rows.Add(stepName, grid.Rows.Count + 1);
-        }
-
-        /// <summary>
-        /// 删除选中的行数据
-        /// </summary>
-        public void DeleteSelectedRow()
-        {
-            if (grid.SelectedRows.Count > 0)
-            {
-                var selectedRow = grid.SelectedRows[0];
-                int index = selectedRow.Index;
-
-                // 从临时存储中删除
-                tempSteps.RemoveAt(index);
-
-                // 从网格中删除
-                grid.Rows.Remove(selectedRow);
-
-                // 重新排序
-                ReorderRows();
-            }
-        }
-
-        /// <summary>
-        /// 重新排序行
-        /// </summary>
-        private void ReorderRows()
-        {
-            // 更新网格中的步骤号
-            for (int i = 0; i < grid.Rows.Count; i++)
-            {
-                if (grid.Rows[i].Cells["ColStepNum"] != null)
-                {
-                    grid.Rows[i].Cells["ColStepNum"].Value = i + 1;
-                }
-            }
-
-            // 更新临时存储中的步骤号
-            for (int i = 0; i < tempSteps.Count; i++)
-            {
-                tempSteps[i].StepNum = i + 1;
-            }
-        }
-    }
 }

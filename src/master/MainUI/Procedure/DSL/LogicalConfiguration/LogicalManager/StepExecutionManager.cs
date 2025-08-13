@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration
+namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     public class StepExecutionManager(List<ChildModel> steps)
     {

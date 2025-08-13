@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Text;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration
+namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     /// <summary>
     /// JSON数据访问管理器
