@@ -205,13 +205,10 @@ namespace MainUI.Procedure
                 MessageHelper.MessageOK("请先选择要删除的记录");
                 return;
             }
-
-            string itemType = "";
             bool success = false;
 
             if (selectedData is ModelsType mainData)
             {
-                itemType = "产品类型";
                 var result = MessageHelper.MessageYes($"确认删除类型 [{mainData.ModelTypeName}] 及其所有型号？", TType.Warn);
                 if (result == DialogResult.OK)
                 {
@@ -220,7 +217,6 @@ namespace MainUI.Procedure
             }
             else if (selectedData is NewModels childData)
             {
-                itemType = "产品型号";
                 var result = MessageHelper.MessageYes($"确认删除型号 [{childData.ModelName}]？", TType.Warn);
                 if (result == DialogResult.OK)
                 {

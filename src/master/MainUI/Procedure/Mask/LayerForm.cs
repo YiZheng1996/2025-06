@@ -1,6 +1,4 @@
-﻿using LiveChartsCore.Measure;
-
-namespace MainUI.Procedure.Mask
+﻿namespace MainUI.Procedure.Mask
 {
     public partial class LayerForm : Form
     {

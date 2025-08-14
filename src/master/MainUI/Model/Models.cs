@@ -1,6 +1,5 @@
 ﻿using AntdUI;
 using FreeSql.DataAnnotations;
-using OpenTK.Input;
 using System.ComponentModel;
 
 namespace MainUI.Model

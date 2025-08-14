@@ -135,7 +135,6 @@
     </PackageReference>
     <PackageReference Include="FreeSql" Version="3.2.833" />
     <PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.833" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WinForms" Version="2.0.0-rc4.5" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

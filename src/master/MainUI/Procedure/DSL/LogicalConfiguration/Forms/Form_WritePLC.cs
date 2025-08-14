@@ -6,7 +6,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_WritePLC : UIForm
     {
-        private readonly SingletonStatus _status;
         public Form_WritePLC()
         {
             InitializeComponent();
@@ -123,13 +122,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 MessageHelper.MessageOK($"拖拽步骤错误：{ex.Message}", TType.Error);
             }
         }
-
         private void DataGridViewPLCList_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = e.Data.GetDataPresent(typeof(TreeNode)) ?
                DragDropEffects.Copy : DragDropEffects.None;
         }
-
 
         // 保存数据到当前步骤
         private void BtnSave_Click(object sender, EventArgs e)
@@ -209,6 +206,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        // 删除选中的PLC行
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             int rowIndex = -1;

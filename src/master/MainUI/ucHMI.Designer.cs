@@ -1,4 +1,6 @@
-﻿using MainUI.Procedure.Controls;
+﻿using AntdUI;
+using MainUI.Procedure.Controls;
+using Label = System.Windows.Forms.Label;
 
 namespace MainUI
 {
@@ -2753,7 +2755,7 @@ namespace MainUI
             btnWorkmanshipForms.BorderWidth = 1F;
             btnWorkmanshipForms.Font = new Font("微软雅黑", 14F, FontStyle.Bold);
             btnWorkmanshipForms.ForeColor = Color.Black;
-            btnWorkmanshipForms.JoinRight = true;
+            btnWorkmanshipForms.JoinMode = TJoinMode.Right;
             btnWorkmanshipForms.Location = new Point(335, 0);
             btnWorkmanshipForms.Name = "btnWorkmanshipForms";
             btnWorkmanshipForms.Size = new Size(158, 35);
@@ -2770,7 +2772,7 @@ namespace MainUI
             btnReportForms.BorderWidth = 1F;
             btnReportForms.Font = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
             btnReportForms.ForeColor = Color.White;
-            btnReportForms.JoinLeft = true;
+            btnReportForms.JoinMode = TJoinMode.Right;
             btnReportForms.Location = new Point(494, 0);
             btnReportForms.Name = "btnReportForms";
             btnReportForms.Size = new Size(158, 35);

@@ -1,8 +1,5 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using RW.Modules;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration
 {
@@ -11,12 +8,57 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
     /// </summary>
     public static class MethodCollection
     {
-        static readonly Dictionary<string, BaseModule> _dicPLC;
-        static MethodCollection()
+        #region 初始化的PLC模块字典
+        /// <summary>
+        /// 延迟初始化的PLC模块字典
+        /// </summary>
+        private static readonly Lazy<Dictionary<string, BaseModule>> _lazyDicPLC =
+            new(InitializePLCModules, LazyThreadSafetyMode.ExecutionAndPublication);
+
+        /// <summary>
+        /// 获取PLC模块字典的属性
+        /// </summary>
+        private static Dictionary<string, BaseModule> _dicPLC => _lazyDicPLC.Value;
+
+        /// <summary>
+        /// 初始化PLC模块的方法
+        /// </summary>
+        private static Dictionary<string, BaseModule> InitializePLCModules()
         {
-            ModuleComponent.Instance.Init();
-            _dicPLC = ModuleComponent.Instance.GetList();
+            try
+            {
+                NlogHelper.Default.Info("开始延迟初始化 PLC 模块集合");
+
+                // 确保 ModuleComponent 正确初始化
+                ModuleComponent.Instance.Init();
+
+                // 获取模块列表
+                var moduleList = ModuleComponent.Instance.GetList();
+
+                if (moduleList == null || moduleList.Count == 0)
+                {
+                    NlogHelper.Default.Warn("未找到任何 PLC 模块，使用空字典");
+                    return [];
+                }
+
+                NlogHelper.Default.Info($"成功初始化 {moduleList.Count} 个 PLC 模块: {string.Join(", ", moduleList.Keys)}");
+                return moduleList;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Info($"PLC模块延迟初始化失败: {ex.Message}", ex);
+                // 返回空字典而不是抛出异常，确保系统继续运行
+                return [];
+            }
         }
+
+        /// <summary>
+        /// 检查PLC模块是否已成功初始化
+        /// </summary>
+        public static bool IsPLCInitialized => _lazyDicPLC.IsValueCreated && _dicPLC.Count > 0;
+
+        #endregion
+
         #region 1. 延时工具 - 最简单的实现
         /// <summary>
         /// 延时方法 - 用于验证基础架构
@@ -126,30 +168,51 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         {
             try
             {
-                // 解析集合PLC值 (支持变量引用或直接值)
-                var plcClient = param.Items;
-                if (plcClient == null || plcClient.Count == 0)
+                if (param?.Items == null || param.Items.Count == 0)
                 {
-                    NlogHelper.Default.Error("PLC读取参数为空或未指定PLC项");
+                    NlogHelper.Default.Error("PLC读取参数为空");
                     return Task.FromResult(false);
                 }
 
-                // PLC读取集合
-                foreach (var plc in plcClient)
+                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
+                int successCount = 0;
+
+                foreach (var plc in param.Items)
                 {
-                    if (_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                    try
                     {
-                        var plcValue = _dicPLC[plc.PlcModuleName].Read(plc.PlcKeyName);
-                        NlogHelper.Default.Info($"PLC读取成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {plcValue}");
+                        // 通过ID查找目标变量
+                        var targetVariable = variables.FirstOrDefault(v => v.VarName == plc.TargetVarName);
+                        if (targetVariable == null)
+                        {
+                            NlogHelper.Default.Error($"目标变量不存在: {plc.TargetVarName}");
+                            continue;
+                        }
+
+                        // 检查PLC模块
+                        if (!_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                        {
+                            NlogHelper.Default.Error($"PLC模块不存在: {plc.PlcModuleName}");
+                            continue;
+                        }
+
+                        // 读取PLC值
+                        var plcValue = module.Read(plc.PlcKeyName);
+
+                        // 直接更新VarItem，包含历史记录
+                        targetVariable.UpdateValue(plcValue, $"PLC读取: {plc.PlcModuleName}.{plc.PlcKeyName}");
+
+                        NlogHelper.Default.Info($"PLC读取成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {plcValue} -> {targetVariable.VarName}");
+                        successCount++;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        NlogHelper.Default.Error($"未找到指定的PLC模块: {plc.PlcModuleName}");
-                        return Task.FromResult(false);
+                        NlogHelper.Default.Error($"PLC读取项失败 {plc.PlcModuleName}.{plc.PlcKeyName}: {ex.Message}", ex);
                     }
                 }
 
-                return Task.FromResult(true);
+                NlogHelper.Default.Info($"PLC读取完成: 成功 {successCount}/{param.Items.Count} 项");
+                return Task.FromResult(successCount > 0);
             }
             catch (Exception ex)
             {
@@ -161,40 +224,61 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// PLC写入方法
         /// </summary>
-        public static Task<bool> Method_WritePLC(Parameter_WritePLC param)
+        public static async Task<bool> Method_WritePLC(Parameter_WritePLC param)
         {
             try
             {
-                // 解析写入值 (支持变量引用或直接值)
-                var plcClient = param.Items;
-                if (plcClient == null || plcClient.Count == 0)
+                // 验证参数
+                if (param?.Items == null || param.Items.Count == 0)
                 {
                     NlogHelper.Default.Error("PLC写入参数为空或未指定PLC项");
-                    return Task.FromResult(false);
+                    return false;
                 }
 
-                // 写入PLC
-                foreach (var plc in plcClient)
+                int successCount = 0;
+                int totalCount = param.Items.Count;
+
+                // 逐个写入PLC值
+                foreach (var plc in param.Items)
                 {
-                    if (_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                    try
                     {
-                        _dicPLC[plc.PlcModuleName].Write(plc.PlcKeyName, plc.PlcValue);
-                        var writeValue = ResolveValue(plc.PlcValue).Result;
+                        // 验证参数完整性
+                        if (string.IsNullOrEmpty(plc.PlcModuleName) ||
+                            string.IsNullOrEmpty(plc.PlcKeyName))
+                        {
+                            NlogHelper.Default.Error($"PLC写入项参数不完整: {plc.PlcModuleName}.{plc.PlcKeyName}");
+                            continue;
+                        }
+
+                        // 检查PLC模块是否存在
+                        if (!_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                        {
+                            NlogHelper.Default.Error($"未找到指定的PLC模块: {plc.PlcModuleName}");
+                            continue;
+                        }
+
+                        // 先解析写入值
+                        object writeValue = await ResolveValue(plc.PlcValue);
+                        module.Write(plc.PlcKeyName, writeValue);
                         NlogHelper.Default.Info($"PLC写入成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {writeValue}");
+                        successCount++;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        NlogHelper.Default.Error($"未找到指定的PLC模块: {plc.PlcModuleName}");
-                        return Task.FromResult(false);
+                        NlogHelper.Default.Error($"PLC写入项失败 {plc.PlcModuleName}.{plc.PlcKeyName}: {ex.Message}", ex);
                     }
                 }
 
-                return Task.FromResult(true);
+                // 根据成功率判断整体结果
+                bool overallSuccess = successCount > 0;
+                NlogHelper.Default.Info($"PLC写入完成: 成功 {successCount}/{totalCount} 项");
+                return overallSuccess;
             }
             catch (Exception ex)
             {
                 NlogHelper.Default.Error($"PLC写入异常: {ex.Message}", ex);
-                return Task.FromResult(false);
+                return false;
             }
         }
         #endregion

@@ -41,7 +41,6 @@
             // 
             grpUser.BackColor = Color.FromArgb(236, 236, 237);
             grpUser.Controls.Add(Tables);
-            grpUser.Controls.Add(btnRelease);
             grpUser.Controls.Add(btnExpandAll);
             grpUser.Controls.Add(btnEdit);
             grpUser.Controls.Add(btnDelete);
@@ -195,7 +194,6 @@
 
         private UIGroupBox grpUser;
         private AntdUI.Table Tables;
-        private UIButton btnRelease;
         private UIButton btnExpandAll;
         private UIButton btnEdit;
         private UIButton btnDelete;
