@@ -270,9 +270,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     }
 
                     // 获取要删除的PLC名称
-                    string plcName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
+                    string plcModelName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
+                    string plcKeyName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLKeyName"].Value?.ToString();
                     // 在集合中查找并移除
-                    var toRemove = param.Items.FirstOrDefault(x => x.PlcKeyName == plcName);
+                    var toRemove = param.Items.FirstOrDefault(x => $"{x.PlcModuleName}.{x.PlcKeyName}" == $"{plcModelName}.{plcKeyName}");
                     if (toRemove != null)
                     {
                         param.Items.Remove(toRemove);

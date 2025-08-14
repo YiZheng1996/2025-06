@@ -11,6 +11,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
     /// </summary>
     public static class MethodCollection
     {
+        static readonly Dictionary<string, BaseModule> _dicPLC;
+        static MethodCollection()
+        {
+            ModuleComponent.Instance.Init();
+            _dicPLC = ModuleComponent.Instance.GetList();
+        }
         #region 1. 延时工具 - 最简单的实现
         /// <summary>
         /// 延时方法 - 用于验证基础架构
@@ -120,38 +126,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         {
             try
             {
-                //// 获取PLC通信客户端 (需要根据您的实际PLC库调整)
-                //var plcClient = PLCManager.GetClient(param.PLCAddress);
-                //if (plcClient == null)
-                //{
-                //    NlogHelper.Default.Error($"无法连接到PLC: {param.PLCAddress}");
-                //    return false;
-                //}
+                // 解析集合PLC值 (支持变量引用或直接值)
+                var plcClient = param.Items;
+                if (plcClient == null || plcClient.Count == 0)
+                {
+                    NlogHelper.Default.Error("PLC读取参数为空或未指定PLC项");
+                    return Task.FromResult(false);
+                }
 
-                //// 读取PLC数据
-                //var result = await plcClient.ReadAsync(param.RegisterAddress, param.DataType);
-                //if (!result.IsSuccess)
-                //{
-                //    NlogHelper.Default.Error($"PLC读取失败: {result.ErrorMessage}");
-                //    return false;
-                //}
-
-                //// 将读取的值保存到变量中
-                //if (!string.IsNullOrEmpty(param.SaveToVariable))
-                //{
-                //    var singleton = SingletonStatus.Instance;
-                //    var variables = singleton.Obj.OfType<VarItem>().ToList();
-                //    var targetVar = variables.FirstOrDefault(v => v.VarName == param.SaveToVariable);
-                //    if (targetVar != null)
-                //    {
-                //        targetVar.VarValue = result.Value;
-                //        NlogHelper.Default.Info($"PLC读取成功: {param.RegisterAddress} = {result.Value}, 保存到变量: {param.SaveToVariable}");
-                //    }
-                //    else
-                //    {
-                //        NlogHelper.Default.Error($"目标变量 {param.SaveToVariable} 不存在，无法保存PLC读取值");
-                //    }
-                //}
+                // PLC读取集合
+                foreach (var plc in plcClient)
+                {
+                    if (_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                    {
+                        var plcValue = _dicPLC[plc.PlcModuleName].Read(plc.PlcKeyName);
+                        NlogHelper.Default.Info($"PLC读取成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {plcValue}");
+                    }
+                    else
+                    {
+                        NlogHelper.Default.Error($"未找到指定的PLC模块: {plc.PlcModuleName}");
+                        return Task.FromResult(false);
+                    }
+                }
 
                 return Task.FromResult(true);
             }
@@ -169,9 +165,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         {
             try
             {
-                ModuleComponent.Instance.Init();
-                Dictionary<string, BaseModule> DicPLC = ModuleComponent.Instance.GetList();
-
                 // 解析写入值 (支持变量引用或直接值)
                 var plcClient = param.Items;
                 if (plcClient == null || plcClient.Count == 0)
@@ -183,9 +176,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 // 写入PLC
                 foreach (var plc in plcClient)
                 {
-                    if (DicPLC.TryGetValue(plc.PlcModuleName, out var module))
+                    if (_dicPLC.TryGetValue(plc.PlcModuleName, out var module))
                     {
-                        DicPLC[plc.PlcModuleName].Write(plc.PlcKeyName, plc.PlcValue);
+                        _dicPLC[plc.PlcModuleName].Write(plc.PlcKeyName, plc.PlcValue);
                         var writeValue = ResolveValue(plc.PlcValue).Result;
                         NlogHelper.Default.Info($"PLC写入成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {writeValue}");
                     }

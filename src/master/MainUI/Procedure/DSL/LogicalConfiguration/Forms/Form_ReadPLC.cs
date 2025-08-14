@@ -201,9 +201,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                         if (string.IsNullOrEmpty(plcModelName)) continue;
 
-                        if (plcItems.Any(p => p.PlcKeyName.Equals($"{plcModelName}.{plcKeyName}", StringComparison.OrdinalIgnoreCase)))
+                        if (plcItems.Any(p => $"{p.PlcModuleName}.{p.PlcKeyName}".Equals($"{plcModelName}.{plcKeyName}", StringComparison.OrdinalIgnoreCase)))
                         {
                             MessageHelper.MessageOK($"PLC名称\"{plcModelName}.{plcKeyName}\"重复。", TType.Warn);
+                            return;
+                        }
+
+                        if (plcItems.Any(p => p.TargetVarName.Equals(targetVarName, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            MessageHelper.MessageOK($"变量赋值名称:[{targetVarName}]重复。", TType.Warn);
                             return;
                         }
 
@@ -217,6 +223,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                             var conflictInfo = CheckVariableAssignmentConflict(targetVarName, idx);
                             if (conflictInfo.HasConflict)
                             {
+                                // 修复：正确显示步骤号（从1开始）
                                 conflictVariables.Add($"{targetVarName} (步骤{conflictInfo.ConflictStepNum}: {conflictInfo.ConflictStepName})");
                             }
                         }
@@ -338,9 +345,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     }
 
                     // 获取要删除的PLC名称
-                    string plcName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
+                    string plcModelName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
+                    string plcKeyName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLKeyName"].Value?.ToString();
                     // 在集合中查找并移除
-                    var toRemove = param.Items.FirstOrDefault(x => x.PlcKeyName == plcName);
+                    var toRemove = param.Items.FirstOrDefault(x => $"{x.PlcModuleName}.{x.PlcKeyName}" == $"{plcModelName}.{plcKeyName}");
                     if (toRemove != null)
                     {
                         param.Items.Remove(toRemove);
@@ -390,7 +398,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                 for (int i = 0; i < steps.Count; i++)
                 {
-                    if (i != currentStepIndex) continue; // 跳过当前步骤
+                    if (i == currentStepIndex) continue; // 应该跳过当前步骤，检查其他步骤
 
                     var step = steps[i];
                     if (step.StepParameter == null) continue;
@@ -399,7 +407,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     if (IsVariableAssignmentStep(step.StepParameter, variableName))
                     {
                         conflictInfo.HasConflict = true;
-                        conflictInfo.ConflictStepNum = step.StepNum;
+                        conflictInfo.ConflictStepNum = step.StepNum; // 这里使用StepNum（从1开始）
                         conflictInfo.ConflictStepName = step.StepName;
                         break;
                     }
@@ -408,7 +416,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     if (IsPlcReadStepConflict(step.StepParameter, variableName))
                     {
                         conflictInfo.HasConflict = true;
-                        conflictInfo.ConflictStepNum = step.StepNum;
+                        conflictInfo.ConflictStepNum = step.StepNum; // 这里使用StepNum（从1开始）
                         conflictInfo.ConflictStepName = step.StepName;
                         break;
                     }
@@ -522,7 +530,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                 for (int i = 0; i < steps.Count; i++)
                 {
-                    if (i != excludeStepIndex) continue;
+                    if (i == excludeStepIndex) continue; // 应该跳过当前步骤，处理其他步骤
 
                     var step = steps[i];
                     if (step.StepParameter == null) continue;
@@ -530,13 +538,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 清除变量赋值步骤中的状态
                     if (TryUpdateVariableAssignmentParameter(step, variableName, false))
                     {
-                        NlogHelper.Default.Info($"已清除步骤 {step.StepName} 中变量 {variableName} 的赋值状态");
+                        NlogHelper.Default.Info($"已清除步骤 {step.StepName} (步骤号: {step.StepNum}) 中变量 {variableName} 的赋值状态");
                     }
 
                     // 清除其他PLC读取步骤中的冲突项
                     if (TryRemoveConflictFromPlcReadStep(step, variableName))
                     {
-                        NlogHelper.Default.Info($"已从步骤 {step.StepName} 中移除变量 {variableName} 的冲突赋值");
+                        NlogHelper.Default.Info($"已从步骤 {step.StepName} (步骤号: {step.StepNum}) 中移除变量 {variableName} 的冲突赋值");
                     }
                 }
             }
@@ -652,5 +660,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 NlogHelper.Default.Error($"设置变量赋值状态失败: {ex.Message}", ex);
             }
         }
+
+
     }
 }
