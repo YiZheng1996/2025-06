@@ -19,11 +19,10 @@
             new("延时工具","Form_DelayTime","MethodCollection.Method_DelayTime","Parameter_DelayTime"),
             new("PLC读取","Form_ReadPLC","MethodCollection.Method_ReadPLC","Parameter_ReadPLC"),
             new("PLC写入","Form_WritePLC","MethodCollection.Method_WritePLC","Parameter_WritePLC"),
+            new("检测工具","Form_Detection","MethodCollection.Method_Detection","Parameter_Detection"),
+
             new("变量赋值","Form_VariableAssignment","MethodCollection.Method_VariableAssignment"
                 ,"Parameter_VariableAssignment"),
-
-            //new("开始循环","Form_LoopConfiguration","MethodCollection.Method_VariableAssignment"
-            //    ,"Parameter_VariableAssignment"),
         ];
 
         public static ReadOnlyCollection<FormStr> readOnlyList = new(infoList);

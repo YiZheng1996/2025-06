@@ -1,12 +1,13 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using System.Text;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration
+namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     /// <summary>
     /// PLC点位配置管理，默认地址为 Bin\Modules\MyModules.ini
     /// </summary>
-    public sealed class PointLocationPLC : IniConfig
+    public sealed class PointPLCManager : IniConfig
     {
         private const string MODULE_FILE_PATH = "Modules\\MyModules.ini";
         private static readonly string AppPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -16,13 +17,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// </summary>
         /// <remarks>实例仅在首次访问时创建，以确保高效的资源使用，避免不必要的开销。
         ///</remarks>
-        private static readonly Lazy<PointLocationPLC> _instance =
-            new(() => new PointLocationPLC());
+        private static readonly Lazy<PointPLCManager> _instance =
+            new(() => new PointPLCManager());
 
         /// <summary>
         /// 获取PointLocationPLC的单例实例
         /// </summary>
-        public static PointLocationPLC Instance => _instance.Value;
+        public static PointPLCManager Instance => _instance.Value;
 
         /// <summary>
         /// 存储所有模块配置内容的字典
@@ -38,7 +39,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         /// <summary>
         /// 私有构造函数，确保单例模式
         /// </summary>
-        private PointLocationPLC() : base(AppPath + MODULE_FILE_PATH)
+        private PointPLCManager() : base(AppPath + MODULE_FILE_PATH)
         {
             _dicModelsContent = [];
             Initialize();
@@ -160,5 +161,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             }
             return null;
         }
+
     }
 }

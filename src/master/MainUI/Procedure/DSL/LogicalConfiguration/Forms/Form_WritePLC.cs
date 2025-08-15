@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Newtonsoft.Json;
 
@@ -74,7 +75,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 TreeViewPLC.Nodes.Clear();
-                foreach (var kvp in PointLocationPLC.Instance.DicModelsContent)
+                foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
                 {
                     // 创建主节点(Key)
                     TreeNode parentNode = new(kvp.Key);

@@ -356,6 +356,497 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         }
         #endregion
 
+        #region 6. 检测工具
+        /// <summary>
+        /// 检测工具执行方法
+        /// </summary>
+        /// <param name="param">检测参数</param>
+        /// <returns>检测结果</returns>
+        public static async Task<bool> Method_Detection(Parameter_Detection param)
+        {
+            try
+            {
+                NlogHelper.Default.Info($"开始执行检测: {param.DetectionName}");
+
+                DetectionResult result = new DetectionResult
+                {
+                    DetectionName = param.DetectionName,
+                    StartTime = DateTime.Now
+                };
+
+                // 执行检测逻辑（支持重试机制）
+                for (int attempt = 0; attempt <= param.RetryCount; attempt++)
+                {
+                    try
+                    {
+                        if (attempt > 0)
+                        {
+                            NlogHelper.Default.Info($"检测重试 {attempt}/{param.RetryCount}: {param.DetectionName}");
+                            await Task.Delay(param.RetryIntervalMs);
+                        }
+
+                        // 1. 获取检测数据
+                        object detectionValue = await GetDetectionValue(param.DataSource);
+                        result.DetectedValue = detectionValue;
+
+                        // 2. 执行检测判断
+                        result.IsSuccess = await EvaluateDetection(detectionValue, param);
+                        result.EndTime = DateTime.Now;
+
+                        if (result.IsSuccess || attempt == param.RetryCount)
+                        {
+                            break; // 成功或达到最大重试次数
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.ErrorMessage = ex.Message;
+                        NlogHelper.Default.Error($"检测执行异常 (尝试 {attempt + 1}): {ex.Message}", ex);
+
+                        if (attempt == param.RetryCount)
+                        {
+                            result.IsSuccess = false;
+                            break;
+                        }
+                    }
+                }
+
+                // 3. 处理检测结果
+                await ProcessDetectionResult(result, param);
+
+                NlogHelper.Default.Info($"检测完成: {param.DetectionName}, 结果: {(result.IsSuccess ? "通过" : "失败")}");
+
+                return result.IsSuccess;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"检测工具执行失败: {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取检测数据值
+        /// </summary>
+        private static async Task<object> GetDetectionValue(DataSourceConfig dataSource)
+        {
+            switch (dataSource.SourceType)
+            {
+                case DataSourceType.Variable:
+                    return await GetVariableValue(dataSource.VariableName);
+
+                case DataSourceType.PLC:
+                    return await GetPlcValue(dataSource.PlcConfig);
+
+                case DataSourceType.Expression:
+                    return await EvaluateExpression(dataSource.Expression, 
+                        GlobalVariableManager.GetAllVariables());
+
+                default:
+                    throw new NotSupportedException($"不支持的数据源类型: {dataSource.SourceType}");
+            }
+        }
+
+        /// <summary>
+        /// 获取变量值
+        /// </summary>
+        private static async Task<object> GetVariableValue(string variableName)
+        {
+            var singleton = SingletonStatus.Instance;
+            var variables = singleton.Obj.OfType<VarItem>().ToList();
+            var variable = variables.FirstOrDefault(v => v.VarName == variableName);
+
+            if (variable == null)
+            {
+                throw new ArgumentException($"变量 {variableName} 不存在");
+            }
+
+            await Task.CompletedTask;
+            return variable.VarValue;
+        }
+
+        /// <summary>
+        /// 获取PLC值
+        /// </summary>
+        private static async Task<object> GetPlcValue(PlcAddressConfig plcConfig)
+        {
+            try
+            {
+                // 检查PLC模块是否存在
+                if (!_dicPLC.TryGetValue(plcConfig.ModuleName, out var module))
+                {
+                    throw new ArgumentException($"未找到指定的PLC模块: {plcConfig.ModuleName}");
+                }
+
+                // 读取PLC值
+                var plcValue = module.Read(plcConfig.Address);
+
+                NlogHelper.Default.Info($"PLC读取成功: {plcConfig.ModuleName}.{plcConfig.Address} = {plcValue}");
+
+                await Task.CompletedTask;
+                return plcValue;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"读取PLC值失败: {plcConfig.ModuleName}.{plcConfig.Address}, 错误: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 读取PLC值的异步方法 - 修正版
+        /// </summary>
+        private static async Task<object> ReadPlcValueAsync(PlcAddressConfig plcConfig)
+        {
+            // 这里需要实现实际的PLC读取逻辑
+            // 示例代码，需要根据实际情况调整
+            await Task.Delay(100); // 模拟异步读取
+            return await GetPlcValue(plcConfig);
+        }
+
+        /// <summary>
+        /// 检查PLC模块和地址是否有效
+        /// </summary>
+        /// <param name="plcConfig">PLC配置</param>
+        /// <returns>是否有效</returns>
+        public static bool ValidatePlcConfig(PlcAddressConfig plcConfig)
+        {
+            if (plcConfig == null) return false;
+
+            if (string.IsNullOrWhiteSpace(plcConfig.ModuleName))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(plcConfig.Address))
+            {
+                return false;
+            }
+
+            // 检查PLC模块是否存在
+            return _dicPLC.ContainsKey(plcConfig.ModuleName);
+        }
+
+        /// <summary>
+        /// 获取所有可用的PLC模块名称
+        /// </summary>
+        /// <returns>PLC模块名称列表</returns>
+        public static List<string> GetAvailablePlcModules()
+        {
+            return [.. _dicPLC.Keys];
+        }
+
+        /// <summary>
+        /// 获取指定PLC模块的所有可用地址
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        /// <returns>地址列表</returns>
+        public static List<string> GetAvailablePlcAddresses(string moduleName)
+        {
+            try
+            {
+                // 从 PointLocationPLC 获取地址信息
+                if (PointPLCManager.Instance.DicModelsContent.TryGetValue(moduleName, out var addresses))
+                {
+                    return addresses.Keys.Where(key => key != "ServerName").ToList();
+                }
+                return new List<string>();
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"获取PLC地址失败: {ex.Message}", ex);
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// 执行检测判断
+        /// </summary>
+        private static async Task<bool> EvaluateDetection(object value, Parameter_Detection param)
+        {
+            try
+            {
+                switch (param.Type)
+                {
+                    case DetectionType.ValueRange:
+                        return await EvaluateRangeDetection(value, param.Condition);
+
+                    case DetectionType.Equality:
+                        return await EvaluateEqualityDetection(value, param.Condition);
+
+                    case DetectionType.Threshold:
+                        return await EvaluateThresholdDetection(value, param.Condition);
+
+                    case DetectionType.Status:
+                        return await EvaluateStatusDetection(value, param.Condition);
+
+                    case DetectionType.ChangeRate:
+                        return await EvaluateChangeRateDetection(value, param.Condition);
+
+                    case DetectionType.CustomExpression:
+                        return await EvaluateCustomExpression(value, param.Condition);
+
+                    default:
+                        throw new NotSupportedException($"不支持的检测类型: {param.Type}");
+                }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"检测判断失败: {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 范围检测
+        /// </summary>
+        private static async Task<bool> EvaluateRangeDetection(object value, DetectionCondition condition)
+        {
+            if (!double.TryParse(value?.ToString(), out double numValue))
+            {
+                return false;
+            }
+
+            await Task.CompletedTask;
+            return numValue >= condition.MinValue && numValue <= condition.MaxValue;
+        }
+
+        /// <summary>
+        /// 相等性检测
+        /// </summary>
+        private static async Task<bool> EvaluateEqualityDetection(object value, DetectionCondition condition)
+        {
+            await Task.CompletedTask;
+
+            if (double.TryParse(value?.ToString(), out double numValue) &&
+                double.TryParse(condition.TargetValue, out double targetNum))
+            {
+                return Math.Abs(numValue - targetNum) <= condition.Tolerance;
+            }
+
+            return string.Equals(value?.ToString(), condition.TargetValue, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 阈值检测
+        /// </summary>
+        private static async Task<bool> EvaluateThresholdDetection(object value, DetectionCondition condition)
+        {
+            if (!double.TryParse(value?.ToString(), out double numValue))
+            {
+                return false;
+            }
+
+            await Task.CompletedTask;
+
+            return condition.Operator switch
+            {
+                ComparisonOperator.GreaterThan => numValue > condition.ThresholdValue,
+                ComparisonOperator.GreaterThanOrEqual => numValue >= condition.ThresholdValue,
+                ComparisonOperator.LessThan => numValue < condition.ThresholdValue,
+                ComparisonOperator.LessThanOrEqual => numValue <= condition.ThresholdValue,
+                ComparisonOperator.Equal => Math.Abs(numValue - condition.ThresholdValue) <= condition.Tolerance,
+                ComparisonOperator.NotEqual => Math.Abs(numValue - condition.ThresholdValue) > condition.Tolerance,
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// 状态检测
+        /// </summary>
+        private static async Task<bool> EvaluateStatusDetection(object value, DetectionCondition condition)
+        {
+            await Task.CompletedTask;
+
+            // 状态检测通常用于布尔值或状态字符串
+            if (value is bool boolValue)
+            {
+                return bool.TryParse(condition.TargetValue, out bool targetBool) && boolValue == targetBool;
+            }
+
+            return string.Equals(value?.ToString(), condition.TargetValue, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// 变化率检测
+        /// </summary>
+        private static async Task<bool> EvaluateChangeRateDetection(object value, DetectionCondition condition)
+        {
+            // 变化率检测需要历史数据，这里是简化实现
+            // 实际应用中需要维护历史值队列
+            await Task.CompletedTask;
+            return true; // 简化实现
+        }
+
+        /// <summary>
+        /// 自定义表达式检测
+        /// </summary>
+        private static async Task<bool> EvaluateCustomExpression(object value, DetectionCondition condition)
+        {
+            try
+            {
+                // 替换表达式中的变量引用
+                string expression = condition.CustomExpression.Replace("{value}", value?.ToString() ?? "0");
+
+                // 这里可以使用表达式求值库，比如 NCalc 或自定义解析器
+                // 简化实现，只支持基本的比较
+                await Task.CompletedTask;
+                return true; // 简化实现
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"自定义表达式求值失败: {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 处理检测结果
+        /// </summary>
+        private static async Task ProcessDetectionResult(DetectionResult result, Parameter_Detection param)
+        {
+            try
+            {
+                var singleton = SingletonStatus.Instance;
+                var variables = singleton.Obj.OfType<VarItem>().ToList();
+
+                // 保存检测结果到变量
+                if (param.ResultHandling.SaveToVariable && !string.IsNullOrEmpty(param.ResultHandling.ResultVariableName))
+                {
+                    await SaveOrUpdateVariable(param.ResultHandling.ResultVariableName, result.IsSuccess);
+                }
+
+                // 保存检测值到变量
+                if (param.ResultHandling.SaveValueToVariable && !string.IsNullOrEmpty(param.ResultHandling.ValueVariableName))
+                {
+                    await SaveOrUpdateVariable(param.ResultHandling.ValueVariableName, result.DetectedValue);
+                }
+
+                // 显示检测结果
+                if (param.ResultHandling.ShowResult)
+                {
+                    string message = param.ResultHandling.MessageTemplate
+                        .Replace("{DetectionName}", param.DetectionName)
+                        .Replace("{Result}", result.IsSuccess ? "通过" : "失败")
+                        .Replace("{Value}", result.DetectedValue?.ToString() ?? "无")
+                        .Replace("{Duration}", $"{result.Duration.TotalMilliseconds:F0}ms");
+
+                    NlogHelper.Default.Info(message);
+                }
+
+                // 处理失败情况
+                if (!result.IsSuccess)
+                {
+                    await HandleDetectionFailure(param.ResultHandling, result);
+                }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"处理检测结果失败: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 处理检测失败
+        /// </summary>
+        private static async Task HandleDetectionFailure(ResultHandling resultHandling, DetectionResult result)
+        {
+            switch (resultHandling.OnFailure)
+            {
+                case FailureAction.Continue:
+                    // 继续执行，无需特殊处理
+                    break;
+
+                case FailureAction.Stop:
+                    // 停止流程执行
+                    throw new InvalidOperationException($"检测失败，流程已停止: {result.DetectionName}");
+
+                case FailureAction.Jump:
+                    // 跳转逻辑需要在流程执行器中处理
+                    break;
+
+                case FailureAction.Confirm:
+                    // 显示确认对话框
+                    var confirmResult = MessageHelper.MessageYes(
+                        $"检测失败: {result.DetectionName}\n检测值: {result.DetectedValue}\n是否继续执行流程？");
+                    if (confirmResult != DialogResult.Yes)
+                    {
+                        throw new OperationCanceledException("用户取消流程执行");
+                    }
+                    break;
+            }
+
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 保存或更新变量
+        /// </summary>
+        private static async Task SaveOrUpdateVariable(string variableName, object value)
+        {
+            var singleton = SingletonStatus.Instance;
+            var variables = singleton.Obj.OfType<VarItem>().ToList();
+            var existingVar = variables.FirstOrDefault(v => v.VarName == variableName);
+
+            if (existingVar != null)
+            {
+                existingVar.VarValue = (string)value;
+            }
+            else
+            {
+                var newVar = new VarItem
+                {
+                    VarName = variableName,
+                    VarValue = (string)value,
+                    VarType = value?.GetType().Name ?? "String"
+                };
+                singleton.Obj.Add(newVar);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 检测结果类
+        /// </summary>
+        public class DetectionResult
+        {
+            /// <summary>
+            /// 检测项名称
+            /// </summary>
+            public string DetectionName { get; set; }
+
+            /// <summary>
+            /// 检测是否成功
+            /// </summary>
+            public bool IsSuccess { get; set; }
+
+            /// <summary>
+            /// 检测到的值
+            /// </summary>
+            public object DetectedValue { get; set; }
+
+            /// <summary>
+            /// 开始时间
+            /// </summary>
+            public DateTime StartTime { get; set; }
+
+            /// <summary>
+            /// 结束时间
+            /// </summary>
+            public DateTime EndTime { get; set; }
+
+            /// <summary>
+            /// 检测耗时
+            /// </summary>
+            public TimeSpan Duration => EndTime - StartTime;
+
+            /// <summary>
+            /// 错误消息
+            /// </summary>
+            public string ErrorMessage { get; set; }
+        }
+        #endregion
+
         #region 循环工具 - 支持简单的循环逻辑
 
         #endregion

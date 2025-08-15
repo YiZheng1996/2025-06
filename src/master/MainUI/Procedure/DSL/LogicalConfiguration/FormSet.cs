@@ -99,7 +99,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
     }
 
     /// <summary>
-    /// lass FormStr 用于存储窗体的相关信息
+    ///  FormStr 用于存储窗体的相关信息
     /// </summary>
     /// <param name="text">窗体显示文本</param>
     /// <param name="name">窗体名称</param>
