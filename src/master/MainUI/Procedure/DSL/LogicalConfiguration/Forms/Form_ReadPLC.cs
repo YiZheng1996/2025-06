@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Newtonsoft.Json;
 
@@ -74,15 +75,25 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
-
-                // 清空并重新加载
-                ColVariable.Items.Clear();
-
-                foreach (var variable in variables)
+                try
                 {
-                    // 显示变量名，但使用VarId作为值
-                    ColVariable.Items.Add(new { Text = variable.VarName, Value = variable.VarName });
+                    var variables = GlobalVariableManager.GetAllVariables();
+
+                    // 清空并重新加载
+                    ColVariable.Items.Clear();
+
+                    // 添加空选项
+                    ColVariable.Items.Add("");
+
+                    foreach (var variable in variables)
+                    {
+                        ColVariable.Items.Add(variable.VarName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    NlogHelper.Default.Error("初始化变量下拉框失败", ex);
+                    MessageHelper.MessageOK("初始化变量下拉框失败：" + ex.Message, TType.Error);
                 }
             }
             catch (Exception ex)
@@ -91,72 +102,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
-        /// <summary>
-        /// 清除指定步骤中的变量赋值
-        /// </summary>
-        private void ClearVariableAssignmentInStep(int stepIndex, string varId)
-        {
-            try
-            {
-                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
-                var variable = variables.FirstOrDefault(v => v.VarName == varId);
-
-                if (variable != null && variable.AssignedByStepIndex == stepIndex)
-                {
-                    variable.ClearAssignmentStatus();
-
-                    // 如果需要，也可以清理步骤参数中的引用
-                    var steps = SingletonStatus.Instance.IempSteps;
-                    if (steps != null && stepIndex >= 0 && stepIndex < steps.Count)
-                    {
-                        RemoveVariableFromStepParameter(steps[stepIndex], varId);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"清除变量赋值状态失败: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// 从步骤参数中移除变量引用
-        /// </summary>
-        private void RemoveVariableFromStepParameter(ChildModel step, string varId)
-        {
-            try
-            {
-                if (step.StepParameter is string jsonStr)
-                {
-                    // 尝试解析为PLC读取参数
-                    var plcParam = Newtonsoft.Json.JsonConvert.DeserializeObject<Parameter_ReadPLC>(jsonStr);
-                    if (plcParam?.Items != null)
-                    {
-                        plcParam.Items.RemoveAll(item => item.TargetVarName == varId);
-                        step.StepParameter = Newtonsoft.Json.JsonConvert.SerializeObject(plcParam);
-                        return;
-                    }
-
-                    // 尝试解析为变量赋值参数
-                    var varParam = Newtonsoft.Json.JsonConvert.DeserializeObject<Parameter_VariableAssignment>(jsonStr);
-                    if (varParam?.TargetVarName != null)
-                    {
-                        var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
-                        var targetVar = variables.FirstOrDefault(v => v.VarName == varId);
-                        if (targetVar?.VarName == varParam.TargetVarName)
-                        {
-                            varParam.IsAssignment = false;
-                            step.StepParameter = Newtonsoft.Json.JsonConvert.SerializeObject(varParam);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // 忽略解析失败
-            }
-        }
-       
         /// <summary>
         /// 加载全部PLC点位
         /// </summary>
@@ -222,75 +167,58 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                DragDropEffects.Copy : DragDropEffects.None;
         }
 
-
         // 保存数据到当前步骤
         private void BtnSave_Click(object sender, EventArgs e)
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
-
-                if (steps == null || idx < 0 || idx >= steps.Count)
+                // 获取当前步骤信息
+                var stepInfo = GlobalVariableManager.GetCurrentStepInfo();
+                if (!stepInfo.IsValid)
                 {
-                    MessageHelper.MessageOK("当前步骤无效", TType.Warn);
+                    MessageHelper.MessageOK("当前步骤无效，无法保存。", TType.Error);
                     return;
                 }
 
-                var currentStep = steps[idx];
-                var plcItems = new List<PlcReadItem>();
-                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
+                // 检查是否有重复的变量名
+                if (DataGridViewManager.HasDuplicateValuesInColumn(DataGridViewPLCList, "ColVariable"))
+                {
+                    MessageHelper.MessageOK("变量赋值名称被重复使用！！！", TType.Error);
+                    return;
+                }
 
-                // 遍历DataGridView中的行
-                // foreach (DataGridViewRow row in DataGridViewPLCList.Rows)
-                // {
-                //     if (row.IsNewRow) continue;
-                //     
-                //     string plcModuleName = row.Cells["ColPCLModelName"].Value?.ToString()?.Trim() ?? "";
-                //     string plcKeyName = row.Cells["ColPCLKeyName"].Value?.ToString()?.Trim() ?? "";
-                //     string targetVarId = row.Cells["ColVariable"].Value?.ToString()?.Trim() ?? "";
-                //     
-                //     if (string.IsNullOrEmpty(plcModuleName) || string.IsNullOrEmpty(targetVarId)) 
-                //         continue;
-                //     
-                //     // 直接通过ID查找变量
-                //     var targetVariable = variables.FirstOrDefault(v => v.VarId == targetVarId);
-                //     if (targetVariable == null)
-                //     {
-                //         MessageHelper.MessageOK($"目标变量不存在: {targetVarId}", TType.Error);
-                //         return;
-                //     }
-                //     
-                //     // 检查变量是否已被其他步骤赋值
-                //     if (targetVariable.IsAssignedByStep && targetVariable.AssignedByStepIndex != idx)
-                //     {
-                //         var result = MessageHelper.MessageQuestion(
-                //             $"变量 {targetVariable.VarName} 已被步骤 {targetVariable.AssignedByStepIndex + 1} 赋值，是否覆盖？");
-                //         if (result != DialogResult.Yes)
-                //             continue;
-                //         
-                //         // 清除原步骤的赋值状态
-                //         ClearVariableAssignmentInStep(targetVariable.AssignedByStepIndex, targetVariable.VarId);
-                //     }
-                //     
-                //     // 设置新的赋值状态
-                //     targetVariable.SetAssignmentStatus(idx, $"PLC读取: {currentStep.StepName}", VariableAssignmentType.PLCRead);
-                //     
-                //     plcItems.Add(new PlcReadItem_Optimized
-                //     {
-                //         PlcModuleName = plcModuleName,
-                //         PlcKeyName = plcKeyName,
-                //         TargetVarId = targetVarId,
-                //         TargetVariable = targetVariable
-                //     });
-                // }
+                // 1. 收集变量赋值信息
+                var variableAssignments = CollectVariableAssignments();
+                var plcItems = CollectPlcItems();
+
+                // 2. 检查变量冲突
+                var conflicts = GlobalVariableManager.CheckVariableConflicts(
+                    [.. variableAssignments.Select(v => v.VariableName)],
+                    stepInfo.StepIndex
+                );
+
+                // 3. 显示冲突警告
+                if (!GlobalVariableManager.ShowConflictWarning(conflicts, this))
+                {
+                    return;
+                }
 
                 if (plcItems.Count > 0)
                 {
+                    // 4. 保存参数
                     var param = new Parameter_ReadPLC { Items = plcItems };
-                    currentStep.StepParameter = Newtonsoft.Json.JsonConvert.SerializeObject(param);
+                    stepInfo.Step.StepParameter = JsonConvert.SerializeObject(param);
 
-                    MessageHelper.MessageOK("保存成功！", TType.Success);
+                    // 5. 使用通用管理器设置变量状态
+                    GlobalVariableManager.SetStepVariableAssignments(
+                        stepInfo.StepIndex,
+                        stepInfo.StepName,
+                        variableAssignments,
+                        VariableAssignmentType.PLCRead
+                    );
+
+                    MessageHelper.MessageOK("保存成功！请在主界面点击保存以写入文件。", TType.Success);
+                    Close();
                 }
                 else
                 {
@@ -306,19 +234,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
-            int rowIndex = -1;
-            // 优先用 SelectedRows
-            if (DataGridViewPLCList.SelectedRows.Count > 0)
-            {
-                rowIndex = DataGridViewPLCList.SelectedRows[0].Index;
-            }
-            // 如果没有整行选中，尝试用当前单元格
-            else if (DataGridViewPLCList.CurrentCell != null)
-            {
-                rowIndex = DataGridViewPLCList.CurrentCell.RowIndex;
-            }
-
-            if (rowIndex < 0 || rowIndex >= DataGridViewPLCList.Rows.Count || DataGridViewPLCList.Rows[rowIndex].IsNewRow)
+            // 获取要删除的行
+            int rowIndex = GetSelectedRowIndex();
+            if (rowIndex < 0)
             {
                 MessageHelper.MessageOK("请选择要删除的PLC行！", TType.Warn);
                 return;
@@ -328,359 +246,119 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             {
                 try
                 {
-                    // 获取当前步骤
-                    var steps = SingletonStatus.Instance.IempSteps;
-                    int idx = SingletonStatus.Instance.StepNum;
-                    if (steps == null || idx < 0 || idx >= steps.Count)
+                    var stepInfo = GlobalVariableManager.GetCurrentStepInfo();
+                    if (!stepInfo.IsValid)
                     {
                         MessageHelper.MessageOK("当前步骤无效，无法删除。", TType.Warn);
                         return;
                     }
-                    var currentStep = steps[idx];
 
-                    // 获取当前参数集合
-                    Parameter_ReadPLC param = null;
-                    if (currentStep.StepParameter is Parameter_ReadPLC directParam)
+                    // 1. 获取要删除的变量名
+                    string targetVarName = DataGridViewPLCList.Rows[rowIndex].Cells["ColVariable"].Value?.ToString();
+
+                    // 2. 清除该变量的赋值状态
+                    if (!string.IsNullOrEmpty(targetVarName))
                     {
-                        param = directParam;
-                    }
-                    else if (currentStep.StepParameter != null)
-                    {
-                        try
-                        {
-                            param = JsonConvert.DeserializeObject<Parameter_ReadPLC>(
-                                currentStep.StepParameter is string s ? s :
-                                JsonConvert.SerializeObject(currentStep.StepParameter)
-                            );
-                        }
-                        catch
-                        {
-                            param = new Parameter_ReadPLC();
-                        }
-                    }
-                    if (param == null || param.Items == null)
-                    {
-                        MessageHelper.MessageOK("集合数据异常，无法删除。", TType.Error);
-                        return;
+                        GlobalVariableManager.ClearSpecificVariableAssignment(targetVarName, stepInfo.StepIndex);
                     }
 
-                    // 获取要删除的PLC名称
-                    string plcModelName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
-                    string plcKeyName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLKeyName"].Value?.ToString();
-                    // 在集合中查找并移除
-                    var toRemove = param.Items.FirstOrDefault(x => $"{x.PlcModuleName}.{x.PlcKeyName}" == $"{plcModelName}.{plcKeyName}");
-                    if (toRemove != null)
-                    {
-                        param.Items.Remove(toRemove);
-                        // 更新StepParameter
-                        currentStep.StepParameter = JsonConvert.SerializeObject(param);
-                        // 删除DataGridView行
-                        DataGridViewPLCList.Rows.RemoveAt(rowIndex);
-                        MessageHelper.MessageOK("删除成功！", TType.Success);
-                    }
-                    else
-                    {
-                        MessageHelper.MessageOK("集合中未找到对应数据。", TType.Warn);
-                    }
+                    // 3. 从参数和UI中移除
+                    RemoveItemFromParameter(stepInfo, rowIndex);
+                    DataGridViewPLCList.Rows.RemoveAt(rowIndex);
+
+                    MessageHelper.MessageOK("删除成功！", TType.Success);
                 }
                 catch (Exception ex)
                 {
-                    NlogHelper.Default.Error($"删除失败", ex);
+                    NlogHelper.Default.Error("删除PLC行失败", ex);
                     MessageHelper.MessageOK($"删除失败：{ex.Message}", TType.Error);
                 }
             }
         }
 
-        /// <summary>
-        /// 检查变量赋值冲突信息
-        /// </summary>
-        private class VariableConflictInfo
+        // 获取行索引
+        private int GetSelectedRowIndex()
         {
-            public bool HasConflict { get; set; }
-            public int ConflictStepNum { get; set; }
-            public string ConflictStepName { get; set; }
+            if (DataGridViewPLCList.SelectedRows.Count > 0)
+                return DataGridViewPLCList.SelectedRows[0].Index;
+            else if (DataGridViewPLCList.CurrentCell != null)
+                return DataGridViewPLCList.CurrentCell.RowIndex;
+            return -1;
         }
 
-        /// <summary>
-        /// 检查变量赋值占用冲突
-        /// </summary>
-        /// <param name="variableName">要检查的变量名</param>
-        /// <param name="currentStepIndex">当前步骤索引</param>
-        /// <returns>冲突信息</returns>
-        private VariableConflictInfo CheckVariableAssignmentConflict(string variableName, int currentStepIndex)
+        private void RemoveItemFromParameter(CurrentStepInfo stepInfo, int rowIndex)
         {
-            var conflictInfo = new VariableConflictInfo();
+            string plcModuleName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLModelName"].Value?.ToString();
+            string plcKeyName = DataGridViewPLCList.Rows[rowIndex].Cells["ColPCLKeyName"].Value?.ToString();
 
-            try
+            if (GlobalVariableManager.TryGetParameter<Parameter_ReadPLC>(stepInfo.Step.StepParameter, out var param))
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                if (steps == null) return conflictInfo;
+                var toRemove = param.Items.FirstOrDefault(x =>
+                    x.PlcModuleName == plcModuleName && x.PlcKeyName == plcKeyName);
 
-                for (int i = 0; i < steps.Count; i++)
+                if (toRemove != null)
                 {
-                    if (i == currentStepIndex) continue; // 应该跳过当前步骤，检查其他步骤
-
-                    var step = steps[i];
-                    if (step.StepParameter == null) continue;
-
-                    // 检查变量赋值步骤
-                    if (IsVariableAssignmentStep(step.StepParameter, variableName))
-                    {
-                        conflictInfo.HasConflict = true;
-                        conflictInfo.ConflictStepNum = step.StepNum; // 这里使用StepNum（从1开始）
-                        conflictInfo.ConflictStepName = step.StepName;
-                        break;
-                    }
-
-                    // 检查其他PLC读取步骤
-                    if (IsPlcReadStepConflict(step.StepParameter, variableName))
-                    {
-                        conflictInfo.HasConflict = true;
-                        conflictInfo.ConflictStepNum = step.StepNum; // 这里使用StepNum（从1开始）
-                        conflictInfo.ConflictStepName = step.StepName;
-                        break;
-                    }
+                    param.Items.Remove(toRemove);
+                    stepInfo.Step.StepParameter = JsonConvert.SerializeObject(param);
                 }
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"检查变量赋值冲突失败: {ex.Message}", ex);
-            }
-
-            return conflictInfo;
-        }
-
-        /// <summary>
-        /// 检查是否为变量赋值步骤且目标变量匹配
-        /// </summary>
-        private bool IsVariableAssignmentStep(object stepParameter, string variableName)
-        {
-            try
-            {
-                if (stepParameter is Parameter_VariableAssignment directParam)
-                {
-                    return directParam.IsAssignment &&
-                           directParam.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true;
-                }
-
-                if (stepParameter is string jsonStr)
-                {
-                    var param = JsonConvert.DeserializeObject<Parameter_VariableAssignment>(jsonStr);
-                    return param?.IsAssignment == true &&
-                           param?.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true;
-                }
-            }
-            catch
-            {
-                // 如果反序列化失败，说明不是变量赋值步骤
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 检查是否为PLC读取步骤且存在变量冲突
-        /// </summary>
-        private bool IsPlcReadStepConflict(object stepParameter, string variableName)
-        {
-            try
-            {
-                if (stepParameter is Parameter_ReadPLC directParam)
-                {
-                    return directParam.Items?.Any(item =>
-                        item.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true) == true;
-                }
-
-                if (stepParameter is string jsonStr)
-                {
-                    var param = JsonConvert.DeserializeObject<Parameter_ReadPLC>(jsonStr);
-                    return param?.Items?.Any(item =>
-                        item.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true) == true;
-                }
-            }
-            catch
-            {
-                // 如果反序列化失败，说明不是PLC读取步骤
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 更新变量赋值状态
-        /// </summary>
-        /// <param name="plcItems">PLC读取项目</param>
-        /// <param name="stepIndex">步骤索引</param>
-        /// <param name="stepName">步骤名称</param>
-        private void UpdateVariableAssignmentStatus(List<PlcReadItem> plcItems, int stepIndex, string stepName)
-        {
-            try
-            {
-                var steps = SingletonStatus.Instance.IempSteps;
-                if (steps == null) return;
-
-                foreach (var plcItem in plcItems)
-                {
-                    if (string.IsNullOrEmpty(plcItem.TargetVarName)) continue;
-
-                    // 清除其他步骤中该变量的赋值状态
-                    ClearVariableAssignmentInOtherSteps(plcItem.TargetVarName, stepIndex);
-
-                    // 如果有对应的变量赋值步骤，设置其IsAssignment为true
-                    SetVariableAssignmentStatus(plcItem.TargetVarName, true, $"PLC读取步骤: {stepName}");
-                }
-
-                NlogHelper.Default.Info($"已更新 {plcItems.Count} 个变量的赋值状态");
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"更新变量赋值状态失败: {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// 清除其他步骤中指定变量的赋值状态
+        /// 收集变量赋值信息
         /// </summary>
-        private void ClearVariableAssignmentInOtherSteps(string variableName, int excludeStepIndex)
+        private List<VariableAssignment> CollectVariableAssignments()
         {
-            try
+            var assignments = new List<VariableAssignment>();
+
+            foreach (DataGridViewRow row in DataGridViewPLCList.Rows)
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                if (steps == null) return;
+                if (row.IsNewRow) continue;
 
-                for (int i = 0; i < steps.Count; i++)
+                string plcModuleName = row.Cells["ColPCLModelName"].Value?.ToString();
+                string plcKeyName = row.Cells["ColPCLKeyName"].Value?.ToString();
+                string varName = row.Cells["ColVariable"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(varName) && !string.IsNullOrEmpty(plcModuleName) && !string.IsNullOrEmpty(plcKeyName))
                 {
-                    if (i == excludeStepIndex) continue; // 应该跳过当前步骤，处理其他步骤
-
-                    var step = steps[i];
-                    if (step.StepParameter == null) continue;
-
-                    // 清除变量赋值步骤中的状态
-                    if (TryUpdateVariableAssignmentParameter(step, variableName, false))
+                    assignments.Add(new VariableAssignment
                     {
-                        NlogHelper.Default.Info($"已清除步骤 {step.StepName} (步骤号: {step.StepNum}) 中变量 {variableName} 的赋值状态");
-                    }
-
-                    // 清除其他PLC读取步骤中的冲突项
-                    if (TryRemoveConflictFromPlcReadStep(step, variableName))
-                    {
-                        NlogHelper.Default.Info($"已从步骤 {step.StepName} (步骤号: {step.StepNum}) 中移除变量 {variableName} 的冲突赋值");
-                    }
+                        VariableName = varName,
+                        AssignmentDescription = $"PLC读取({plcModuleName}.{plcKeyName})"
+                    });
                 }
             }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"清除变量赋值状态失败: {ex.Message}", ex);
-            }
+
+            return assignments;
         }
 
         /// <summary>
-        /// 尝试更新变量赋值参数中的IsAssignment状态
+        /// 收集PLC项
         /// </summary>
-        private bool TryUpdateVariableAssignmentParameter(ChildModel step, string variableName, bool isAssignment)
+        private List<PlcReadItem> CollectPlcItems()
         {
-            try
+            var plcItems = new List<PlcReadItem>();
+
+            foreach (DataGridViewRow row in DataGridViewPLCList.Rows)
             {
-                if (step.StepParameter is Parameter_VariableAssignment directParam)
+                if (row.IsNewRow) continue;
+
+                string plcModuleName = row.Cells["ColPCLModelName"].Value?.ToString();
+                string plcKeyName = row.Cells["ColPCLKeyName"].Value?.ToString();
+                string varName = row.Cells["ColVariable"].Value?.ToString();
+
+                if (!string.IsNullOrEmpty(plcModuleName) && !string.IsNullOrEmpty(plcKeyName))
                 {
-                    if (directParam.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true)
+                    plcItems.Add(new PlcReadItem
                     {
-                        directParam.IsAssignment = isAssignment;
-                        return true;
-                    }
+                        PlcModuleName = plcModuleName,
+                        PlcKeyName = plcKeyName,
+                        TargetVarName = varName
+                    });
                 }
-                else if (step.StepParameter is string jsonStr)
-                {
-                    var param = JsonConvert.DeserializeObject<Parameter_VariableAssignment>(jsonStr);
-                    if (param?.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true)
-                    {
-                        param.IsAssignment = isAssignment;
-                        step.StepParameter = JsonConvert.SerializeObject(param);
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-                // 忽略反序列化失败的情况
             }
 
-            return false;
+            return plcItems;
         }
-
-        /// <summary>
-        /// 尝试从PLC读取步骤中移除冲突的变量赋值
-        /// </summary>
-        private bool TryRemoveConflictFromPlcReadStep(ChildModel step, string variableName)
-        {
-            try
-            {
-                if (step.StepParameter is Parameter_ReadPLC directParam)
-                {
-                    if (directParam.Items?.RemoveAll(item =>
-                        item.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true) > 0)
-                    {
-                        return true;
-                    }
-                }
-                else if (step.StepParameter is string jsonStr)
-                {
-                    var param = JsonConvert.DeserializeObject<Parameter_ReadPLC>(jsonStr);
-                    if (param?.Items?.RemoveAll(item =>
-                        item.TargetVarName?.Equals(variableName, StringComparison.OrdinalIgnoreCase) == true) > 0)
-                    {
-                        step.StepParameter = JsonConvert.SerializeObject(param);
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-                // 忽略反序列化失败的情况
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// 设置变量赋值状态
-        /// </summary>
-        private void SetVariableAssignmentStatus(string variableName, bool isAssignment, string assignmentForm)
-        {
-            try
-            {
-                var steps = SingletonStatus.Instance.IempSteps;
-                if (steps == null) return;
-
-                // 查找对应的变量赋值步骤
-                foreach (var step in steps)
-                {
-                    if (TryUpdateVariableAssignmentParameter(step, variableName, isAssignment))
-                    {
-                        // 如果是设置为true，同时更新AssignmentForm
-                        if (isAssignment && step.StepParameter is Parameter_VariableAssignment param)
-                        {
-                            param.AssignmentForm = assignmentForm;
-                        }
-                        else if (isAssignment && step.StepParameter is string jsonStr)
-                        {
-                            var StrJson = JsonConvert.DeserializeObject<Parameter_VariableAssignment>(jsonStr);
-                            if (StrJson != null)
-                            {
-                                StrJson.AssignmentForm = assignmentForm;
-                                step.StepParameter = JsonConvert.SerializeObject(StrJson);
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"设置变量赋值状态失败: {ex.Message}", ex);
-            }
-        }
-
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using RW.Modules;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration
@@ -94,7 +95,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             try
             {
                 var singleton = SingletonStatus.Instance;
-                var variables = GetVariables();
+                var variables = GlobalVariableManager.GetAllVariables();
 
                 // 检查变量是否已存在
                 var existingVar = variables.FirstOrDefault(v => v.VarName == param.VarName);
@@ -103,22 +104,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                     // 更新现有变量
                     existingVar.VarName = param.VarName;
                     existingVar.VarType = param.VarType;
+                    existingVar.UpdateValue(param.VarValue, "变量定义更新");
                     NlogHelper.Default.Info($"更新变量: {param.VarName} = {param.VarValue} ({param.VarType})");
                 }
                 else
                 {
-                    // 添加新变量
-                    var newVar = new VarItem
+                    // 添加新变量（使用VarItem_Enhanced）
+                    var newVar = new VarItem_Enhanced
                     {
                         VarName = param.VarName,
                         VarValue = param.VarValue,
-                        VarType = param.VarType
+                        VarType = param.VarType,
+                        LastUpdated = DateTime.Now,
+                        IsAssignedByStep = false,
+                        AssignmentType = VariableAssignmentType.None
                     };
                     singleton.Obj.Add(newVar);
                     NlogHelper.Default.Info($"定义新变量: {param.VarName} = {param.VarValue} ({param.VarType})");
                 }
 
-                await Task.CompletedTask; // 保持异步接口一致性
+                await Task.CompletedTask;
                 return true;
             }
             catch (Exception ex)
@@ -135,7 +140,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
         {
             try
             {
-                var targetVar = FindVariable(param.TargetVarName);
+                var targetVar = GlobalVariableManager.FindVariableByName(param.TargetVarName);
 
                 if (targetVar == null)
                 {
@@ -144,10 +149,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 }
 
                 // 解析赋值表达式
-                object newValue = await EvaluateExpression(param.Expression, GetVariables());
+                object newValue = await EvaluateExpression(param.Expression, GlobalVariableManager.GetAllVariables());
 
                 // 类型转换和赋值
-                targetVar.VarValue = ConvertValue(newValue, targetVar.VarType).ToString();
+                targetVar.UpdateValue(ConvertValue(newValue, targetVar.VarType), "变量赋值");
 
                 NlogHelper.Default.Info($"变量赋值: {param.TargetVarName} = {targetVar.VarValue}");
                 return true;
@@ -181,7 +186,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 {
                     try
                     {
-                        // 通过ID查找目标变量
+                        // 通过名称查找目标变量
                         var targetVariable = variables.FirstOrDefault(v => v.VarName == plc.TargetVarName);
                         if (targetVariable == null)
                         {
@@ -199,7 +204,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                         // 读取PLC值
                         var plcValue = module.Read(plc.PlcKeyName);
 
-                        // 直接更新VarItem，包含历史记录
+                        // 更改变量状态
                         targetVariable.UpdateValue(plcValue, $"PLC读取: {plc.PlcModuleName}.{plc.PlcKeyName}");
 
                         NlogHelper.Default.Info($"PLC读取成功: {plc.PlcModuleName}.{plc.PlcKeyName} = {plcValue} -> {targetVariable.VarName}");
@@ -211,12 +216,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                     }
                 }
 
-                NlogHelper.Default.Info($"PLC读取完成: 成功 {successCount}/{param.Items.Count} 项");
                 return Task.FromResult(successCount > 0);
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error($"PLC读取异常: {ex.Message}", ex);
+                NlogHelper.Default.Error($"PLC读取方法失败: {ex.Message}", ex);
                 return Task.FromResult(false);
             }
         }
@@ -358,25 +362,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
 
         #region 辅助方法
         /// <summary>
-        /// 安全获取变量列表
-        /// </summary>
-        private static List<VarItem> GetVariables()
-        {
-            return [.. SingletonStatus.Instance.Obj.OfType<VarItem>()];
-        }
-
-        /// <summary>
-        /// 根据名称查找变量
-        /// </summary>
-        private static VarItem FindVariable(string varName)
-        {
-            return GetVariables().FirstOrDefault(v => v.VarName == varName);
-        }
-
-        /// <summary>
         /// 表达式求值 - 支持简单的数学运算和变量引用
         /// </summary>
-        private static async Task<object> EvaluateExpression(string expression, List<VarItem> variables)
+        private static async Task<object> EvaluateExpression(string expression, List<VarItem_Enhanced> variables)
         {
             // 简单实现 - 可以扩展支持更复杂的表达式
             expression = expression.Trim();
@@ -430,7 +418,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
             if (valueExpression.StartsWith("{") && valueExpression.EndsWith("}"))
             {
                 string varName = valueExpression.Substring(1, valueExpression.Length - 2);
-                var variable = FindVariable(varName);
+                var variable = GlobalVariableManager.FindVariableByName(varName);
                 return variable?.VarValue;
             }
 
@@ -447,7 +435,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration
                 return text;
 
             string result = text;
-            var variables = GetVariables();
+            var variables = GlobalVariableManager.GetAllVariables();
 
             foreach (var variable in variables)
             {

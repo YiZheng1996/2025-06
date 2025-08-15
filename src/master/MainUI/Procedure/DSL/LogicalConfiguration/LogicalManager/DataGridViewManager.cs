@@ -57,5 +57,24 @@
                 tempSteps[i].StepNum = i + 1;
             }
         }
+
+        /// <summary>
+        /// ataGridView中指定列是否有重复值
+        /// </summary>
+        /// <param name="dataGridView">控件名</param>
+        /// <param name="columnName">列名</param>
+        /// <returns></returns>
+        public static bool HasDuplicateValuesInColumn(DataGridView dataGridView, string columnName)
+        {
+            // 使用LINQ查询找到重复的项
+            var duplicateValues = dataGridView.Rows
+                .Cast<DataGridViewRow>() // 将Rows集合转换为IEnumerable<DataGridViewRow>
+                .Select(row => row.Cells[columnName].Value) // 选择指定列的值
+                .GroupBy(value => value) // 对值进行分组
+                .Where(group => group.Count() > 1) // 找到有多个的组（即重复的值）
+                .Any(); // 如果有任何重复，返回true
+
+            return duplicateValues;
+        }
     }
 }

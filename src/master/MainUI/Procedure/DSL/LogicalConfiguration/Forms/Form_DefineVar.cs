@@ -17,36 +17,29 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         // 加载变量列表
+        // 修改LoadVariables方法
         private void LoadVariables()
         {
-            DataGridViewDefineVar.Rows.Clear();
-            if (SingletonStatus.Instance.Obj != null)
+            try
             {
-                foreach (var obj in SingletonStatus.Instance.Obj)
+                DataGridViewDefineVar.Rows.Clear();
+                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList(); 
+                foreach (var variable in variables)
                 {
-                    if (obj is VarItem v)
-                    {
-                        DataGridViewDefineVar.Rows.Add(v.VarName, v.VarType, v.VarText);
-                    }
+                    DataGridViewDefineVar.Rows.Add(variable.VarName, variable.VarType, variable.VarText);
                 }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("加载变量失败", ex);
+                MessageHelper.MessageOK("加载变量失败：" + ex.Message, TType.Error);
             }
         }
 
         private void Clean_Click(object sender, EventArgs e)
         {
-            int rowIndex = -1;
-            // 优先用 SelectedRows
-            if (DataGridViewDefineVar.SelectedRows.Count > 0)
-            {
-                rowIndex = DataGridViewDefineVar.SelectedRows[0].Index;
-            }
-            // 如果没有整行选中，尝试用当前单元格
-            else if (DataGridViewDefineVar.CurrentCell != null)
-            {
-                rowIndex = DataGridViewDefineVar.CurrentCell.RowIndex;
-            }
-
-            if (rowIndex < 0 || rowIndex >= DataGridViewDefineVar.Rows.Count || DataGridViewDefineVar.Rows[rowIndex].IsNewRow)
+            int rowIndex = DataGridViewDefineVar.CurrentCell?.RowIndex ?? -1;
+            if (rowIndex < 0 || DataGridViewDefineVar.Rows[rowIndex].IsNewRow)
             {
                 MessageHelper.MessageOK("请选择要删除的变量！", TType.Warn);
                 return;
@@ -58,7 +51,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 {
                     string varName = DataGridViewDefineVar.Rows[rowIndex].Cells[0].Value?.ToString();
                     var toRemove = SingletonStatus.Instance.Obj
-                        .OfType<VarItem>()
+                        .OfType<VarItem_Enhanced>()
                         .FirstOrDefault(x => x.VarName == varName);
                     if (toRemove != null)
                     {
@@ -95,24 +88,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 跳过变量名为空的行
                     if (string.IsNullOrEmpty(varName)) continue;
 
-                    // 检查变量名是否重复（只在本次循环内）
-                    if (SingletonStatus.Instance.Obj.OfType<VarItem>().Any(v => v.VarName.Equals(varName, StringComparison.OrdinalIgnoreCase)))
+                    // 检查变量名是否重复
+                    if (SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().Any(v => v.VarName.Equals(varName, StringComparison.OrdinalIgnoreCase)))
                     {
-                        MessageHelper.MessageOK($"变量名称“{varName}”重复，无法保存。", TType.Warn);
+                        MessageHelper.MessageOK($"变量名称\"{varName}\"重复，无法保存。", TType.Warn);
                         return;
                     }
 
-                    SingletonStatus.Instance.Obj.Add(new VarItem
+                    // 使用VarItem_Enhanced
+                    SingletonStatus.Instance.Obj.Add(new VarItem_Enhanced
                     {
                         VarName = varName,
                         VarType = varType,
-                        VarText = varText
+                        VarText = varText,
+                        VarValue = "", // 默认值
+                        LastUpdated = DateTime.Now,
+                        IsAssignedByStep = false,
+                        AssignedByStepIndex = -1,
+                        AssignmentType = VariableAssignmentType.None
                     });
+
                     await JsonManager.UpdateConfigAsync(config =>
                     {
-                        // 清空并写入自定义参数
+                        // 清空并写入自定义参数 - 转换为VarItem用于序列化
                         config.Variable.Clear();
-                        config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem>());
+                        config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().Cast<VarItem>());
                         return Task.CompletedTask;
                     });
                 }

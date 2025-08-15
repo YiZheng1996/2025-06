@@ -34,15 +34,15 @@
             DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             DataGridViewPLCList = new UIDataGridView();
-            ColPCLModelName = new DataGridViewTextBoxColumn();
-            ColPCLKeyName = new DataGridViewTextBoxColumn();
-            ColVariable = new DataGridViewComboBoxColumn();
             TreeViewPLC = new UITreeView();
             BtnDelete = new UISymbolButton();
             BtnSave = new UISymbolButton();
             uiPanel1 = new UIPanel();
             uiLine2 = new UILine();
             uiLine1 = new UILine();
+            ColPCLModelName = new DataGridViewTextBoxColumn();
+            ColPCLKeyName = new DataGridViewTextBoxColumn();
+            ColVariable = new DataGridViewComboBoxColumn();
             ((System.ComponentModel.ISupportInitialize)DataGridViewPLCList).BeginInit();
             uiPanel1.SuspendLayout();
             SuspendLayout();
@@ -102,26 +102,6 @@
             DataGridViewPLCList.DragDrop += DataGridViewPLCList_DragDrop;
             DataGridViewPLCList.DragEnter += DataGridViewPLCList_DragEnter;
             // 
-            // ColPCLModelName
-            // 
-            ColPCLModelName.HeaderText = "PLC模块名称";
-            ColPCLModelName.Name = "ColPCLModelName";
-            ColPCLModelName.Width = 240;
-            // 
-            // ColPCLKeyName
-            // 
-            ColPCLKeyName.HeaderText = "PLC点位名称";
-            ColPCLKeyName.Name = "ColPCLKeyName";
-            ColPCLKeyName.Width = 240;
-            // 
-            // ColVariable
-            // 
-            ColVariable.HeaderText = "赋值变量";
-            ColVariable.Name = "ColVariable";
-            ColVariable.Resizable = DataGridViewTriState.True;
-            ColVariable.SortMode = DataGridViewColumnSortMode.Automatic;
-            ColVariable.Width = 210;
-            // 
             // TreeViewPLC
             // 
             TreeViewPLC.BackColor = Color.Transparent;
@@ -129,7 +109,7 @@
             TreeViewPLC.FillColor2 = Color.White;
             TreeViewPLC.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
             TreeViewPLC.Location = new Point(16, 80);
-            TreeViewPLC.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            TreeViewPLC.Margin = new Padding(4, 5, 4, 5);
             TreeViewPLC.MinimumSize = new Size(1, 1);
             TreeViewPLC.Name = "TreeViewPLC";
             TreeViewPLC.Radius = 10;
@@ -196,7 +176,7 @@
             uiPanel1.FillColor2 = Color.White;
             uiPanel1.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             uiPanel1.Location = new Point(16, 622);
-            uiPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            uiPanel1.Margin = new Padding(4, 5, 4, 5);
             uiPanel1.MinimumSize = new Size(1, 1);
             uiPanel1.Name = "uiPanel1";
             uiPanel1.Radius = 10;
@@ -236,6 +216,26 @@
             uiLine1.TabIndex = 443;
             uiLine1.Text = "读取数据";
             uiLine1.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // ColPCLModelName
+            // 
+            ColPCLModelName.HeaderText = "PLC模块名称";
+            ColPCLModelName.Name = "ColPCLModelName";
+            ColPCLModelName.Width = 240;
+            // 
+            // ColPCLKeyName
+            // 
+            ColPCLKeyName.HeaderText = "PLC点位名称";
+            ColPCLKeyName.Name = "ColPCLKeyName";
+            ColPCLKeyName.Width = 240;
+            // 
+            // ColVariable
+            // 
+            ColVariable.HeaderText = "变量赋值";
+            ColVariable.Name = "ColVariable";
+            ColVariable.Resizable = DataGridViewTriState.True;
+            ColVariable.SortMode = DataGridViewColumnSortMode.Automatic;
+            ColVariable.Width = 210;
             // 
             // Form_ReadPLC
             // 

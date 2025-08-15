@@ -1,5 +1,6 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
@@ -249,14 +250,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 Form =
                 [
                     new()
-                    {
-                        ModelTypeName = modelType,
-                        ModelName = modelName,
-                        ItemName = processName,
-                        ChildSteps = []
-                    }
+                     {
+                         ModelTypeName = modelType,
+                         ModelName = modelName,
+                         ItemName = processName,
+                         ChildSteps = []
+                     }
                 ],
-                // 初始化默认变量列表
+                // 初始化默认变量列表（使用VarItem_Enhanced）
                 Variable =
                 [
                     new VarItem { VarName = "a", VarType = "int", VarText = "变量a" },
@@ -286,7 +287,20 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             {
                 // 读取JSON文件中的变量项
                 var VarItems = await JsonManager.ReadVarItemsAsync();
-                SingletonStatus.Instance.Obj = [.. VarItems];
+
+                // 将VarItem转换为VarItem_Enhanced
+                var enhancedVarItems = VarItems.Select(v => new VarItem_Enhanced
+                {
+                    VarName = v.VarName,
+                    VarType = v.VarType,
+                    VarValue = v.VarValue,
+                    VarText = v.VarText,
+                    LastUpdated = DateTime.Now,
+                    IsAssignedByStep = false,
+                    AssignmentType = VariableAssignmentType.None
+                }).Cast<object>().ToList();
+
+                SingletonStatus.Instance.Obj = enhancedVarItems;
             }
             catch (Exception ex)
             {
@@ -414,9 +428,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         });
                     }
 
-                    // 清空并写入自定义参数
+                    // 清空并写入自定义参数 - 转换VarItem_Enhanced为VarItem
                     config.Variable.Clear();
-                    config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem>());
+                    config.Variable.AddRange(SingletonStatus.Instance.Obj.
+                        OfType<VarItem_Enhanced>().Cast<VarItem>());
 
                     // 清空并写入所有步骤
                     config.Form[0].ChildSteps.Clear();
@@ -434,6 +449,37 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 MessageHelper.MessageOK($"保存步骤到配置文件错误：{ex.Message}", TType.Error);
             }
         }
+
+        /// <summary>
+        /// 更新所有变量的赋值状态
+        /// </summary>
+        private void UpdateVariableAssignmentStatuses()
+        {
+            var steps = SingletonStatus.Instance.IempSteps;
+
+            // 遍历所有步骤，设置变量赋值状态
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var step = steps[i];
+
+                // 如果是PLC读取步骤
+                if (ParameterManager.TryGetParameter<Parameter_ReadPLC>(step.StepParameter, out var plcParam))
+                {
+                    foreach (var item in plcParam.Items)
+                    {
+                        var variable = GlobalVariableManager.FindVariableByName(item.TargetVarName);
+                        variable?.SetAssignmentStatus(i, $"PLC读取:{step.StepName}", VariableAssignmentType.PLCRead);
+                    }
+                }
+
+                // 如果是变量赋值步骤
+                if (ParameterManager.TryGetParameter<Parameter_VariableAssignment>(step.StepParameter, out var varParam) && varParam.IsAssignment)
+                {
+                    var variable = GlobalVariableManager.FindVariableByName(varParam.TargetVarName);
+                    variable?.SetAssignmentStatus(i, $"变量赋值:{step.StepName}", VariableAssignmentType.Expression);
+                }
+            }
+        }
         #endregion
 
         #region PLC点位
@@ -443,8 +489,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private void InitializePointLocationPLC()
         {
             TreeViewPLC.Nodes.Clear();
-            var PLCData = PointLocationPLC.Instance.DicModelsContent;
-            foreach (var kvp in PLCData)
+            foreach (var kvp in PointLocationPLC.Instance.DicModelsContent)
             {
                 // 创建主节点(Key)
                 TreeNode parentNode = new(kvp.Key);
@@ -480,6 +525,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     _isExecuting = true;
                     btnExecute.Text = "停止";
                     btnExecute.Symbol = 61516;
+
+                    // 取消选择
+                    ProcessDataGridView.ClearSelection();
 
                     // 创建执行管理器
                     _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
@@ -521,7 +569,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                 var row = ProcessDataGridView.Rows[index];
 
-                // 更新状态显示（可以用不同颜色表示不同状态）
+                // 更新状态显示（不同颜色表示不同状态）
                 switch (step.Status)
                 {
                     case 0: // 未执行

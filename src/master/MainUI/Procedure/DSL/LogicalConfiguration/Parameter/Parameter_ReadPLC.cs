@@ -18,7 +18,7 @@
 
         // 运行时解析的变量引用（不序列化）
         [Newtonsoft.Json.JsonIgnore]
-        public VarItem TargetVariable { get; set; }
+        public VarItem_Enhanced TargetVariable { get; set; }
 
         // 为了向后兼容，保留名称属性
         public string TargetVarName
@@ -29,7 +29,7 @@
                 // 通过名称查找变量并设置引用
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var variables = SingletonStatus.Instance.Obj.OfType<VarItem>().ToList();
+                    var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
                     TargetVariable = variables.FirstOrDefault(v => v.VarName == value);
                 }
             }
