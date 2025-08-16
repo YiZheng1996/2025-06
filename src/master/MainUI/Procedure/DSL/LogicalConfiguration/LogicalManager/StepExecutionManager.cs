@@ -1,23 +1,28 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+ï»¿using MainUI.Procedure.DSL.LogicalConfiguration.Methods;
+using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     public class StepExecutionManager(List<ChildModel> steps)
     {
-        private readonly List<ChildModel> _steps = 
-            steps ?? throw new ArgumentNullException(nameof(steps));
+        private readonly List<ChildModel> _steps = steps ?? throw new ArgumentNullException(nameof(steps));
         private bool _isExecuting;
         private int _currentStepIndex;
+
+        private readonly SystemMethods _systemMethods = DSLMethodRegistry.GetMethod<SystemMethods>();
+        private readonly VariableMethods _variableMethods = DSLMethodRegistry.GetMethod<VariableMethods>();
+        private readonly PLCMethods _plcMethods = DSLMethodRegistry.GetMethod<PLCMethods>();
+        private readonly DetectionMethods _detectionMethods = DSLMethodRegistry.GetMethod<DetectionMethods>();
+        private readonly FlowControlMethods _flowControlMethods = DSLMethodRegistry.GetMethod<FlowControlMethods>();
+        private readonly ReportMethods _reportMethods = DSLMethodRegistry.GetMethod<ReportMethods>();
 
         public event Action<ChildModel, int> StepStatusChanged;
 
         /// <summary>
-        /// ¿ªÊ¼Ö´ĞĞËùÓĞ²½Öè
+        /// å¼€å§‹æ‰§è¡Œæ‰€æœ‰æ­¥éª¤
         /// </summary>
         public async Task StartExecutionAsync()
         {
@@ -30,49 +35,49 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
                 {
                     var step = _steps[_currentStepIndex];
 
-                    // ¸üĞÂ²½Öè×´Ì¬ÎªÖ´ĞĞÖĞ
-                    step.Status = 1; // Ö´ĞĞÖĞ
+                    // æ›´æ–°æ­¥éª¤çŠ¶æ€ä¸ºæ‰§è¡Œä¸­
+                    step.Status = 1; // æ‰§è¡Œä¸­
                     StepStatusChanged?.Invoke(step, _currentStepIndex);
 
                     try
                     {
-                        // Ö´ĞĞ²½Öè
+                        // æ‰§è¡Œæ­¥éª¤
                         var result = await ExecuteStepAsync(step);
 
                         if (result.Success)
                         {
-                            step.Status = 2; // ³É¹¦
+                            step.Status = 2; // æˆåŠŸ
 
-                            // ¼ì²éÊÇ·ñÊÇÌõ¼şÅĞ¶Ï²½Öè£¬ĞèÒªÌø×ª
+                            // æ£€æŸ¥æ˜¯å¦æ˜¯æ¡ä»¶åˆ¤æ–­æ­¥éª¤ï¼Œéœ€è¦è·³è½¬
                             if (result.NextStepIndex.HasValue)
                             {
                                 _currentStepIndex = result.NextStepIndex.Value;
-                                NlogHelper.Default.Info($"Ìõ¼şÌø×ªµ½²½Öè: {_currentStepIndex}");
+                                NlogHelper.Default.Info($"æ¡ä»¶è·³è½¬åˆ°æ­¥éª¤: {_currentStepIndex}");
                             }
                             else
                             {
-                                _currentStepIndex++; // Ë³ĞòÖ´ĞĞÏÂÒ»²½
+                                _currentStepIndex++; // é¡ºåºæ‰§è¡Œä¸‹ä¸€æ­¥
                             }
                         }
                         else
                         {
-                            step.Status = 3; // Ê§°Ü
-                            NlogHelper.Default.Info($"²½ÖèÖ´ĞĞÊ§°Ü: {step.StepName}");
-                            break; // Í£Ö¹Ö´ĞĞ
+                            step.Status = 3; // å¤±è´¥
+                            NlogHelper.Default.Info($"æ­¥éª¤æ‰§è¡Œå¤±è´¥: {step.StepName}");
+                            break; // åœæ­¢æ‰§è¡Œ
                         }
                     }
                     catch (Exception ex)
                     {
-                        step.Status = 3; // Ê§°Ü
-                        NlogHelper.Default.Info($"²½ÖèÖ´ĞĞÒì³£: {step.StepName}", ex);
-                        break; // Í£Ö¹Ö´ĞĞ
+                        step.Status = 3; // å¤±è´¥
+                        NlogHelper.Default.Info($"æ­¥éª¤æ‰§è¡Œå¼‚å¸¸: {step.StepName}", ex);
+                        break; // åœæ­¢æ‰§è¡Œ
                     }
                     finally
                     {
                         StepStatusChanged?.Invoke(step, _currentStepIndex);
                     }
 
-                    // ¿ÉÒÔÔÚÕâÀïÌí¼Ó²½Öè¼äµÄÑÓÊ±
+                    // å¯ä»¥åœ¨è¿™é‡Œæ·»åŠ æ­¥éª¤é—´çš„å»¶æ—¶
                     await Task.Delay(100);
                 }
             }
@@ -83,204 +88,216 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         }
 
         /// <summary>
-        /// Ö´ĞĞµ¥¸ö²½Öè
+        /// åœæ­¢æ‰§è¡Œ
+        /// </summary>
+        public void Stop()
+        {
+            _isExecuting = false;
+            NlogHelper.Default.Info("æ­¥éª¤æ‰§è¡Œå·²åœæ­¢");
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œå•ä¸ªæ­¥éª¤
         /// </summary>
         private async Task<ExecutionResult> ExecuteStepAsync(ChildModel step)
         {
             try
             {
-                // 1. »ñÈ¡²½Öè¶ÔÓ¦µÄ´°ÌåĞÅÏ¢
-                var formInfo = FormInfo.readOnlyList.FirstOrDefault(f => f.FormText == step.StepName);
-                if (formInfo == null)
+                return step.StepName switch
                 {
-                    NlogHelper.Default.Info($"Î´ÕÒµ½²½ÖèÅäÖÃ: {step.StepName}");
-                    return ExecutionResult.Failed();
-                }
+                    // ç³»ç»Ÿå·¥å…·
+                    "å»¶æ—¶å·¥å…·" => await ExecuteDelayTime(step),
+                    "æç¤ºå·¥å…·" => await ExecuteSystemPrompt(step),
 
-                // 2. ½âÎö·½·¨Ãû
-                var methodName = formInfo.FormMethod;
-                if (string.IsNullOrEmpty(methodName))
-                {
-                    NlogHelper.Default.Info($"²½Öè {step.StepName} Î´ÅäÖÃÖ´ĞĞ·½·¨");
-                    return ExecutionResult.Failed();
-                }
+                    // å˜é‡ç®¡ç†
+                    "å˜é‡å®šä¹‰" => await ExecuteDefineVar(step),
+                    "è¯•éªŒå‚æ•°" => await ExecuteDefineVar(step), // è¯•éªŒå‚æ•°ä¹Ÿä½¿ç”¨å˜é‡å®šä¹‰
+                    "å˜é‡èµ‹å€¼" => await ExecuteVariableAssignment(step),
 
-                // ÌáÈ¡Êµ¼ÊµÄ·½·¨Ãû£¨È¥µô "MethodCollection." Ç°×º£©
-                string actualMethodName = methodName.Contains('.')
-                    ? methodName.Split('.').Last()
-                    : methodName;
+                    // PLCé€šä¿¡
+                    "PLCè¯»å–" => await ExecuteReadPLC(step),
+                    "PLCå†™å…¥" => await ExecuteWritePLC(step),
 
-                // 3. »ñÈ¡·½·¨·´ÉäĞÅÏ¢
-                var method = typeof(MethodCollection).GetMethod(actualMethodName);
-                if (method == null)
-                {
-                    NlogHelper.Default.Info($"Î´ÕÒµ½·½·¨: {actualMethodName}");
-                    return ExecutionResult.Failed();
-                }
+                    // æ£€æµ‹å·¥å…·
+                    "æ£€æµ‹å·¥å…·" => await ExecuteDetection(step),
 
-                // 4. ×ª»»²ÎÊıÀàĞÍ
-                object parameter = ConvertStepParameter(step.StepParameter, formInfo.FormParameter);
-                if (parameter == null)
-                {
-                    NlogHelper.Default.Info($"²ÎÊı×ª»»Ê§°Ü: {step.StepName}");
-                    return ExecutionResult.Failed();
-                }
+                    // æµç¨‹æ§åˆ¶
+                    "æ¡ä»¶åˆ¤æ–­" => await ExecuteEvaluateCondition(step),
 
-                // 5. µ÷ÓÃ·½·¨
-                NlogHelper.Default.Info($"Ö´ĞĞ²½Öè: {step.StepName}");
+                    // æŠ¥è¡¨å·¥å…·
+                    "ä¿å­˜æŠ¥è¡¨" => await ExecuteSaveReport(step),
+                    "è¯»å–å•å…ƒæ ¼" => await ExecuteReadCells(step),
+                    "å†™å…¥å•å…ƒæ ¼" => await ExecuteWriteCells(step),
 
-                var result = method.Invoke(null, [parameter]);
-
-                // 6. ´¦Àí·µ»ØÖµ
-                return await HandleMethodResult(result, step.StepName);
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Info($"Ö´ĞĞ²½ÖèÊ§°Ü: {step.StepName}", ex);
-                return ExecutionResult.Failed();
-            }
-        }
-
-        /// <summary>
-        /// ×ª»»²½Öè²ÎÊıÀàĞÍ - ½â¾öJObject×ª»»ÎÊÌâ
-        /// </summary>
-        private object ConvertStepParameter(object stepParameter, string parameterTypeName)
-        {
-            try
-            {
-                // Èç¹û²ÎÊıÎª¿Õ£¬´´½¨Ä¬ÈÏÊµÀı
-                if (stepParameter == null)
-                {
-                    return CreateDefaultParameter(parameterTypeName);
-                }
-
-                // ´¦Àí×Ö·û´®ÀàĞÍµÄ²ÎÊı
-                if (stepParameter is string strParameter)
-                {
-                    try
-                    {
-                        var obj = JObject.Parse(strParameter);
-                        stepParameter = obj;
-                    }
-                    catch (JsonReaderException ex)
-                    {
-                        NlogHelper.Default.Info($"JSON½âÎöÊ§°Ü: {ex.Message}");
-                        return null;
-                    }
-                }
-
-                // Èç¹ûÊÇJObject£¬ĞèÒª×ª»»Îª¾ßÌåÀàĞÍ
-                if (stepParameter is JObject jObject)
-                {
-                    // ¹¹½¨ÍêÕûµÄÀàĞÍÃû³Æ
-                    string fullTypeName = $"MainUI.Procedure.DSL.LogicalConfiguration.Parameter.{parameterTypeName}";
-
-                    // »ñÈ¡²ÎÊıÀàĞÍ
-                    var parameterType = Assembly.GetExecutingAssembly().GetType(fullTypeName);
-                    if (parameterType == null)
-                    {
-                        NlogHelper.Default.Info($"Î´ÕÒµ½²ÎÊıÀàĞÍ: {fullTypeName}");
-                        return null;
-                    }
-
-                    // ½«JObject×ª»»Îª¾ßÌåÀàĞÍ
-                    var convertedParameter = jObject.ToObject(parameterType);
-
-                    NlogHelper.Default.Info($"²ÎÊı×ª»»³É¹¦: {parameterTypeName}");
-                    return convertedParameter;
-                }
-
-                // Èç¹ûÒÑ¾­ÊÇÕıÈ·ÀàĞÍ£¬Ö±½Ó·µ»Ø
-                return stepParameter;
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Info($"²ÎÊı×ª»»Òì³£: {parameterTypeName}", ex);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// ´´½¨Ä¬ÈÏ²ÎÊıÊµÀı
-        /// </summary>
-        private object CreateDefaultParameter(string parameterTypeName)
-        {
-            try
-            {
-                string fullTypeName = $"MainUI.Procedure.DSL.LogicalConfiguration.Parameter.{parameterTypeName}";
-                var parameterType = Assembly.GetExecutingAssembly().GetType(fullTypeName);
-
-                if (parameterType != null)
-                {
-                    return Activator.CreateInstance(parameterType);
-                }
-
-                // Èç¹ûÕÒ²»µ½¾ßÌåÀàĞÍ£¬´´½¨Ò»Ğ©Ä¬ÈÏÖµ
-                return parameterTypeName switch
-                {
-                    "Parameter_DelayTime" => new { T = 1.0 },
-                    "Parameter_DefineVar" => new { VarName = "", VarValue = "", VarType = "string" },
-                    _ => new { }
+                    // æœªçŸ¥æ­¥éª¤
+                    _ => ExecutionResult.Failed()
                 };
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Info($"´´½¨Ä¬ÈÏ²ÎÊıÊ§°Ü: {parameterTypeName}", ex);
-                return new { };
+                NlogHelper.Default.Error($"æ‰§è¡Œæ­¥éª¤å¤±è´¥: {step.StepName}", ex);
+                return ExecutionResult.Failed();
             }
         }
 
+        #region å…·ä½“æ­¥éª¤æ‰§è¡Œæ–¹æ³•
+
         /// <summary>
-        /// ´¦Àí·½·¨·µ»ØÖµ
+        /// æ‰§è¡Œå»¶æ—¶å·¥å…·
         /// </summary>
-        private async Task<ExecutionResult> HandleMethodResult(object result, string stepName)
+        private async Task<ExecutionResult> ExecuteDelayTime(ChildModel step)
         {
+            var param = ConvertStepParameter<Parameter_DelayTime>(step.StepParameter);
+            var success = await _systemMethods.DelayTime(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œç³»ç»Ÿæç¤º
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteSystemPrompt(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_SystemPrompt>(step.StepParameter);
+            var success = await _systemMethods.SystemPrompt(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œå˜é‡å®šä¹‰
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteDefineVar(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_DefineVar>(step.StepParameter);
+            var success = await _variableMethods.DefineVar(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œå˜é‡èµ‹å€¼
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteVariableAssignment(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_VariableAssignment>(step.StepParameter);
+            var success = await _variableMethods.VariableAssignment(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡ŒPLCè¯»å–
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteReadPLC(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_ReadPLC>(step.StepParameter);
+            var success = await _plcMethods.ReadPLC(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡ŒPLCå†™å…¥
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteWritePLC(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_WritePLC>(step.StepParameter);
+            var success = await _plcMethods.WritePLC(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œæ£€æµ‹å·¥å…·
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteDetection(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_Detection>(step.StepParameter);
+            var success = await _detectionMethods.Detection(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œæ¡ä»¶åˆ¤æ–­
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteEvaluateCondition(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_Condition>(step.StepParameter);
+            var nextStepIndex = await _flowControlMethods.EvaluateCondition(param);
+            return ExecutionResult.Jump(nextStepIndex);
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œä¿å­˜æŠ¥è¡¨
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteSaveReport(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_SaveReport>(step.StepParameter);
+            var success = await _reportMethods.SaveReport(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
+        }
+
+        /// <summary>
+        /// æ‰§è¡Œè¯»å–å•å…ƒæ ¼
+        /// </summary>
+        private async Task<ExecutionResult> ExecuteReadCells(ChildModel step)
+        {
+            var param = ConvertStepParameter<Parameter_ReadCells>(step.StepParameter);
             try
             {
-                if (result is Task<bool> boolTask)
-                {
-                    bool success = await boolTask;
-                    return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
-                }
-                else if (result is Task<int> intTask)
-                {
-                    // Ìõ¼şÅĞ¶Ï·½·¨·µ»ØÏÂÒ»²½Ë÷Òı
-                    int nextStepIndex = await intTask;
-                    return ExecutionResult.Jump(nextStepIndex);
-                }
-                else if (result is bool directBool)
-                {
-                    return directBool ? ExecutionResult.Succes() : ExecutionResult.Failed();
-                }
-                else if (result is int directInt)
-                {
-                    return ExecutionResult.Jump(directInt);
-                }
-                else
-                {
-                    NlogHelper.Default.Info($"Î´Ê¶±ğµÄ·µ»ØÖµÀàĞÍ: {result?.GetType().Name}");
-                    return ExecutionResult.Succes(); // Ä¬ÈÏ³É¹¦
-                }
+                await _reportMethods.ReadCells(param);
+                return ExecutionResult.Succes();
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Info($"´¦Àí·½·¨·µ»ØÖµÊ§°Ü: {stepName}", ex);
+                NlogHelper.Default.Error($"è¯»å–å•å…ƒæ ¼å¤±è´¥: {ex.Message}", ex);
                 return ExecutionResult.Failed();
             }
         }
 
         /// <summary>
-        /// Í£Ö¹Ö´ĞĞ
+        /// æ‰§è¡Œå†™å…¥å•å…ƒæ ¼
         /// </summary>
-        public void Stop()
+        private async Task<ExecutionResult> ExecuteWriteCells(ChildModel step)
         {
-            _isExecuting = false;
-            NlogHelper.Default.Info("²½ÖèÖ´ĞĞÒÑÍ£Ö¹");
+            var param = ConvertStepParameter<Parameter_WriteCells>(step.StepParameter);
+            var success = await _reportMethods.WriteCells(param);
+            return success ? ExecutionResult.Succes() : ExecutionResult.Failed();
         }
+
+        /// <summary>
+        /// é€šç”¨å‚æ•°è½¬æ¢æ–¹æ³•
+        /// </summary>
+        private T ConvertStepParameter<T>(object stepParameter) where T : class, new()
+        {
+            try
+            {
+                if (stepParameter == null)
+                    return new T();
+
+                if (stepParameter is T directType)
+                    return directType;
+
+                if (stepParameter is string strParameter && !string.IsNullOrWhiteSpace(strParameter))
+                {
+                    return JsonConvert.DeserializeObject<T>(strParameter) ?? new T();
+                }
+
+                if (stepParameter is JObject jObject)
+                {
+                    return jObject.ToObject<T>() ?? new T();
+                }
+
+                // å°è¯•åºåˆ—åŒ–/ååºåˆ—åŒ–
+                var jsonString = JsonConvert.SerializeObject(stepParameter);
+                return JsonConvert.DeserializeObject<T>(jsonString) ?? new T();
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"å‚æ•°è½¬æ¢å¤±è´¥ {typeof(T).Name}: {ex.Message}", ex);
+                return new T();
+            }
+        }
+        #endregion
     }
 
     /// <summary>
-    /// Ö´ĞĞ½á¹ûÀà
+    /// æ‰§è¡Œç»“æœç±»
     /// </summary>
     public class ExecutionResult
     {
@@ -290,38 +307,5 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         public static ExecutionResult Succes() => new() { Success = true };
         public static ExecutionResult Failed() => new() { Success = false };
         public static ExecutionResult Jump(int stepIndex) => new() { Success = true, NextStepIndex = stepIndex };
-    }
-
-    // ²¹³ä£ºÈç¹ûÄúĞèÒª¸üÇ¿ÀàĞÍµÄ²ÎÊı´¦Àí£¬¿ÉÒÔÌí¼ÓÕâ¸öÀ©Õ¹·½·¨
-    public static class ParameterExtensions
-    {
-        /// <summary>
-        /// °²È«×ª»»JObjectÎªÖ¸¶¨ÀàĞÍ
-        /// </summary>
-        public static T ToParameterType<T>(this object obj) where T : class, new()
-        {
-            if (obj == null) return new T();
-
-            if (obj is JObject jObj)
-            {
-                return jObj.ToObject<T>() ?? new T();
-            }
-
-            if (obj is T directType)
-            {
-                return directType;
-            }
-
-            // ×îºó³¢ÊÔJSONĞòÁĞ»¯/·´ĞòÁĞ»¯
-            try
-            {
-                string json = JsonConvert.SerializeObject(obj);
-                return JsonConvert.DeserializeObject<T>(json) ?? new T();
-            }
-            catch
-            {
-                return new T();
-            }
-        }
     }
 }

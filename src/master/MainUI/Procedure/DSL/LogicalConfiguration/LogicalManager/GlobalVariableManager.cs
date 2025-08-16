@@ -14,7 +14,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// </summary>
         public static List<VarItem_Enhanced> GetAllVariables()
         {
-            return SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
+            return [.. SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>()];
         }
 
         /// <summary>
@@ -22,7 +22,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// </summary>
         public static VarItem_Enhanced FindVariableByName(string varName)
         {
-            return GetAllVariables().FirstOrDefault(v => v.VarName == varName);
+            return GetAllVariables().FirstOrDefault(v => v.VarName == varName) ??
+                throw new ArgumentException($"变量 {varName} 不存在");
         }
 
         /// <summary>

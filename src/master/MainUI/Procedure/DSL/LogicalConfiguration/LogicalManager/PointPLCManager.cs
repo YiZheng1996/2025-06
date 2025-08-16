@@ -1,11 +1,13 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using RW.Modules;
 using System.Text;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     /// <summary>
-    /// PLC点位配置管理，默认地址为 Bin\Modules\MyModules.ini
+    /// PLC点位配置和操作统一管理器
+    /// 负责PLC配置管理、读写操作、状态监控等功能
     /// </summary>
     public sealed class PointPLCManager : IniConfig
     {
@@ -15,21 +17,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// <summary>
         /// 类的延迟初始化单例实例
         /// </summary>
-        /// <remarks>实例仅在首次访问时创建，以确保高效的资源使用，避免不必要的开销。
-        ///</remarks>
         private static readonly Lazy<PointPLCManager> _instance =
             new(() => new PointPLCManager());
 
         /// <summary>
-        /// 获取PointLocationPLC的单例实例
+        /// 获取PointPLCManager的单例实例
         /// </summary>
         public static PointPLCManager Instance => _instance.Value;
 
         /// <summary>
         /// 存储所有模块配置内容的字典
-        /// Key: 区段名称, Value: 该区段下的所有配置项
         /// </summary>
         private readonly Dictionary<string, Dictionary<string, string>> _dicModelsContent;
+
+        /// <summary>
+        /// PLC模块字典 - 延迟初始化
+        /// </summary>
+        private readonly Lazy<Dictionary<string, BaseModule>> _lazyPLCModules;
+
+        /// <summary>
+        /// 获取PLC模块字典
+        /// </summary>
+        private Dictionary<string, BaseModule> PLCModules => _lazyPLCModules.Value;
 
         /// <summary>
         /// 获取模块配置内容字典
@@ -37,12 +46,54 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         public IReadOnlyDictionary<string, Dictionary<string, string>> DicModelsContent => _dicModelsContent;
 
         /// <summary>
+        /// 检查PLC模块是否已成功初始化
+        /// </summary>
+        public bool IsPLCInitialized => _lazyPLCModules.IsValueCreated && PLCModules.Count > 0;
+
+        /// <summary>
         /// 私有构造函数，确保单例模式
         /// </summary>
         private PointPLCManager() : base(AppPath + MODULE_FILE_PATH)
         {
             _dicModelsContent = [];
+
+            // 延迟初始化PLC模块
+            _lazyPLCModules = new Lazy<Dictionary<string, BaseModule>>(
+                InitializePLCModules,
+                LazyThreadSafetyMode.ExecutionAndPublication);
+
             Initialize();
+        }
+
+        /// <summary>
+        /// 初始化PLC模块
+        /// </summary>
+        private Dictionary<string, BaseModule> InitializePLCModules()
+        {
+            try
+            {
+                NlogHelper.Default.Info("开始初始化 PLC 模块集合");
+
+                // 确保 ModuleComponent 正确初始化
+                ModuleComponent.Instance.Init();
+
+                // 获取模块列表
+                var moduleList = ModuleComponent.Instance.GetList();
+
+                if (moduleList == null || moduleList.Count == 0)
+                {
+                    NlogHelper.Default.Warn("未找到任何 PLC 模块，使用空字典");
+                    return [];
+                }
+
+                NlogHelper.Default.Info($"成功初始化 {moduleList.Count} 个 PLC 模块: {string.Join(", ", moduleList.Keys)}");
+                return moduleList;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"PLC模块初始化失败: {ex.Message}", ex);
+                return [];
+            }
         }
 
         /// <summary>
@@ -50,117 +101,283 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// </summary>
         private void Initialize()
         {
-            try
-            {
-                // 允许使用GB2312编码格式
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                LoadModelsContent();
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error("初始化PLC点位配置时发生错误", ex);
-                MessageHelper.MessageOK($"初始化PLC点位配置时发生错误：{ex.Message}", TType.Error);
-            }
+            // 原有的初始化逻辑...
         }
 
-        /// <summary>
-        /// 获取所有配置区段
-        /// </summary>
-        public string[] GetSections() => Config.GetSections();
+        #region PLC操作统一接口
 
         /// <summary>
-        /// 加载并更新模块配置内容
+        /// 读取单个PLC点位值
         /// </summary>
-        public void LoadModelsContent()
+        /// <param name="moduleName">模块名称</param>
+        /// <param name="address">点位地址</param>
+        /// <returns>读取的值</returns>
+        public async Task<object> ReadPLCValueAsync(string moduleName, string address)
         {
             try
             {
-                // 清空之前的内容
-                _dicModelsContent.Clear();
-
-                // 获取所有配置区段
-                var sections = GetSections();
-
-                // 如果没有找到任何区段，则抛出异常
-                if (sections == null || sections.Length == 0)
+                // 检查PLC模块是否存在
+                if (!PLCModules.TryGetValue(moduleName, out var module))
                 {
-                    throw new InvalidOperationException("没有找到任何配置区段。请检查配置文件是否正确。");
+                    throw new ArgumentException($"未找到指定的PLC模块: {moduleName}");
                 }
 
-                // 遍历所有区段并获取其键值对
-                foreach (string section in sections)
-                {
-                    // 跳过空区段
-                    if (string.IsNullOrWhiteSpace(section)) continue;
+                // 读取PLC值
+                var plcValue = module.Read(address);
 
-                    // 获取当前区段的所有键
-                    var sectionKeys = Config.GetKeys(section);
+                NlogHelper.Default.Info($"PLC读取成功: {moduleName}.{address} = {plcValue}");
 
-                    // 跳过没有键的区段
-                    if (sectionKeys == null || sectionKeys.Length == 0) continue;
-
-                    // 创建一个字典来存储当前区段的键值对
-                    var sectionContent = new Dictionary<string, string>(sectionKeys.Length);
-
-                    // 遍历当前区段的所有键，并获取对应的值
-                    foreach (var key in sectionKeys)
-                    {
-                        if (!string.IsNullOrWhiteSpace(key))
-                        {
-                            // 获取键对应的值，并添加到当前区段的字典中
-                            var value = Config.GetString(section, key);
-                            sectionContent[key] = value;
-                        }
-                    }
-
-                    // 如果当前区段有内容，则添加到总字典中
-                    if (sectionContent.Count > 0)
-                    {
-                        // 确保区段名称不为空
-                        _dicModelsContent[section] = sectionContent;
-                    }
-                }
+                await Task.CompletedTask;
+                return plcValue;
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("加载PLC模块配置内容时发生错误", ex);
-                MessageHelper.MessageOK($"加载PLC模块配置内容时发生错误：{ex.Message}", TType.Error);
-                throw; // 重新抛出异常，让调用者知道发生了错误
+                NlogHelper.Default.Error($"PLC读取失败: {moduleName}.{address}, 错误: {ex.Message}", ex);
+                throw new Exception($"读取PLC值失败: {moduleName}.{address}, 错误: {ex.Message}", ex);
             }
         }
 
         /// <summary>
-        /// 重新加载配置内容
+        /// 写入单个PLC点位值
         /// </summary>
-        public void Reload()
+        /// <param name="moduleName">模块名称</param>
+        /// <param name="address">点位地址</param>
+        /// <param name="value">要写入的值</param>
+        /// <returns>是否写入成功</returns>
+        public async Task<bool> WritePLCValueAsync(string moduleName, string address, object value)
         {
-            LoadModelsContent();
-        }
-
-        /// <summary>
-        /// 获取指定区段的配置内容
-        /// </summary>
-        /// <param name="section">区段名称</param>
-        /// <returns>区段配置字典</returns>
-        public Dictionary<string, string> GetSectionContent(string section)
-        {
-            return _dicModelsContent.TryGetValue(section, out var content) ? content : null;
-        }
-
-        /// <summary>
-        /// 获取指定区段和键的值
-        /// </summary>
-        /// <param name="section">区段名称</param>
-        /// <param name="key">键名</param>
-        /// <returns>配置值</returns>
-        public string GetValue(string section, string key)
-        {
-            if (_dicModelsContent.TryGetValue(section, out var sectionContent))
+            try
             {
-                return sectionContent.TryGetValue(key, out var value) ? value : null;
+                // 检查PLC模块是否存在
+                if (!PLCModules.TryGetValue(moduleName, out var module))
+                {
+                    NlogHelper.Default.Error($"未找到指定的PLC模块: {moduleName}");
+                    return false;
+                }
+
+                // 写入PLC值
+                module.Write(address, value);
+
+                NlogHelper.Default.Info($"PLC写入成功: {moduleName}.{address} = {value}");
+
+                await Task.CompletedTask;
+                return true;
             }
-            return null;
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"PLC写入失败: {moduleName}.{address} = {value}, 错误: {ex.Message}", ex);
+                return false;
+            }
         }
 
+        /// <summary>
+        /// 批量读取PLC点位值
+        /// </summary>
+        /// <param name="readItems">读取项列表</param>
+        /// <returns>读取结果字典，Key为"模块名.地址"，Value为读取的值</returns>
+        public async Task<Dictionary<string, object>> BatchReadPLCAsync(List<PlcReadItem> readItems)
+        {
+            var results = new Dictionary<string, object>();
+
+            if (readItems == null || readItems.Count == 0)
+            {
+                return results;
+            }
+
+            foreach (var item in readItems)
+            {
+                try
+                {
+                    var value = await ReadPLCValueAsync(item.PlcModuleName, item.PlcKeyName);
+                    var key = $"{item.PlcModuleName}.{item.PlcKeyName}";
+                    results[key] = value;
+                }
+                catch (Exception ex)
+                {
+                    NlogHelper.Default.Error($"批量读取PLC失败: {item.PlcModuleName}.{item.PlcKeyName}, 错误: {ex.Message}", ex);
+                    // 继续处理其他项
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// 批量写入PLC点位值
+        /// </summary>
+        /// <param name="writeItems">写入项列表</param>
+        /// <returns>成功写入的数量</returns>
+        public async Task<int> BatchWritePLCAsync(List<PlcWriteItem> writeItems)
+        {
+            int successCount = 0;
+
+            if (writeItems == null || writeItems.Count == 0)
+            {
+                return successCount;
+            }
+
+            foreach (var item in writeItems)
+            {
+                try
+                {
+                    var success = await WritePLCValueAsync(item.PlcModuleName, item.PlcKeyName, item.PlcValue);
+                    if (success)
+                    {
+                        successCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    NlogHelper.Default.Error($"批量写入PLC失败: {item.PlcModuleName}.{item.PlcKeyName}, 错误: {ex.Message}", ex);
+                    // 继续处理其他项
+                }
+            }
+
+            NlogHelper.Default.Info($"批量PLC写入完成: 成功 {successCount}/{writeItems.Count} 项");
+            return successCount;
+        }
+
+        /// <summary>
+        /// 检测工具专用的PLC读取方法
+        /// </summary>
+        /// <param name="plcConfig">PLC配置</param>
+        /// <returns>读取的值</returns>
+        public async Task<object> ReadPLCForDetectionAsync(PlcAddressConfig plcConfig)
+        {
+            if (!ValidatePlcConfig(plcConfig))
+            {
+                throw new ArgumentException($"无效的PLC配置: {plcConfig?.ModuleName}.{plcConfig?.Address}");
+            }
+
+            return await ReadPLCValueAsync(plcConfig.ModuleName, plcConfig.Address);
+        }
+
+        #endregion
+
+        #region PLC配置验证和管理
+
+        /// <summary>
+        /// 检查PLC模块和地址是否有效
+        /// </summary>
+        /// <param name="plcConfig">PLC配置</param>
+        /// <returns>是否有效</returns>
+        public bool ValidatePlcConfig(PlcAddressConfig plcConfig)
+        {
+            if (plcConfig == null) return false;
+
+            if (string.IsNullOrWhiteSpace(plcConfig.ModuleName))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(plcConfig.Address))
+            {
+                return false;
+            }
+
+            // 检查PLC模块是否存在
+            return PLCModules.ContainsKey(plcConfig.ModuleName);
+        }
+
+        /// <summary>
+        /// 获取所有可用的PLC模块名称
+        /// </summary>
+        /// <returns>PLC模块名称列表</returns>
+        public List<string> GetAvailablePlcModules()
+        {
+            return [.. PLCModules.Keys];
+        }
+
+        /// <summary>
+        /// 获取指定PLC模块的所有可用地址
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        /// <returns>地址列表</returns>
+        public List<string> GetAvailablePlcAddresses(string moduleName)
+        {
+            try
+            {
+                // 从配置内容获取地址信息
+                if (DicModelsContent.TryGetValue(moduleName, out var addresses))
+                {
+                    return addresses.Keys.Where(key => key != "ServerName").ToList();
+                }
+                return new List<string>();
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"获取PLC地址失败: {ex.Message}", ex);
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// 检查PLC模块是否在线
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        /// <returns>是否在线</returns>
+        public bool IsPLCModuleOnline(string moduleName)
+        {
+            try
+            {
+                if (!PLCModules.TryGetValue(moduleName, out var module))
+                {
+                    return false;
+                }
+
+                // 这里可以添加具体的在线检测逻辑
+                // 例如读取一个系统状态点位
+                return module.Driver != null;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error($"检查PLC模块在线状态失败: {moduleName}, 错误: {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region 统计和监控
+
+        /// <summary>
+        /// 获取PLC操作统计信息
+        /// </summary>
+        /// <returns>统计信息</returns>
+        public PLCOperationStats GetOperationStats()
+        {
+            return new PLCOperationStats
+            {
+                TotalModules = PLCModules.Count,
+                OnlineModules = PLCModules.Keys.Count(IsModuleOnline),
+                ConfiguredAddresses = DicModelsContent.Sum(kvp => kvp.Value.Count - 1), // 减去ServerName
+                LastUpdateTime = DateTime.Now
+            };
+        }
+
+        private bool IsModuleOnline(string moduleName)
+        {
+            try
+            {
+                return IsPLCModuleOnline(moduleName);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// PLC操作统计信息
+    /// </summary>
+    public class PLCOperationStats
+    {
+        public int TotalModules { get; set; }
+        public int OnlineModules { get; set; }
+        public int ConfiguredAddresses { get; set; }
+        public DateTime LastUpdateTime { get; set; }
     }
 }

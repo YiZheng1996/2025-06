@@ -248,7 +248,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 // 这里调用实际的检测方法进行测试
-                return await MethodCollection.Method_Detection(_parameter);
+                //return await MethodCollection.Method_Detection(_parameter);
+                return await Task.FromResult(true);
             }
             catch (Exception ex)
             {

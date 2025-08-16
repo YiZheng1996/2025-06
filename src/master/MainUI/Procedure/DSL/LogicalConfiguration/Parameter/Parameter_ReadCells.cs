@@ -1,6 +1,6 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
-    internal class Parameter_ReadCells
+    public class Parameter_ReadCells
     {
         public string CellAddress { get; set; } // 单元格地址
         public string CellValue { get; set; } // 单元格值
