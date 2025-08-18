@@ -1,6 +1,6 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    partial class Form_DelayTime
+    partial class FormDelayTime
     {
         /// <summary>
         /// Required designer variable.
