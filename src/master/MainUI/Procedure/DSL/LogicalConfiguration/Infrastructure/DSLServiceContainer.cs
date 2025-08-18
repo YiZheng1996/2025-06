@@ -64,13 +64,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
         /// </summary>
         private static void RegisterManagers(IServiceCollection services)
         {
-            // StepExecutionManager每次使用时创建新实例
-            services.AddTransient<StepExecutionManager>();
+            // StepExecutionManager 工厂注册 - 每次创建新实例
+            services.AddTransient<Func<List<ChildModel>, StepExecutionManager>>(provider =>
+                steps => StepExecutionManager.Create(steps));
 
             // GlobalVariableManager作为单例
             services.AddSingleton<GlobalVariableManager>();
 
-            // DataGridViewManager每次创建新实例
+            // DataGridViewManager每次创建新实例  
             services.AddTransient<DataGridViewManager>();
         }
 
@@ -81,6 +82,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
         {
             // 可以在这里注册其他需要的服务
             // 例如：配置服务、缓存服务等
+
+            // 示例：注册配置服务
+            // services.AddSingleton<IConfigurationService, ConfigurationService>();
+
+            // 示例：注册缓存服务
+            // services.AddSingleton<ICacheService, MemoryCacheService>();
         }
 
         /// <summary>
@@ -92,6 +99,63 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
             {
                 _serviceProvider.Value?.GetService<IServiceProvider>()?.GetService<IDisposable>()?.Dispose();
             }
+        }
+
+        /// <summary>
+        /// 验证服务容器是否正确配置
+        /// </summary>
+        public static bool ValidateConfiguration()
+        {
+            try
+            {
+                // 验证所有DSL方法类是否可以正确创建
+                var systemMethods = GetService<SystemMethods>();
+                var variableMethods = GetService<VariableMethods>();
+                var plcMethods = GetService<PLCMethods>();
+                var detectionMethods = GetService<DetectionMethods>();
+                var flowControlMethods = GetService<FlowControlMethods>();
+                var reportMethods = GetService<ReportMethods>();
+
+                // 验证管理器类是否可以正确创建
+                var globalVariableManager = GetService<GlobalVariableManager>();
+
+                // 验证工厂是否可以正确工作
+                var factory = GetService<Func<List<ChildModel>, StepExecutionManager>>();
+                var testManager = factory(new List<ChildModel>());
+
+                return systemMethods != null &&
+                       variableMethods != null &&
+                       plcMethods != null &&
+                       detectionMethods != null &&
+                       flowControlMethods != null &&
+                       reportMethods != null &&
+                       globalVariableManager != null &&
+                       testManager != null;
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("服务容器验证失败", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取所有注册的服务类型
+        /// </summary>
+        public static IEnumerable<Type> GetRegisteredServiceTypes()
+        {
+            return new[]
+            {
+                typeof(SystemMethods),
+                typeof(VariableMethods),
+                typeof(PLCMethods),
+                typeof(DetectionMethods),
+                typeof(FlowControlMethods),
+                typeof(ReportMethods),
+                typeof(GlobalVariableManager),
+                typeof(DataGridViewManager),
+                typeof(Func<List<ChildModel>, StepExecutionManager>)
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 
@@ -24,14 +25,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 加载工具箱
                 InitializeToolbox();
 
-                // 加载PLC所有点位
-                InitializePointLocationPLC();
-
                 // 使用服务容器创建DataGridView管理器
                 _gridManager = new DataGridViewManager(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
 
                 // 设置事件处理程序
                 RegisterEventHandlers();
+
+                // 验证依赖注入容器
+                ValidateDependencyInjection();
             }
             catch (Exception ex)
             {
@@ -118,6 +119,36 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 MessageHelper.MessageOK($"加载步骤数据错误：{ex.Message}", TType.Error);
             }
         }
+        #endregion
+
+        #region 依赖注入验证
+        /// <summary>
+        /// 验证依赖注入容器是否正常工作
+        /// </summary>
+        private void ValidateDependencyInjection()
+        {
+            try
+            {
+                // 验证服务容器配置
+                bool isValid = DSLServiceContainer.ValidateConfiguration();
+
+                if (isValid)
+                {
+                    NlogHelper.Default.Info("依赖注入容器验证成功");
+                }
+                else
+                {
+                    NlogHelper.Default.Error("依赖注入容器验证失败");
+                    MessageHelper.MessageOK("系统初始化失败：依赖注入容器配置错误", TType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("依赖注入容器验证异常", ex);
+                MessageHelper.MessageOK($"系统初始化失败：{ex.Message}", TType.Error);
+            }
+        }
+
         #endregion
 
         #region 工具箱初始化
@@ -482,40 +513,18 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region PLC点位
-        /// <summary>
-        /// 加载全部PLC点位
-        /// </summary>
-        private void InitializePointLocationPLC()
-        {
-            TreeViewPLC.Nodes.Clear();
-            foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
-            {
-                // 创建主节点(Key)
-                TreeNode parentNode = new(kvp.Key);
-
-                // 添加子节点(Value)
-                foreach (var value in kvp.Value)
-                {
-                    if (value.Key != "ServerName")
-                        parentNode.Nodes.Add(value.Key);
-                }
-                TreeViewPLC.Nodes.Add(parentNode);
-            }
-            // 默认全部展开
-            TreeViewPLC.ExpandAll();
-        }
-        #endregion
-
         #region 执行和停止操作
 
-        // 添加执行和停止按钮的事件处理
+        /// <summary>
+        /// 执行按钮点击事件 - 使用纯依赖注入模式
+        /// </summary>
         private async void btnExecute_Click(object sender, EventArgs e)
         {
             try
             {
                 if (_isExecuting)
                 {
+                    // 停止执行
                     _executionManager?.Stop();
                     return;
                 }
@@ -529,19 +538,32 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 取消选择
                     ProcessDataGridView.ClearSelection();
 
-                    // 使用服务容器创建执行管理器
-                    _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
+                    //  使用依赖注入工厂创建执行管理器
+                    var factory = DSLServiceContainer.GetService<Func<List<ChildModel>, StepExecutionManager>>();
+                    _executionManager = factory(SingletonStatus.Instance.IempSteps);
+
+                    //  或者直接使用静态工厂方法（两种方式都可以）
+                    // _executionManager = StepExecutionManager.Create(SingletonStatus.Instance.IempSteps);
+
                     _executionManager.StepStatusChanged += UpdateStepStatus;
+
+                    NlogHelper.Default.Info($"开始执行步骤序列，共 {SingletonStatus.Instance.IempSteps.Count} 个步骤");
 
                     // 开始执行
                     await _executionManager.StartExecutionAsync();
+
+                    NlogHelper.Default.Info("步骤序列执行完成");
                 }
                 finally
                 {
                     _isExecuting = false;
                     btnExecute.Text = "执行";
                     btnExecute.Symbol = 61515;
-                    _executionManager.StepStatusChanged -= UpdateStepStatus;
+
+                    if (_executionManager != null)
+                    {
+                        _executionManager.StepStatusChanged -= UpdateStepStatus;
+                    }
                 }
             }
             catch (Exception ex)
@@ -549,10 +571,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 NlogHelper.Default.Error("开始执行步骤错误", ex);
                 MessageHelper.MessageOK($"开始执行步骤错误：{ex.Message}", TType.Error);
             }
-
         }
 
-        // 更新步骤状态显示
+        /// <summary>
+        /// 更新步骤状态显示
+        /// </summary>
         private void UpdateStepStatus(ChildModel step, int index)
         {
             try
@@ -583,13 +606,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         row.DefaultCellStyle.BackColor = Color.LightPink;
                         break;
                 }
+
+                // 刷新显示
+                ProcessDataGridView.Refresh();
             }
             catch (Exception ex)
             {
                 NlogHelper.Default.Error("更新步骤状态显示错误", ex);
-                MessageHelper.MessageOK($"更新步骤状态显示错误：{ex.Message}", TType.Error);
             }
         }
+
+        #endregion
     }
-    #endregion
 }

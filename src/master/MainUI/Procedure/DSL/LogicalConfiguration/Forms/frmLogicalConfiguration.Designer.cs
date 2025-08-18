@@ -46,7 +46,6 @@
             BtnClose = new UISymbolButton();
             btnSave = new UISymbolButton();
             uiLine3 = new UILine();
-            TreeViewPLC = new UITreeView();
             ((System.ComponentModel.ISupportInitialize)ProcessDataGridView).BeginInit();
             uiContextMenuStrip1.SuspendLayout();
             uiPanel1.SuspendLayout();
@@ -59,7 +58,7 @@
             ToolTreeView.FillColor2 = Color.White;
             ToolTreeView.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
             ToolTreeView.Location = new Point(29, 87);
-            ToolTreeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            ToolTreeView.Margin = new Padding(4, 5, 4, 5);
             ToolTreeView.MinimumSize = new Size(1, 1);
             ToolTreeView.Name = "ToolTreeView";
             ToolTreeView.Radius = 10;
@@ -197,7 +196,7 @@
             uiPanel1.FillColor2 = Color.White;
             uiPanel1.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             uiPanel1.Location = new Point(29, 809);
-            uiPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            uiPanel1.Margin = new Padding(4, 5, 4, 5);
             uiPanel1.MinimumSize = new Size(1, 1);
             uiPanel1.Name = "uiPanel1";
             uiPanel1.Radius = 10;
@@ -286,28 +285,6 @@
             uiLine3.Text = "PLC点位";
             uiLine3.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // TreeViewPLC
-            // 
-            TreeViewPLC.BackColor = Color.Transparent;
-            TreeViewPLC.FillColor = Color.White;
-            TreeViewPLC.FillColor2 = Color.White;
-            TreeViewPLC.Font = new Font("微软雅黑", 12.75F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            TreeViewPLC.Location = new Point(753, 87);
-            TreeViewPLC.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            TreeViewPLC.MinimumSize = new Size(1, 1);
-            TreeViewPLC.Name = "TreeViewPLC";
-            TreeViewPLC.Radius = 10;
-            TreeViewPLC.RectColor = Color.White;
-            TreeViewPLC.RectDisableColor = Color.White;
-            TreeViewPLC.ScrollBarStyleInherited = false;
-            TreeViewPLC.ShowLines = true;
-            TreeViewPLC.ShowNodeToolTips = true;
-            TreeViewPLC.ShowText = false;
-            TreeViewPLC.Size = new Size(321, 714);
-            TreeViewPLC.TabIndex = 438;
-            TreeViewPLC.Text = null;
-            TreeViewPLC.TextAlignment = ContentAlignment.MiddleCenter;
-            // 
             // FrmLogicalConfiguration
             // 
             AutoScaleMode = AutoScaleMode.None;
@@ -315,7 +292,6 @@
             ClientSize = new Size(1102, 878);
             ControlBox = false;
             Controls.Add(uiLine3);
-            Controls.Add(TreeViewPLC);
             Controls.Add(uiPanel1);
             Controls.Add(uiLine2);
             Controls.Add(ProcessDataGridView);
@@ -348,7 +324,6 @@
         private UIContextMenuStrip uiContextMenuStrip1;
         private ToolStripMenuItem toolDeleteStep;
         private UILine uiLine3;
-        private UITreeView TreeViewPLC;
         private UISymbolButton btnSave;
         private UISymbolButton BtnClose;
         private UISymbolButton btnExecute;

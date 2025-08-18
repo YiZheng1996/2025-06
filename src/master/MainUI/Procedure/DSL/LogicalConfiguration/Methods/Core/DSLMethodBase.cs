@@ -33,25 +33,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core
         {
             await MethodExecutor.ExecuteAsync(methodName, parameter, action);
         }
-
-        // 保留原有方法以向后兼容（标记为过时）
-        [Obsolete("请使用 ExecuteWithLogging 方法")]
-        protected void LogMethodStart(string methodName, object parameter)
-        {
-            NlogHelper.Default.Info($"开始执行 {methodName}，参数: {parameter?.ToString() ?? "null"}");
-        }
-
-        [Obsolete("请使用 ExecuteWithLogging 方法")]
-        protected void LogMethodSuccess(string methodName, object result = null)
-        {
-            NlogHelper.Default.Info($"{methodName} 执行成功，结果: {result?.ToString() ?? "无返回值"}");
-        }
-
-        [Obsolete("请使用 ExecuteWithLogging 方法")]
-        protected void LogMethodError(string methodName, Exception ex)
-        {
-            NlogHelper.Default.Error($"{methodName} 执行失败: {ex.Message}", ex);
-        }
     }
 
     /// <summary>

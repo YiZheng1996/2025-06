@@ -1,5 +1,4 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration;
-using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 
