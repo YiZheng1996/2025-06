@@ -1,6 +1,6 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    partial class FormDelayTime
+    partial class Form_DelayTime
     {
         /// <summary>
         /// Required designer variable.
@@ -53,7 +53,7 @@
             BtnSave.TabIndex = 7;
             BtnSave.Text = "保存";
             BtnSave.TipsFont = new Font("微软雅黑", 12F);
-            BtnSave.Click += BtnSave_Click;
+            //BtnSave.Click += BtnSave_Click;
             // 
             // txtTime
             // 

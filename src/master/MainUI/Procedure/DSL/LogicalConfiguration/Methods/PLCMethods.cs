@@ -1,12 +1,6 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration;
-using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
@@ -19,19 +13,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         public override string Description => "提供PLC读写等硬件交互功能";
 
         /// <summary>
-        /// PLC读取方法
+        /// PLC读取方法 - 使用新的统一错误处理
         /// </summary>
         public async Task<bool> ReadPLC(Parameter_ReadPLC param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(ReadPLC), param);
-
                 if (param?.Items == null || param.Items.Count == 0)
                 {
-                    LogMethodError(nameof(ReadPLC),
-                        new ArgumentException("PLC读取参数为空"));
-                    return false;
+                    throw new ArgumentException("PLC读取参数为空");
                 }
 
                 var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
@@ -41,7 +31,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                 {
                     try
                     {
-                        // 通过名称查找目标变量
                         var targetVariable = variables.FirstOrDefault(v => v.VarName == plc.TargetVarName);
                         if (targetVariable == null)
                         {
@@ -49,14 +38,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                             continue;
                         }
 
-                        // 使用统一的PLC管理器读取值
                         var plcValue = await PointPLCManager.Instance.ReadPLCValueAsync(
                             plc.PlcModuleName, plc.PlcKeyName);
 
-                        // 更新变量值
-                        targetVariable.UpdateValue(plcValue,
-                            $"PLC读取: {plc.PlcModuleName}.{plc.PlcKeyName}");
-
+                        targetVariable.UpdateValue(plcValue, $"PLC读取: {plc.PlcModuleName}.{plc.PlcKeyName}");
                         successCount++;
                     }
                     catch (Exception ex)
@@ -65,15 +50,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                     }
                 }
 
-                bool success = successCount > 0;
-                LogMethodSuccess(nameof(ReadPLC), $"成功读取 {successCount}/{param.Items.Count} 项");
-                return success;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(ReadPLC), ex);
-                return false;
-            }
+                // 只要有一个成功就算成功
+                return successCount > 0;
+            }, false);
         }
 
         /// <summary>
@@ -81,29 +60,46 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> WritePLC(Parameter_WritePLC param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(WritePLC), param);
-
                 if (param?.Items == null || param.Items.Count == 0)
                 {
-                    LogMethodError(nameof(WritePLC),
-                        new ArgumentException("PLC写入参数为空"));
-                    return false;
+                    throw new ArgumentException("PLC写入参数为空");
                 }
 
-                // 使用统一的PLC管理器进行批量写入
-                var successCount = await PointPLCManager.Instance.BatchWritePLCAsync(param.Items);
+                int successCount = 0;
 
-                bool success = successCount > 0;
-                LogMethodSuccess(nameof(WritePLC), $"成功写入 {successCount}/{param.Items.Count} 项");
-                return success;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(WritePLC), ex);
-                return false;
-            }
+                foreach (var plc in param.Items)
+                {
+                    try
+                    {
+                        // 解析写入值
+                        var writeValue = await ResolveWriteValue(plc.PlcValue);
+
+                        // 执行PLC写入
+                        await PointPLCManager.Instance.WritePLCValueAsync(
+                            plc.PlcModuleName, plc.PlcKeyName, writeValue);
+
+                        successCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        NlogHelper.Default.Error($"PLC写入项失败 {plc.PlcModuleName}.{plc.PlcKeyName}: {ex.Message}", ex);
+                    }
+                }
+
+                return successCount > 0;
+            }, false);
+        }
+
+        /// <summary>
+        /// 解析写入值
+        /// </summary>
+        private async Task<object> ResolveWriteValue(string value)
+        {
+            // 实现值解析逻辑
+            await Task.CompletedTask;
+            return value;
         }
     }
 }

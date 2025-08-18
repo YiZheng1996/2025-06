@@ -6,7 +6,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
     /// <summary>
     /// 全局变量管理器 - 提供统一的变量操作接口
     /// </summary>
-    public static class GlobalVariableManager
+    public class GlobalVariableManager
     {
         #region 通用变量数据集
         /// <summary>

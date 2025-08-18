@@ -18,10 +18,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> Detection(Parameter_Detection param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(Detection), param);
-
                 DetectionResult result = new()
                 {
                     DetectionName = param.DetectionName,
@@ -70,14 +68,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                 // 处理检测结果
                 await ProcessDetectionResult(result, param);
 
-                LogMethodSuccess(nameof(Detection), $"检测 {param.DetectionName}: {(result.IsSuccess ? "通过" : "失败")}");
                 return result.IsSuccess;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(Detection), ex);
-                return false;
-            }
+            }, false);
         }
 
         /// <summary>

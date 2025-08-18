@@ -12,47 +12,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         public override string Description => "提供Excel报表读写等功能";
 
         /// <summary>
-        /// 保存报表方法
+        /// 保存报表方法 - 使用新的统一错误处理
         /// </summary>
         public async Task<bool> SaveReport(Parameter_SaveReport param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(SaveReport), param);
-
                 // TODO: 实现报表保存逻辑
-                await Task.CompletedTask;
+                await Task.Delay(100); // 模拟保存操作
 
-                LogMethodSuccess(nameof(SaveReport), "报表保存成功");
                 return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(SaveReport), ex);
-                return false;
-            }
+            }, false);
         }
 
         /// <summary>
-        /// 读取单元格方法
+        /// 读取单元格方法 - 返回对象类型
         /// </summary>
         public async Task<object> ReadCells(Parameter_ReadCells param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(ReadCells), param);
-
                 // TODO: 实现单元格读取逻辑
-                await Task.CompletedTask;
-
-                LogMethodSuccess(nameof(ReadCells), "单元格读取成功");
+                await Task.Delay(100);
                 return null;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(ReadCells), ex);
-                throw;
-            }
+
+            }, (object)null);
         }
 
         /// <summary>
@@ -60,21 +44,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> WriteCells(Parameter_WriteCells param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(WriteCells), param);
-
                 // TODO: 实现单元格写入逻辑
-                await Task.CompletedTask;
+                await Task.Delay(100); // 模拟写入操作
 
-                LogMethodSuccess(nameof(WriteCells), "单元格写入成功");
                 return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(WriteCells), ex);
-                return false;
-            }
+            }, false);
         }
     }
 }

@@ -4,7 +4,7 @@ using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
     /// <summary>
-    /// 系统工具方法集合
+    /// 系统工具方法集合 - 使用新的统一错误处理
     /// </summary>
     public class SystemMethods : DSLMethodBase
     {
@@ -16,20 +16,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> DelayTime(Parameter_DelayTime param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(DelayTime), param);
-
                 await Task.Delay(TimeSpan.FromMilliseconds(param.T));
-
-                LogMethodSuccess(nameof(DelayTime), $"延时 {param.T} 毫秒");
                 return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(DelayTime), ex);
-                return false;
-            }
+            }, false); // 默认返回false
         }
 
         /// <summary>
@@ -37,10 +28,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> SystemPrompt(Parameter_SystemPrompt param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(SystemPrompt), param);
-
                 // 解析提示内容中的变量引用
                 string resolvedMessage = await ResolveVariablesInText(param.Message);
 
@@ -50,19 +39,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                 // 如果需要等待用户响应
                 if (param.WaitForResponse)
                 {
-                    bool success = result == DialogResult.OK;
-                    LogMethodSuccess(nameof(SystemPrompt), $"用户响应: {success}");
-                    return success;
+                    return result == DialogResult.OK;
                 }
 
-                LogMethodSuccess(nameof(SystemPrompt), "提示显示成功");
                 return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(SystemPrompt), ex);
-                return false;
-            }
+            }, false);
         }
 
         /// <summary>

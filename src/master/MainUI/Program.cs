@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
+using System.Configuration;
 
 namespace MainUI
 {
@@ -47,6 +48,7 @@ namespace MainUI
                 try
                 {
                     OPCHelper.Connect();
+                    ServiceContainerInitializer.Initialize();
                     frmMainMenu main = new()
                     {
                         Icon = new Icon("ico.ico")

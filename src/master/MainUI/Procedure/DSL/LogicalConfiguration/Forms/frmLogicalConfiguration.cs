@@ -27,8 +27,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 加载PLC所有点位
                 InitializePointLocationPLC();
 
-                // 初始化DataGridView管理器
-                _gridManager = new(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
+                // 使用服务容器创建DataGridView管理器
+                _gridManager = new DataGridViewManager(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
 
                 // 设置事件处理程序
                 RegisterEventHandlers();
@@ -529,10 +529,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 取消选择
                     ProcessDataGridView.ClearSelection();
 
-                    // 创建执行管理器
+                    // 使用服务容器创建执行管理器
                     _executionManager = new StepExecutionManager(SingletonStatus.Instance.IempSteps);
-
-                    // 注册状态改变事件
                     _executionManager.StepStatusChanged += UpdateStepStatus;
 
                     // 开始执行

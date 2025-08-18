@@ -1,144 +1,191 @@
-﻿using AntdUI;
-using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using Newtonsoft.Json;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     /// <summary>
-    /// 延时配置表单
+    /// 延时参数配置表单 - 解决方法冲突问题
     /// </summary>
-    public partial class Form_DelayTime : UIForm
+    public partial class Form_DelayTime : BaseParameterForm, IParameterForm<Parameter_DelayTime>
     {
         private const double DEFAULT_DELAY_TIME = 1000.0;
-        private readonly SingletonStatus _status;
 
         /// <summary>
-        /// 默认构造函数
+        /// 参数对象
         /// </summary>
+        public Parameter_DelayTime Parameter { get; set; }
+
+        #region 构造函数
+
         public Form_DelayTime()
         {
             InitializeComponent();
-            _status = SingletonStatus.Instance;
-            LoadDelayParameters();
+            InitializeForm();
         }
 
-        /// <summary>
-        /// 带参数构造函数
-        /// </summary>
-        /// <param name="status">单例状态实例</param>
-        public Form_DelayTime(SingletonStatus status)
+        public Form_DelayTime(Parameter_DelayTime parameter) : this()
         {
-            InitializeComponent();
-            _status = status;
-            LoadDelayParameters();
+            Parameter = parameter ?? new Parameter_DelayTime();
         }
 
-        /// <summary>
-        /// 加载延时参数
-        /// </summary>
-        private void LoadDelayParameters()
+        private void InitializeForm()
         {
-            try
-            {
-                var currentStep = GetCurrentStep();
-                if (currentStep?.StepParameter is null)
-                {
-                    SetDefaultDelayTime();
-                    return;
-                }
+            Parameter = new Parameter_DelayTime();
+            BindEvents();
+        }
 
-                var delayTime = ExtractDelayTime(currentStep.StepParameter);
-                txtTime.Text = delayTime.ToString();
-            }
-            catch (Exception ex)
+        private void BindEvents()
+        {
+            if (BtnSave != null) BtnSave.Click += OnSaveClick;
+            //if (BtnCancel != null) BtnCancel.Click += OnCancelClick;
+            //if (BtnReset != null) BtnReset.Click += OnResetClick;
+
+            // 绑定输入验证事件
+            if (txtTime != null)
             {
-                NlogHelper.Default.Error("加载延时参数失败", ex);
-                SetDefaultDelayTime();
+                txtTime.KeyPress += txtTime_KeyPress;
+                txtTime.Leave += txtTime_Leave;
             }
         }
 
-        /// <summary>
-        /// 获取当前步骤
-        /// </summary>
-        private ChildModel GetCurrentStep()
-        {
-            var steps = _status.IempSteps;
-            var idx = _status.StepNum;
+        #endregion
 
-            return (steps != null && idx >= 0 && idx < steps.Count) ? steps[idx] : null;
+        #region 重写基类方法
+
+        protected override void LoadParameterFromStep(object stepParameter)
+        {
+            Parameter = ConvertParameter(stepParameter);
+            PopulateControls(Parameter);
+        }
+
+        protected override void SetDefaultValues()
+        {
+            Parameter = new Parameter_DelayTime { T = DEFAULT_DELAY_TIME };
+            PopulateControls(Parameter);
+        }
+
+        protected override bool ValidateParameters()
+        {
+            // 调用接口的类型安全验证方法
+            return ValidateTypedParameters();
+        }
+
+        protected override object CollectParameters()
+        {
+            // 调用接口的类型安全收集方法
+            return CollectTypedParameters();
+        }
+
+        #endregion
+
+        #region 实现泛型接口 - 使用新的方法名
+
+        /// <summary>
+        /// 填充控件
+        /// </summary>
+        public void PopulateControls(Parameter_DelayTime parameter)
+        {
+            if (parameter == null) return;
+
+            SetControlText(txtTime, parameter.T.ToString());
         }
 
         /// <summary>
-        /// 提取延时时间
+        /// 验证参数 - 接口方法，新命名
         /// </summary>
-        private static double ExtractDelayTime(object paramObj)
+        public bool ValidateTypedParameters()
         {
-            if (paramObj is Parameter_DelayTime param)
-            {
-                return param.T;
-            }
+            string timeText = GetControlText(txtTime);
 
-            try
+            if (string.IsNullOrEmpty(timeText))
             {
-                var deserializedParam = JsonConvert.DeserializeObject<Parameter_DelayTime>(paramObj.ToString() ?? "");
-                return deserializedParam?.T ?? DEFAULT_DELAY_TIME;
-            }
-            catch
-            {
-                return DEFAULT_DELAY_TIME;
-            }
-        }
-
-        /// <summary>
-        /// 设置默认延时时间
-        /// </summary>
-        private void SetDefaultDelayTime()
-        {
-            txtTime.Text = DEFAULT_DELAY_TIME.ToString();
-        }
-
-        /// <summary>
-        /// 保存参数按钮点击事件
-        /// </summary>
-        private void BtnSave_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                var currentStep = GetCurrentStep();
-                if (currentStep is null)
-                {
-                    MessageHelper.MessageOK("步骤索引无效，无法保存参数。", TType.Error);
-                    return;
-                }
-
-                if (!ValidateAndSaveDelayTime(currentStep))
-                {
-                    return;
-                }
-
-                MessageHelper.MessageOK("参数已暂存，主界面点击保存后才会写入文件。", TType.Info);
-                Close();
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error("保存延时参数失败", ex);
-                MessageHelper.MessageOK($"保存参数失败：{ex.Message}", TType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 验证并保存延时时间
-        /// </summary>
-        private bool ValidateAndSaveDelayTime(ChildModel step)
-        {
-            if (!double.TryParse(txtTime.Text, out double delayTime))
-            {
-                MessageHelper.MessageOK("请输入有效的延时时间。", TType.Warn);
+                ShowValidationError("请输入延时时间。", txtTime);
                 return false;
             }
 
-            step.StepParameter = new Parameter_DelayTime { T = delayTime };
+            if (!double.TryParse(timeText, out double delayTime))
+            {
+                ShowValidationError("请输入有效的数字。", txtTime);
+                return false;
+            }
+
+            if (delayTime < 0)
+            {
+                ShowValidationError("延时时间不能为负数。", txtTime);
+                return false;
+            }
+
+            if (delayTime > 3600000) // 最大1小时
+            {
+                ShowValidationError("延时时间不能超过1小时(3600000毫秒)。", txtTime);
+                return false;
+            }
+
             return true;
         }
+
+        /// <summary>
+        /// 收集参数 - 接口方法
+        /// </summary>
+        public Parameter_DelayTime CollectTypedParameters()
+        {
+            string timeText = GetControlText(txtTime);
+
+            if (double.TryParse(timeText, out double delayTime))
+            {
+                return new Parameter_DelayTime { T = delayTime };
+            }
+
+            return new Parameter_DelayTime { T = DEFAULT_DELAY_TIME };
+        }
+
+        /// <summary>
+        /// 转换参数
+        /// </summary>
+        public Parameter_DelayTime ConvertParameter(object stepParameter)
+        {
+            return ConvertJsonParameter<Parameter_DelayTime>(stepParameter);
+        }
+
+        #endregion
+
+        #region 输入验证事件
+
+        private void txtTime_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // 只允许数字、小数点、退格键
+            if (!char.IsControl(e.KeyChar) &&
+                !char.IsDigit(e.KeyChar) &&
+                e.KeyChar != '.')
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // 只允许一个小数点
+            if (e.KeyChar == '.' && txtTime.Text.Contains('.'))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void txtTime_Leave(object sender, EventArgs e)
+        {
+            if (IsLoading || DesignMode) return;
+
+            string timeText = GetControlText(txtTime);
+
+            if (!string.IsNullOrEmpty(timeText) &&
+                double.TryParse(timeText, out double value))
+            {
+                SetControlText(txtTime, value.ToString("F1"));
+            }
+        }
+
+        void IParameterForm<Parameter_DelayTime>.SetDefaultValues()
+        {
+            SetDefaultValues();
+        }
+
+        #endregion
     }
 }

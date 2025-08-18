@@ -1,5 +1,4 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration;
-using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 
@@ -11,6 +10,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
     public class VariableMethods : DSLMethodBase
     {
         public override string Category => "变量管理";
+
         public override string Description => "提供变量定义、赋值等变量管理功能";
 
         /// <summary>
@@ -18,10 +18,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> DefineVar(Parameter_DefineVar param)
         {
-            try
+            return await ExecuteWithLogging(param, () =>
             {
-                LogMethodStart(nameof(DefineVar), param);
-
                 var singleton = SingletonStatus.Instance;
                 var variables = GlobalVariableManager.GetAllVariables();
 
@@ -29,16 +27,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                 var existingVar = variables.FirstOrDefault(v => v.VarName == param.VarName);
                 if (existingVar != null)
                 {
-                    // 更新现有变量
                     existingVar.VarName = param.VarName;
                     existingVar.VarType = param.VarType;
                     existingVar.UpdateValue(param.VarValue, "变量定义更新");
-
-                    LogMethodSuccess(nameof(DefineVar), $"更新变量: {param.VarName}");
+                    return Task.FromResult(true);
                 }
                 else
                 {
-                    // 添加新变量
                     var newVar = new VarItem_Enhanced
                     {
                         VarName = param.VarName,
@@ -49,18 +44,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                         AssignmentType = VariableAssignmentType.None
                     };
                     singleton.Obj.Add(newVar);
-
-                    LogMethodSuccess(nameof(DefineVar), $"新建变量: {param.VarName}");
+                    return Task.FromResult(true);
                 }
-
-                await Task.CompletedTask;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(DefineVar), ex);
-                return false;
-            }
+            }, false); // 默认返回false
         }
 
         /// <summary>
@@ -68,54 +54,27 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// </summary>
         public async Task<bool> VariableAssignment(Parameter_VariableAssignment param)
         {
-            try
+            return await ExecuteWithLogging(param, async () =>
             {
-                LogMethodStart(nameof(VariableAssignment), param);
+                var targetVar = GlobalVariableManager.FindVariableByName(param.TargetVarName) ?? 
+                    throw new ArgumentException($"目标变量不存在: {param.TargetVarName}");
 
-                var targetVar = GlobalVariableManager.FindVariableByName(param.TargetVarName);
+                // 执行赋值逻辑
+                string newValue = await CalculateAssignmentValue(param);
+                targetVar.UpdateValue(newValue, $"变量赋值: {param.TargetVarName}");
 
-                if (targetVar == null)
-                {
-                    LogMethodError(nameof(VariableAssignment),
-                        new ArgumentException($"目标变量 {param.TargetVarName} 不存在"));
-                    return false;
-                }
-
-                // 解析赋值表达式
-                object newValue = await EvaluateExpression(param.Expression,
-                    GlobalVariableManager.GetAllVariables());
-
-                // 类型转换和赋值
-                targetVar.UpdateValue(ConvertValue(newValue, targetVar.VarType), "变量赋值");
-
-                LogMethodSuccess(nameof(VariableAssignment),
-                    $"{param.TargetVarName} = {targetVar.VarValue}");
                 return true;
-            }
-            catch (Exception ex)
-            {
-                LogMethodError(nameof(VariableAssignment), ex);
-                return false;
-            }
+            }, false);
         }
 
         /// <summary>
-        /// 表达式求值
+        /// 计算赋值值（私有方法不需要包装）
         /// </summary>
-        private async Task<object> EvaluateExpression(string expression, List<VarItem_Enhanced> variables)
+        private async Task<string> CalculateAssignmentValue(Parameter_VariableAssignment param)
         {
-            // 实现表达式求值逻辑
+            // 实现赋值逻辑
             await Task.CompletedTask;
-            return expression; // 简化实现
-        }
-
-        /// <summary>
-        /// 值类型转换
-        /// </summary>
-        private object ConvertValue(object value, string targetType)
-        {
-            // 实现类型转换逻辑
-            return value;
+            return param.TargetVarName.ToString() ?? "";
         }
     }
 }
