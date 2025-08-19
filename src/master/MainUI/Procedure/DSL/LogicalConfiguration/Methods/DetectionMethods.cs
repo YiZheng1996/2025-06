@@ -92,7 +92,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         private static async Task<object> GetVariableValue(string variableName)
         {
             var singleton = SingletonStatus.Instance;
-            var variables = singleton.Obj.OfType<VarItem>().ToList();
+            var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
             var variable = variables.FirstOrDefault(v => v.VarName == variableName) ??
                 throw new ArgumentException($"变量 {variableName} 不存在");
             await Task.CompletedTask;
@@ -248,7 +248,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             try
             {
                 var singleton = SingletonStatus.Instance;
-                var variables = singleton.Obj.OfType<VarItem>().ToList();
+                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
 
                 // 保存检测结果到变量
                 if (param.ResultHandling.SaveToVariable && !string.IsNullOrEmpty(param.ResultHandling.ResultVariableName))
@@ -325,7 +325,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         private static async Task SaveOrUpdateVariable(string variableName, object value)
         {
             var singleton = SingletonStatus.Instance;
-            var variables = singleton.Obj.OfType<VarItem>().ToList();
+            var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
             var existingVar = variables.FirstOrDefault(v => v.VarName == variableName);
 
             if (existingVar != null)

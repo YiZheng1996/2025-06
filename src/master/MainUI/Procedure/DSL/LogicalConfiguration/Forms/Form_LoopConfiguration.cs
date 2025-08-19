@@ -59,7 +59,7 @@
             try
             {
                 var singleton = SingletonStatus.Instance;
-                var variables = singleton.Obj.OfType<VarItem>().Select(v => v.VarName).ToArray();
+                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().Select(v => v.VarName).ToArray();
 
                 cmbWhileVar.Items.Clear();
                 cmbWhileVar.Items.AddRange(variables);

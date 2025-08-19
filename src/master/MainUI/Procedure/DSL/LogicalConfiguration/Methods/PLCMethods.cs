@@ -24,7 +24,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                     throw new ArgumentException("PLC读取参数为空");
                 }
 
-                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
+                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
                 int successCount = 0;
 
                 foreach (var plc in param.Items)

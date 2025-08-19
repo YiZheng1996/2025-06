@@ -29,7 +29,7 @@
                 // 通过名称查找变量并设置引用
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList();
+                    var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
                     TargetVariable = variables.FirstOrDefault(v => v.VarName == value);
                 }
             }

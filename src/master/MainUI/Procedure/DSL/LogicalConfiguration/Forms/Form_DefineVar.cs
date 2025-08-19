@@ -23,7 +23,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 DataGridViewDefineVar.Rows.Clear();
-                var variables = SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().ToList(); 
+                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>();
                 foreach (var variable in variables)
                 {
                     DataGridViewDefineVar.Rows.Add(variable.VarName, variable.VarType, variable.VarText);
@@ -36,6 +36,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        // 删除变量
         private void Clean_Click(object sender, EventArgs e)
         {
             int rowIndex = DataGridViewDefineVar.CurrentCell?.RowIndex ?? -1;
@@ -50,14 +51,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 try
                 {
                     string varName = DataGridViewDefineVar.Rows[rowIndex].Cells[0].Value?.ToString();
-                    var toRemove = SingletonStatus.Instance.Obj
-                        .OfType<VarItem_Enhanced>()
-                        .FirstOrDefault(x => x.VarName == varName);
+                    var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>();
+                    var toRemove = variables.FirstOrDefault(x => x.VarName == varName);
                     if (toRemove != null)
                     {
-                        SingletonStatus.Instance.Obj.Remove(toRemove);
-                        LoadVariables();
-                        MessageHelper.MessageOK("删除成功！", TType.Success);
+                        bool removed = SingletonStatus.Instance.RemoveObj(toRemove); // ✅ 线程安全
+                        if (removed)
+                        {
+                            LoadVariables();
+                            MessageHelper.MessageOK("删除成功！", TType.Success);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -73,7 +76,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 // 先清空临时变量列表
-                SingletonStatus.Instance.Obj.Clear();
+                SingletonStatus.Instance.ClearObj();
 
                 // 遍历DataGridView所有有效行
                 foreach (DataGridViewRow row in DataGridViewDefineVar.Rows)
@@ -89,14 +92,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     if (string.IsNullOrEmpty(varName)) continue;
 
                     // 检查变量名是否重复
-                    if (SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().Any(v => v.VarName.Equals(varName, StringComparison.OrdinalIgnoreCase)))
+                    if (SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().Any(v => v.VarName.Equals(varName, StringComparison.OrdinalIgnoreCase)))
                     {
                         MessageHelper.MessageOK($"变量名称\"{varName}\"重复，无法保存。", TType.Warn);
                         return;
                     }
 
-                    // 使用VarItem_Enhanced
-                    SingletonStatus.Instance.Obj.Add(new VarItem_Enhanced
+                    var newVariable = new VarItem_Enhanced
                     {
                         VarName = varName,
                         VarType = varType,
@@ -106,13 +108,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         IsAssignedByStep = false,
                         AssignedByStepIndex = -1,
                         AssignmentType = VariableAssignmentType.None
-                    });
+                    };
+
+                    SingletonStatus.Instance.AddObj(newVariable);
 
                     await JsonManager.UpdateConfigAsync(config =>
                     {
                         // 清空并写入自定义参数 - 转换为VarItem用于序列化
                         config.Variable.Clear();
-                        config.Variable.AddRange(SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>().Cast<VarItem>());
+                        config.Variable.AddRange(SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().Cast<VarItem>());
                         return Task.CompletedTask;
                     });
                 }

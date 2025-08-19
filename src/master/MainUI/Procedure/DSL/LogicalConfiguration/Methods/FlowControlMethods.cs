@@ -21,7 +21,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             {
                 // 获取变量值
                 var singleton = SingletonStatus.Instance;
-                var variables = singleton.Obj.OfType<VarItem>().ToList();
+                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
                 var variable = variables.FirstOrDefault(v => v.VarName == param.VarName);
 
                 if (variable == null)
@@ -246,21 +246,5 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 
         #endregion
 
-        #region 辅助类和枚举（如果需要的话）
-
-        /// <summary>
-        /// 全局变量管理器的简化访问（如果没有的话）
-        /// </summary>
-        private static class GlobalVariableManager
-        {
-            public static VarItem_Enhanced FindVariableByName(string varName)
-            {
-                var singleton = SingletonStatus.Instance;
-                return singleton.Obj.OfType<VarItem_Enhanced>()
-                    .FirstOrDefault(v => v.VarName == varName);
-            }
-        }
-
-        #endregion
     }
 }

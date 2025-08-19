@@ -14,7 +14,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// </summary>
         public static List<VarItem_Enhanced> GetAllVariables()
         {
-            return [.. SingletonStatus.Instance.Obj.OfType<VarItem_Enhanced>()];
+            return [.. SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>()];
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
             else
             {
                 // 添加新变量
-                SingletonStatus.Instance.Obj.Add(variable);
+                SingletonStatus.Instance.AddObj(variable);
             }
         }
 
@@ -54,7 +54,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
             var variable = FindVariableByName(varName);
             if (variable != null)
             {
-                return SingletonStatus.Instance.Obj.Remove(variable);
+                return SingletonStatus.Instance.RemoveObj(variable);
             }
             return false;
         }

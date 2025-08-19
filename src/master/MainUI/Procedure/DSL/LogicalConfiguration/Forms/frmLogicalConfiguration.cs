@@ -387,7 +387,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                // 只添加到临时存储和网格
                 var newStep = new ChildModel
                 {
                     StepName = stepName,
@@ -396,7 +395,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     StepParameter = 0
                 };
 
-                SingletonStatus.Instance.IempSteps.Add(newStep);
+                SingletonStatus.Instance.AddStep(newStep);
                 _gridManager.AddRow(stepName);
             }
             catch (Exception ex)
@@ -459,14 +458,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         });
                     }
 
-                    // 清空并写入自定义参数 - 转换VarItem_Enhanced为VarItem
+                    // 清空并写入自定义参数 - 使用线程安全方法
                     config.Variable.Clear();
-                    config.Variable.AddRange(SingletonStatus.Instance.Obj.
-                        OfType<VarItem_Enhanced>().Cast<VarItem>());
+                    var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>();
+                    config.Variable.AddRange(variables.Cast<VarItem>());
 
-                    // 清空并写入所有步骤
+                    // 清空并写入所有步骤 - 使用线程安全方法
                     config.Form[0].ChildSteps.Clear();
-                    config.Form[0].ChildSteps.AddRange(SingletonStatus.Instance.IempSteps);
+                    var steps = SingletonStatus.Instance.IempSteps;
+                    config.Form[0].ChildSteps.AddRange(steps);
 
                     await Task.CompletedTask;
                 });
@@ -478,37 +478,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             {
                 NlogHelper.Default.Error("保存步骤到配置文件错误", ex);
                 MessageHelper.MessageOK($"保存步骤到配置文件错误：{ex.Message}", TType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 更新所有变量的赋值状态
-        /// </summary>
-        private void UpdateVariableAssignmentStatuses()
-        {
-            var steps = SingletonStatus.Instance.IempSteps;
-
-            // 遍历所有步骤，设置变量赋值状态
-            for (int i = 0; i < steps.Count; i++)
-            {
-                var step = steps[i];
-
-                // 如果是PLC读取步骤
-                if (ParameterManager.TryGetParameter<Parameter_ReadPLC>(step.StepParameter, out var plcParam))
-                {
-                    foreach (var item in plcParam.Items)
-                    {
-                        var variable = GlobalVariableManager.FindVariableByName(item.TargetVarName);
-                        variable?.SetAssignmentStatus(i, $"PLC读取:{step.StepName}", VariableAssignmentType.PLCRead);
-                    }
-                }
-
-                // 如果是变量赋值步骤
-                if (ParameterManager.TryGetParameter<Parameter_VariableAssignment>(step.StepParameter, out var varParam) && varParam.IsAssignment)
-                {
-                    var variable = GlobalVariableManager.FindVariableByName(varParam.TargetVarName);
-                    variable?.SetAssignmentStatus(i, $"变量赋值:{step.StepName}", VariableAssignmentType.Expression);
-                }
             }
         }
         #endregion
@@ -538,16 +507,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 取消选择
                     ProcessDataGridView.ClearSelection();
 
-                    //  使用依赖注入工厂创建执行管理器
+                    //  线程安全方法获取步骤列表，使用依赖注入工厂创建执行管理器
+                    var steps = SingletonStatus.Instance.IempSteps;
                     var factory = DSLServiceContainer.GetService<Func<List<ChildModel>, StepExecutionManager>>();
-                    _executionManager = factory(SingletonStatus.Instance.IempSteps);
+                    _executionManager = factory(steps);
 
                     //  或者直接使用静态工厂方法（两种方式都可以）
                     // _executionManager = StepExecutionManager.Create(SingletonStatus.Instance.IempSteps);
 
                     _executionManager.StepStatusChanged += UpdateStepStatus;
 
-                    NlogHelper.Default.Info($"开始执行步骤序列，共 {SingletonStatus.Instance.IempSteps.Count} 个步骤");
+                    NlogHelper.Default.Info($"开始执行步骤序列，共 {SingletonStatus.Instance.GetStepCount()} 个步骤");
 
                     // 开始执行
                     await _executionManager.StartExecutionAsync();
