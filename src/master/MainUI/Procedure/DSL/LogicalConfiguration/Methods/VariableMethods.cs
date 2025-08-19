@@ -21,7 +21,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             return await ExecuteWithLogging(param, () =>
             {
                 var singleton = SingletonStatus.Instance;
-                var variables = GlobalVariableManager.GetAllVariables();
+                var variables = GlobalVariableManager.GetAllVariablesStatic();
 
                 // 检查变量是否已存在
                 var existingVar = variables.FirstOrDefault(v => v.VarName == param.VarName);
@@ -56,7 +56,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         {
             return await ExecuteWithLogging(param, async () =>
             {
-                var targetVar = GlobalVariableManager.FindVariableByName(param.TargetVarName) ?? 
+                var targetVar = GlobalVariableManager.FindVariableByNameStatic(param.TargetVarName) ?? 
                     throw new ArgumentException($"目标变量不存在: {param.TargetVarName}");
 
                 // 执行赋值逻辑

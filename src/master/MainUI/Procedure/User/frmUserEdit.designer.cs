@@ -34,8 +34,8 @@
             btnCancel = new UIButton();
             btnSave = new UIButton();
             uiPanel1 = new UIPanel();
-            uiLabel5 = new UILabel();
             txtUserName = new UITextBox();
+            uiLabel1 = new UILabel();
             uiPanel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -104,7 +104,7 @@
             // 
             // uiPanel1
             // 
-            uiPanel1.Controls.Add(uiLabel5);
+            uiPanel1.Controls.Add(uiLabel1);
             uiPanel1.Controls.Add(uiLabel2);
             uiPanel1.Controls.Add(btnCancel);
             uiPanel1.Controls.Add(CboRole);
@@ -121,13 +121,6 @@
             uiPanel1.RectColor = Color.White;
             uiPanel1.RectDisableColor = Color.White;
             uiPanel1.TextAlignment = ContentAlignment.MiddleCenter;
-            // 
-            // uiLabel5
-            // 
-            uiLabel5.BackColor = Color.Transparent;
-            resources.ApplyResources(uiLabel5, "uiLabel5");
-            uiLabel5.ForeColor = Color.FromArgb(46, 46, 46);
-            uiLabel5.Name = "uiLabel5";
             // 
             // txtUserName
             // 
@@ -150,6 +143,13 @@
             txtUserName.Watermark = "请输入用户名";
             txtUserName.WatermarkActiveColor = Color.FromArgb(46, 46, 46);
             txtUserName.WatermarkColor = Color.FromArgb(46, 46, 46);
+            // 
+            // uiLabel1
+            // 
+            uiLabel1.BackColor = Color.Transparent;
+            resources.ApplyResources(uiLabel1, "uiLabel1");
+            uiLabel1.ForeColor = Color.FromArgb(46, 46, 46);
+            uiLabel1.Name = "uiLabel1";
             // 
             // frmUserEdit
             // 
@@ -176,7 +176,7 @@
         private Sunny.UI.UIButton btnCancel;
         private Sunny.UI.UIButton btnSave;
         private UIPanel uiPanel1;
-        private UILabel uiLabel5;
         private UITextBox txtUserName;
+        private UILabel uiLabel1;
     }
 }

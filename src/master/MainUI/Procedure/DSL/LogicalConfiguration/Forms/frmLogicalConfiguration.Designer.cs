@@ -142,6 +142,7 @@
             ProcessDataGridView.Size = new Size(345, 714);
             ProcessDataGridView.StripeOddColor = Color.FromArgb(235, 243, 255);
             ProcessDataGridView.TabIndex = 2;
+            ProcessDataGridView.CellContentDoubleClick += ProcessDataGridView_CellDoubleClick;
             // 
             // ColProcessName
             // 
@@ -247,7 +248,6 @@
             BtnClose.TabIndex = 441;
             BtnClose.Text = "退 出";
             BtnClose.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            BtnClose.Click += BtnClose_Click;
             // 
             // btnSave
             // 

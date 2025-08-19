@@ -145,7 +145,6 @@ namespace MainUI.Procedure.DSL
                     string TestPath = $"{Application.StartupPath}Procedure\\{ModelType}\\{ModelName}\\{LstName}.json";
                     Debug.WriteLine($"选择型号：{ModelName},选择下标：{LstIndex},选择项点：{LstName}，路径：{TestPath}");
 
-                    //FrmStepEdit stopedit = new(TestPath, ModelType, ModelName, LstName);
                     FrmLogicalConfiguration stopedit = new(TestPath, ModelType,ModelName, LstName);
                     stopedit.ShowDialog();
                 }
@@ -165,39 +164,5 @@ namespace MainUI.Procedure.DSL
             cboModel.DataSource = bModelType.GetNewModels(cboType.SelectedValue.ToInt32());
         }
 
-        void ShowFormWithInterface<ICompressorType>(string formName)
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var formType = assembly.GetTypes()
-                .FirstOrDefault(t => t.IsSubclassOf(typeof(UIForm))
-                                  && t.GetInterfaces().Contains(typeof(ICompressorType))
-                                  /*&& t.Name == formName*/);
-
-            if (formType != null)
-            {
-                var form = (UIForm)Activator.CreateInstance(formType);
-                form.ShowDialog();
-            }
-        }
-
     }
-
-    //public static class FormRegistry
-    //{
-    //    private static readonly ConcurrentDictionary<Type, Type> _formMapping = new();
-
-    //    public static void Initialize()
-    //    {
-    //        var forms = Assembly.GetExecutingAssembly()
-    //            .GetTypes()
-    //            .Where(t => t.IsSubclassOf(typeof(Form))
-    //                      && t.GetCustomAttribute<FormMetadataAttribute>() != null);
-
-    //        foreach (var type in forms)
-    //        {
-    //            var keyType = type.GetCustomAttribute<FormMetadataAttribute>().FormKey;
-    //            _formMapping[keyType] = type;
-    //        }
-    //    }
-    //}
 }

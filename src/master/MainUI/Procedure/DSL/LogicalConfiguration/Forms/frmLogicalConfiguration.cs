@@ -1,22 +1,52 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
-using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
+    /// <summary>
+    /// 使用依赖注入的构造函数
+    /// 
+    /// 优势：
+    /// 1. 明确的依赖关系
+    /// 2. 便于单元测试
+    /// 3. 更好的错误处理
+    /// 4. 支持配置和日志
+    /// </summary>
     public partial class FrmLogicalConfiguration : UIForm
     {
-        private SingletonStatus _singletonStatus;
+        // 通过依赖注入获取的服务
+        private readonly IWorkflowStateService _workflowState;
+        private readonly GlobalVariableManager _variableManager;
+        private readonly ILogger<FrmLogicalConfiguration> _logger;
+
+       // 原有的私有字段
         private readonly DataGridViewManager _gridManager;
         private StepExecutionManager _executionManager;
         private bool _isExecuting;
 
         #region 构造函数
-        public FrmLogicalConfiguration(string path, string modelType, string modelName, string processName)
+        public FrmLogicalConfiguration(
+            IWorkflowStateService workflowState,
+            GlobalVariableManager variableManager,
+            ILogger<FrmLogicalConfiguration> logger,
+            string path,
+            string modelType,
+            string modelName,
+            string processName)
         {
+            // 依赖验证
+            _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
+            _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
             try
             {
+                _logger.LogInformation("正在初始化工作流配置窗体");
+
                 InitializeComponent();
 
                 // 初始化配置
@@ -25,27 +55,56 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 加载工具箱
                 InitializeToolbox();
 
-                // 使用服务容器创建DataGridView管理器
-                _gridManager = new DataGridViewManager(ProcessDataGridView, SingletonStatus.Instance.IempSteps);
+                // 使用服务创建DataGridView管理器
+                var steps = _workflowState.GetSteps();
+                _gridManager = new DataGridViewManager(ProcessDataGridView, steps);
 
                 // 设置事件处理程序
                 RegisterEventHandlers();
 
                 // 验证依赖注入容器
                 ValidateDependencyInjection();
+
+                _logger.LogInformation("工作流配置窗体初始化完成");
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("构造函数加载数据错误", ex);
+                _logger.LogError(ex, "初始化工作流配置窗体时发生错误");
                 MessageHelper.MessageOK($"构造函数加载数据错误：{ex.Message}", TType.Error);
+                throw; // 重新抛出异常，让调用方处理
             }
         }
 
-        // 初始化配置
+        /// <summary>
+        /// 兼容性构造函数（用于现有代码）
+        /// 
+        /// 这个构造函数使用服务定位器模式获取依赖
+        /// 新代码不应该使用这个构造函数
+        /// </summary>
+        public FrmLogicalConfiguration(string path, string modelType, string modelName, string processName)
+            : this(
+                Program.ServiceProvider.GetRequiredService<IWorkflowStateService>(),
+                Program.ServiceProvider.GetRequiredService<GlobalVariableManager>(),
+                Program.ServiceProvider.GetRequiredService<ILogger<FrmLogicalConfiguration>>(),
+                path, modelType, modelName, processName)
+        {
+            // 所有逻辑都委托给主构造函数
+        }
+
+        #endregion
+
+        #region 初始化方法
+
+        /// <summary>
+        /// 初始化配置 - 使用新的服务
+        /// </summary>
         private void InitializeConfiguration(string path, string modelType, string modelName, string processName)
         {
             try
             {
+                _logger.LogDebug("开始初始化配置: {ModelType}/{ModelName}/{ProcessName}",
+                    modelType, modelName, processName);
+
                 // 设置JSON文件路径
                 JsonManager.FilePath = path;
 
@@ -55,70 +114,163 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 创建配置文件
                 CreateJsonFileAsync(modelType, modelName, processName).Wait();
 
+                // 使用新服务更新配置
+                _workflowState.UpdateConfiguration(modelType, modelName, processName);
+
                 // 初始化变量
                 InitializeVariables();
 
                 // 初始化实验步骤
-                LoadStepsToGrid();
+                //LoadStepsToGrid();
 
-                _singletonStatus = SingletonStatus.Instance;
+                _logger.LogDebug("配置初始化完成");
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("初始化配置错误", ex);
-                MessageHelper.MessageOK($"初始化配置错误：{ex.Message}", TType.Error);
+                _logger.LogError(ex, "初始化配置时发生错误");
+                throw;
             }
         }
 
-        // 注册事件处理程序
+        /// <summary>
+        /// 注册事件处理程序 - 使用新的事件
+        /// </summary>
         private void RegisterEventHandlers()
-        {
-            // 拖放事件
-            ToolTreeView.ItemDrag += ToolTreeView_ItemDrag;
-            ToolTreeView.NodeMouseDoubleClick += ToolTreeView_NodeMouseDoubleClick;
-            ProcessDataGridView.DragEnter += ProcessDataGridView_DragEnter;
-            ProcessDataGridView.DragDrop += ProcessDataGridView_DragDrop;
-            ProcessDataGridView.CellDoubleClick += ProcessDataGridView_CellDoubleClick;
-        }
-
-        // 加载已存在的Json数据到DataGridView控件中
-        private async void LoadStepsToGrid()
         {
             try
             {
-                var config = await JsonManager.GetOrCreateConfigAsync();
-                // 找到当前项点的 Parent
-                var parent = config.Form.FirstOrDefault(p =>
-                    p.ModelTypeName == _singletonStatus.ModelTypeName &&
-                    p.ModelName == _singletonStatus.ModelName &&
-                    p.ItemName == _singletonStatus.ItemName);
+                // 订阅工作流状态变更事件
+                _workflowState.StepNumChanged += OnStepNumChanged;
+                _workflowState.VariableAdded += OnVariableAdded;
+                _workflowState.VariableRemoved += OnVariableRemoved;
+                _workflowState.StepAdded += OnStepAdded;
+                _workflowState.StepRemoved += OnStepRemoved;
 
-                if (parent?.ChildSteps != null)
+                _logger.LogDebug("事件处理程序注册完成");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "注册事件处理程序时发生错误");
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region 事件处理方法
+
+        /// <summary>
+        /// 步骤序号变更事件处理
+        /// </summary>
+        private void OnStepNumChanged(int newStepNum)
+        {
+            try
+            {
+                _logger.LogDebug("步骤序号变更为: {StepNum}", newStepNum);
+
+                // 在UI线程上更新界面
+                if (InvokeRequired)
                 {
-                    // 清空临时数据和网格
-                    SingletonStatus.Instance.IempSteps.Clear();
-                    ProcessDataGridView.Rows.Clear();
+                    Invoke(new Action<int>(OnStepNumChanged), newStepNum);
+                    return;
+                }
 
-                    // 加载数据到临时存储和网格
-                    foreach (var step in parent.ChildSteps)
-                    {
-                        SingletonStatus.Instance.IempSteps.Add(new ChildModel
-                        {
-                            StepName = step.StepName,
-                            Status = step.Status,
-                            StepNum = step.StepNum,
-                            StepParameter = step.StepParameter
-                        });
-                        ProcessDataGridView.Rows.Add(step.StepName, step.StepNum);
-                    }
+                // 更新界面显示
+                UpdateStepDisplay(newStepNum);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理步骤序号变更事件时发生错误");
+            }
+        }
+
+        /// <summary>
+        /// 变量添加事件处理
+        /// </summary>
+        private void OnVariableAdded(object variable)
+        {
+            try
+            {
+                if (variable is VarItem_Enhanced varItem)
+                {
+                    _logger.LogDebug("变量已添加: {VarName}", varItem.VarName);
+                    // 可以在这里更新相关UI
                 }
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("加载步骤数据错误", ex);
-                MessageHelper.MessageOK($"加载步骤数据错误：{ex.Message}", TType.Error);
+                _logger.LogError(ex, "处理变量添加事件时发生错误");
             }
         }
+
+        /// <summary>
+        /// 变量移除事件处理
+        /// </summary>
+        private void OnVariableRemoved(object variable)
+        {
+            try
+            {
+                if (variable is VarItem_Enhanced varItem)
+                {
+                    _logger.LogDebug("变量已移除: {VarName}", varItem.VarName);
+                    // 可以在这里更新相关UI
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理变量移除事件时发生错误");
+            }
+        }
+
+        /// <summary>
+        /// 步骤添加事件处理
+        /// </summary>
+        private void OnStepAdded(ChildModel step)
+        {
+            try
+            {
+                _logger.LogDebug("步骤已添加: {StepName}", step.StepName);
+
+                // 在UI线程上更新DataGridView
+                if (InvokeRequired)
+                {
+                    Invoke(new Action<ChildModel>(OnStepAdded), step);
+                    return;
+                }
+
+                _gridManager.AddRow(step.StepName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理步骤添加事件时发生错误");
+            }
+        }
+
+        /// <summary>
+        /// 步骤移除事件处理
+        /// </summary>
+        private void OnStepRemoved(ChildModel step)
+        {
+            try
+            {
+                _logger.LogDebug("步骤已移除: {StepName}", step.StepName);
+
+                // 在UI线程上更新DataGridView
+                if (InvokeRequired)
+                {
+                    Invoke(new Action<ChildModel>(OnStepRemoved), step);
+                    return;
+                }
+
+                // 更新网格显示
+                RefreshStepGrid();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "处理步骤移除事件时发生错误");
+            }
+        }
+
         #endregion
 
         #region 依赖注入验证
@@ -380,13 +532,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region 步骤操作
+        #region 步骤操作 - 使用新服务
 
-        // 将步骤临时添加到表单中
+        /// <summary>
+        /// 添加步骤到表单 - 新版本
+        /// </summary>
         private void AddStepToForm(string stepName, int stepNumber)
         {
             try
             {
+                _logger.LogDebug("添加步骤: {StepName}, 序号: {StepNumber}", stepName, stepNumber);
+
                 var newStep = new ChildModel
                 {
                     StepName = stepName,
@@ -395,17 +551,21 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     StepParameter = 0
                 };
 
-                SingletonStatus.Instance.AddStep(newStep);
-                _gridManager.AddRow(stepName);
+                // 使用新的线程安全方法
+                _workflowState.AddStep(newStep);
+
+                _logger.LogInformation("步骤添加成功: {StepName}", stepName);
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("添加步骤错误", ex);
+                _logger.LogError(ex, "添加步骤时发生错误: {StepName}", stepName);
                 MessageHelper.MessageOK($"添加步骤错误：{ex.Message}", TType.Error);
             }
         }
 
-        // 双击DataGridView单元格打开步骤配置界面
+        /// <summary>
+        /// 双击DataGridView单元格打开步骤配置界面
+        /// </summary>
         private void ProcessDataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             try
@@ -414,17 +574,22 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 {
                     var row = ProcessDataGridView.Rows[e.RowIndex];
                     string stepName = row.Cells[0].Value?.ToString();
+
                     if (!string.IsNullOrEmpty(stepName))
                     {
-                        SingletonStatus.Instance.StepNum = e.RowIndex;
-                        SingletonStatus.Instance.StepName = stepName;
+                        _logger.LogDebug("打开步骤配置: {StepName}, 行索引: {RowIndex}", stepName, e.RowIndex);
+
+                        // 使用新的线程安全属性设置
+                        _workflowState.StepNum = e.RowIndex;
+                        _workflowState.StepName = stepName;
+
                         FormSet.OpenFormByName(stepName, this);
                     }
                 }
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("打开步骤参数配置界面错误", ex);
+                _logger.LogError(ex, "打开步骤参数配置界面时发生错误");
                 MessageHelper.MessageOK($"打开步骤参数配置界面错误：{ex.Message}", TType.Error);
             }
         }
@@ -436,14 +601,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region 按钮操作
-        // 退出界面
-        private void BtnClose_Click(object sender, EventArgs e) => Close();
+        #region 按钮操作 - 使用新服务
 
+        /// <summary>
+        /// 保存按钮点击事件 - 新版本
+        /// </summary>
         private async void BtnSave_Click(object sender, EventArgs e)
         {
             try
             {
+                _logger.LogInformation("开始保存工作流配置");
+
                 await JsonManager.UpdateConfigAsync(async config =>
                 {
                     // 确保配置中有表单
@@ -451,41 +619,39 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     {
                         config.Form.Add(new Parent
                         {
-                            ModelTypeName = _singletonStatus.ModelTypeName,
-                            ModelName = _singletonStatus.ModelName,
-                            ItemName = _singletonStatus.ItemName,
+                            ModelTypeName = _workflowState.ModelTypeName,
+                            ModelName = _workflowState.ModelName,
+                            ItemName = _workflowState.ItemName,
                             ChildSteps = []
                         });
                     }
 
-                    // 清空并写入自定义参数 - 使用线程安全方法
+                    // 使用新的线程安全方法获取变量
                     config.Variable.Clear();
-                    var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>();
+                    var variables = _workflowState.GetAllVariables();
                     config.Variable.AddRange(variables.Cast<VarItem>());
 
-                    // 清空并写入所有步骤 - 使用线程安全方法
+                    // 使用新的线程安全方法获取步骤
                     config.Form[0].ChildSteps.Clear();
-                    var steps = SingletonStatus.Instance.IempSteps;
+                    var steps = _workflowState.GetSteps();
                     config.Form[0].ChildSteps.AddRange(steps);
 
                     await Task.CompletedTask;
                 });
 
+                _logger.LogInformation("工作流配置保存成功");
                 MessageHelper.MessageOK("保存成功！", TType.Success);
                 Close();
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("保存步骤到配置文件错误", ex);
-                MessageHelper.MessageOK($"保存步骤到配置文件错误：{ex.Message}", TType.Error);
+                _logger.LogError(ex, "保存工作流配置时发生错误");
+                MessageHelper.MessageOK($"保存错误：{ex.Message}", TType.Error);
             }
         }
-        #endregion
-
-        #region 执行和停止操作
 
         /// <summary>
-        /// 执行按钮点击事件 - 使用纯依赖注入模式
+        /// 执行按钮点击事件 - 新版本
         /// </summary>
         private async void btnExecute_Click(object sender, EventArgs e)
         {
@@ -498,31 +664,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     return;
                 }
 
+                _isExecuting = true;
+                btnExecute.Text = "停止";
+                btnExecute.Symbol = 61516;
+
                 try
                 {
-                    _isExecuting = true;
-                    btnExecute.Text = "停止";
-                    btnExecute.Symbol = 61516;
-
                     // 取消选择
                     ProcessDataGridView.ClearSelection();
 
-                    //  线程安全方法获取步骤列表，使用依赖注入工厂创建执行管理器
-                    var steps = SingletonStatus.Instance.IempSteps;
+                    // 使用新的线程安全方法获取步骤
+                    var steps = _workflowState.GetSteps();
+                    var stepCount = _workflowState.GetStepCount();
+
+                    _logger.LogInformation("开始执行步骤序列，共 {StepCount} 个步骤", stepCount);
+
+                    // 使用依赖注入工厂创建执行管理器
                     var factory = DSLServiceContainer.GetService<Func<List<ChildModel>, StepExecutionManager>>();
                     _executionManager = factory(steps);
 
-                    //  或者直接使用静态工厂方法（两种方式都可以）
-                    // _executionManager = StepExecutionManager.Create(SingletonStatus.Instance.IempSteps);
-
                     _executionManager.StepStatusChanged += UpdateStepStatus;
-
-                    NlogHelper.Default.Info($"开始执行步骤序列，共 {SingletonStatus.Instance.GetStepCount()} 个步骤");
 
                     // 开始执行
                     await _executionManager.StartExecutionAsync();
 
-                    NlogHelper.Default.Info("步骤序列执行完成");
+                    _logger.LogInformation("步骤序列执行完成");
                 }
                 finally
                 {
@@ -533,15 +699,21 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     if (_executionManager != null)
                     {
                         _executionManager.StepStatusChanged -= UpdateStepStatus;
+                        _executionManager = null;
                     }
                 }
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("开始执行步骤错误", ex);
-                MessageHelper.MessageOK($"开始执行步骤错误：{ex.Message}", TType.Error);
+                _logger.LogError(ex, "执行步骤序列时发生错误");
+                MessageHelper.MessageOK($"执行错误：{ex.Message}", TType.Error);
             }
         }
+
+        #endregion
+
+        #region 执行和停止操作
+
 
         /// <summary>
         /// 更新步骤状态显示
@@ -583,6 +755,81 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             catch (Exception ex)
             {
                 NlogHelper.Default.Error("更新步骤状态显示错误", ex);
+            }
+        }
+
+        #endregion
+
+        #region 辅助方法
+
+        /// <summary>
+        /// 更新步骤显示
+        /// </summary>
+        private void UpdateStepDisplay(int stepNum)
+        {
+            try
+            {
+                // 更新界面显示当前步骤
+                if (stepNum >= 0 && stepNum < ProcessDataGridView.Rows.Count)
+                {
+                    ProcessDataGridView.ClearSelection();
+                    ProcessDataGridView.Rows[stepNum].Selected = true;
+                    ProcessDataGridView.CurrentCell = ProcessDataGridView.Rows[stepNum].Cells[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新步骤显示时发生错误");
+            }
+        }
+
+        /// <summary>
+        /// 刷新步骤网格
+        /// </summary>
+        private void RefreshStepGrid()
+        {
+            try
+            {
+                // 重新加载步骤到网格
+                var steps = _workflowState.GetSteps();
+                //_gridManager.RefreshData(steps);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刷新步骤网格时发生错误");
+            }
+        }
+
+        #endregion
+
+        #region 资源释放
+
+        /// <summary>
+        /// 窗体关闭时的清理工作
+        /// </summary>
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            try
+            {
+                // 取消事件订阅
+                if (_workflowState != null)
+                {
+                    _workflowState.StepNumChanged -= OnStepNumChanged;
+                    _workflowState.VariableAdded -= OnVariableAdded;
+                    _workflowState.VariableRemoved -= OnVariableRemoved;
+                    _workflowState.StepAdded -= OnStepAdded;
+                    _workflowState.StepRemoved -= OnStepRemoved;
+                }
+
+                _logger.LogInformation("工作流配置窗体已关闭");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "关闭窗体时发生错误");
+            }
+            finally
+            {
+                base.OnFormClosed(e);
             }
         }
 

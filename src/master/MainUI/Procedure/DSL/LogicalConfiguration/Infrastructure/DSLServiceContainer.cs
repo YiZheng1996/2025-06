@@ -144,8 +144,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
         /// </summary>
         public static IEnumerable<Type> GetRegisteredServiceTypes()
         {
-            return new[]
-            {
+            return
+            [
                 typeof(SystemMethods),
                 typeof(VariableMethods),
                 typeof(PLCMethods),
@@ -155,7 +155,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
                 typeof(GlobalVariableManager),
                 typeof(DataGridViewManager),
                 typeof(Func<List<ChildModel>, StepExecutionManager>)
-            };
+            ];
         }
     }
 }
