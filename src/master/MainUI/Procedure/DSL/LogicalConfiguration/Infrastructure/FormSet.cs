@@ -36,14 +36,27 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
                 // 根据窗体名称创建对应的窗体
                 switch (formName.ToLowerInvariant())
                 {
-                    case "definevariable":
                     case "变量定义":
                         form = _formFactory.CreateForm<Form_DefineVar>();
                         break;
-
-                    case "plcread":
-                    case "plc读取":
+                    case "PLC读取":
                         form = _formFactory.CreateForm<Form_ReadPLC>();
+                        break;
+                    case "PLC写入":
+                        form = _formFactory.CreateForm<Form_WritePLC>();
+                        break;
+                    case "延时工具":
+                        form = _formFactory.CreateForm<Form_DelayTime>();
+                        break;
+
+                    case "读取单元格":
+                        form = _formFactory.CreateForm<Form_ReadCells>();
+                        break;
+                    case "写入单元格":
+                        form = _formFactory.CreateForm<Form_WriteCells>();
+                        break;
+                    case "保存报表":
+                        form = _formFactory.CreateForm<Form_SaveReport>();
                         break;
 
                     default:

@@ -7,24 +7,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
     /// 全局变量管理器
     /// 同时支持静态方法（兼容性）和实例方法（推荐）
     /// </summary>
-    public class GlobalVariableManager
+    /// <remarks>
+    /// 构造函数（用于依赖注入）
+    /// </remarks>
+    public class GlobalVariableManager(IWorkflowStateService workflowState)
     {
-        private readonly IWorkflowStateService _workflowState;
+        private readonly IWorkflowStateService _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
 
-        #region 构造函数
-
-        /// <summary>
-        /// 构造函数（用于依赖注入）
-        /// </summary>
-        public GlobalVariableManager(IWorkflowStateService workflowState)
-        {
-            _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
-        }
-
-        #endregion
 
         #region 实例方法（推荐使用）
-
         /// <summary>
         /// 获取所有变量
         /// </summary>

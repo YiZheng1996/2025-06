@@ -1,6 +1,8 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration;
 using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
 using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+using MainUI.Procedure.DSL.LogicalConfiguration.Methods;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,114 +12,277 @@ namespace MainUI
 {
     static class Program
     {
-        // 全局服务提供者，用于整个应用程序
+        /// <summary>
+        /// 全局服务提供者，用于整个应用程序
+        /// </summary>
         public static IServiceProvider ServiceProvider { get; private set; }
 
         /// <summary>  
-        /// 应用程序的主入口点。  
+        /// 应用程序的主入口点
         /// </summary>  
         [STAThread]
         static void Main()
         {
-            VarHelper.fsql = new FreeSql.FreeSqlBuilder()
-                .UseMonitorCommand(cmd => Trace.WriteLine($"Sql：{cmd.CommandText}"))  
-                .UseConnectionString(FreeSql.DataType.Sqlite, ConfigurationManager.ConnectionStrings["MyDb"].ConnectionString)
-                .Build();
-            if (!VarHelper.fsql.Ado.ExecuteConnectTest()) throw new Exception("Sqlite数据库连接失败");
+            try
+            {
+                // 1. 初始化数据库
+                InitializeDatabase();
 
-            // 配置依赖注入容器
+                // 2. 配置依赖注入
+                ConfigureDependencyInjection();
+
+                // 3. 检查单例运行
+                EnsureSingleInstance();
+
+                // 4. 配置应用程序
+                ConfigureApplication();
+
+                // 5. 显示登录界面并启动主程序
+                RunApplication();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"应用程序启动失败：{ex.Message}", "错误",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(1);
+            }
+        }
+
+        #region 初始化方法
+
+        /// <summary>
+        /// 初始化数据库连接
+        /// </summary>
+        private static void InitializeDatabase()
+        {
+            VarHelper.fsql = new FreeSql.FreeSqlBuilder()
+                .UseMonitorCommand(cmd => Trace.WriteLine($"Sql：{cmd.CommandText}"))
+                .UseConnectionString(FreeSql.DataType.Sqlite,
+                    ConfigurationManager.ConnectionStrings["MyDb"].ConnectionString)
+                .Build();
+
+            if (!VarHelper.fsql.Ado.ExecuteConnectTest())
+                throw new Exception("Sqlite数据库连接失败");
+        }
+
+        /// <summary>
+        /// 配置依赖注入容器
+        /// </summary>
+        private static void ConfigureDependencyInjection()
+        {
             var services = new ServiceCollection();
             ConfigureServices(services);
 
-            // 构建服务提供者
             ServiceProvider = services.BuildServiceProvider();
 
             // 设置兼容性服务定位器（临时解决方案）
             ServiceLocator.SetServiceProvider(ServiceProvider);
+        }
 
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            frmLogin login = new();
-            login.lblSoftName.Text = "软件通用平台";
-            login.Icon = new Icon("ico.ico");
-            var files = Directory.GetFiles(Application.StartupPath, "ico.*");
-            var f = files.Where(x => !x.Contains("ico.ico")).FirstOrDefault();
-            if (f != null)
-            {
-                Image image = Image.FromFile(f);//登录界面和主界面的图片  
-                login.Logo.Image = image;
-            }
-            #region 单例模式  
+        /// <summary>
+        /// 确保只运行一个应用程序实例
+        /// </summary>
+        private static void EnsureSingleInstance()
+        {
             string softname = Application.ProductName;
             VarHelper.SoftName = softname;
-            bool flag = false;
-            Mutex mutex = new(true, softname, out flag);
-            //第一个参数:true--给调用线程赋予互斥体的初始所属权    
-            //第一个参数:互斥体的名称    
-            //第三个参数:返回值,如果调用线程已被授予互斥体的初始所属权,则返回true    
-            if (!flag)
+
+            using var mutex = new Mutex(true, softname, out bool createdNew);
+
+            if (!createdNew)
             {
-                MessageBox.Show("只能运行一个程序！", "请确定", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("只能运行一个程序！", "请确定",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 Environment.Exit(0);
             }
-            #endregion
-            DialogResult dr = login.ShowDialog();
-            if (dr == DialogResult.OK)
+        }
+
+        /// <summary>
+        /// 配置应用程序基本设置
+        /// </summary>
+        private static void ConfigureApplication()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+        }
+
+        /// <summary>
+        /// 运行应用程序主逻辑
+        /// </summary>
+        private static void RunApplication()
+        {
+            // 创建并配置登录窗体
+            var login = CreateLoginForm();
+
+            DialogResult loginResult = login.ShowDialog();
+            if (loginResult == DialogResult.OK)
             {
-                try
-                {
-                    OPCHelper.Connect();
-                    ServiceContainerInitializer.Initialize();
-                    var main = ServiceProvider.GetRequiredService<frmMainMenu>();
-                    //frmMainMenu main = new()
-                    //{
-                    //    Icon = new Icon("ico.ico")
-                    //};
-                    //if (f != null)
-                    //{
-                    //    Image image = Image.FromFile(f);//登录界面和主界面的图片  
-                    //    main.Logo.Image = image;
-                    //}
-                    Application.Run(main);
-                }
-                catch (Exception ex)
-                {
-                    NlogHelper.Default.Error("初始化失败：", ex);
-                    MessageBox.Show("初始化失败：" + ex.Message, "系统提示", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                StartMainApplication();
             }
         }
+
+        /// <summary>
+        /// 创建登录窗体
+        /// </summary>
+        private static frmLogin CreateLoginForm()
+        {
+            var login = new frmLogin
+            {
+                lblSoftName = { Text = "软件通用平台" },
+                Icon = new Icon("ico.ico")
+            };
+
+            // 设置登录界面图片
+            SetLoginImage(login);
+
+            return login;
+        }
+
+        /// <summary>
+        /// 设置登录界面图片
+        /// </summary>
+        private static void SetLoginImage(frmLogin login)
+        {
+            try
+            {
+                var files = Directory.GetFiles(Application.StartupPath, "ico.*");
+                var imageFile = files.FirstOrDefault(x => !x.Contains("ico.ico"));
+
+                if (imageFile != null)
+                {
+                    using var image = Image.FromFile(imageFile);
+                    login.Logo.Image = new Bitmap(image); // 创建副本避免文件锁定
+                }
+            }
+            catch (Exception ex)
+            {
+                // 图片加载失败不应该中断程序启动
+                NlogHelper.Default.Warn($"加载登录界面图片失败：{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 启动主应用程序
+        /// </summary>
+        private static void StartMainApplication()
+        {
+            try
+            {
+                // 连接OPC
+                OPCHelper.Connect();
+
+                // 获取主窗体
+                var mainForm = ServiceProvider.GetRequiredService<frmMainMenu>();
+
+                // 运行主程序
+                Application.Run(mainForm);
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("主应用程序启动失败：", ex);
+                MessageBox.Show($"主应用程序启动失败：{ex.Message}", "系统提示",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
+
+        #region 服务配置
 
         /// <summary>
         /// 配置所有服务的依赖注入
         /// </summary>
         private static void ConfigureServices(IServiceCollection services)
         {
-            // 注册工作流服务
+            // 注册核心服务
+            RegisterCoreServices(services);
+
+            // 注册DSL相关服务
+            RegisterDSLServices(services);
+
+            // 注册UI相关服务
+            RegisterUIServices(services);
+
+            // 注册基础设施服务
+            RegisterInfrastructureServices(services);
+        }
+
+        /// <summary>
+        /// 注册核心服务
+        /// </summary>
+        private static void RegisterCoreServices(IServiceCollection services)
+        {
+            // 工作流服务
             services.AddWorkflowServices(options =>
             {
-                options.EnableEventLogging = true;      // 开启事件日志
-                options.EnablePerformanceMonitoring = false; // 关闭性能监控（开发阶段）
-                options.MaxVariableCacheSize = 1000;    // 设置缓存大小
+                options.EnableEventLogging = true;
+                options.EnablePerformanceMonitoring = false;
+                options.MaxVariableCacheSize = 1000;
+                options.MaxStepCacheSize = 500;
             });
 
-            // 注册日志服务
-            services.AddLogging(builder =>
-            {
-                builder.AddConsole();  // 控制台日志
-                builder.AddDebug();    // 调试输出日志
-            });
+            // 全局变量管理器
+            services.AddSingleton<GlobalVariableManager>();
+        }
 
-            // 注册你的窗体类（如果需要依赖注入）
+        /// <summary>
+        /// 注册DSL相关服务
+        /// </summary>
+        private static void RegisterDSLServices(IServiceCollection services)
+        {
+            // DSL方法类
+            services.AddSingleton<SystemMethods>();
+            services.AddSingleton<VariableMethods>();
+            services.AddSingleton<PLCMethods>();
+            services.AddSingleton<DetectionMethods>();
+            services.AddSingleton<FlowControlMethods>();
+            services.AddSingleton<ReportMethods>();
+
+            // 步骤执行管理器工厂
+            services.AddTransient<Func<List<ChildModel>, StepExecutionManager>>(provider =>
+                steps => ActivatorUtilities.CreateInstance<StepExecutionManager>(provider, steps));
+        }
+
+        /// <summary>
+        /// 注册UI相关服务
+        /// </summary>
+        private static void RegisterUIServices(IServiceCollection services)
+        {
+            // 主窗体
             services.AddTransient<frmMainMenu>();
+
+            // DSL配置相关窗体
             services.AddTransient<FrmLogicalConfiguration>();
             services.AddTransient<Form_DefineVar>();
+            services.AddTransient<Form_ReadPLC>();
 
-            // 注册其他你需要的服务
-            // services.AddScoped<IDataService, DataService>();
-            // services.AddSingleton<IConfigurationService, ConfigurationService>();
+            // 窗体工厂
+            services.AddSingleton<FormFactory>();
+
+            // UI管理器
+            services.AddTransient<DataGridViewManager>();
         }
+
+        /// <summary>
+        /// 注册基础设施服务
+        /// </summary>
+        private static void RegisterInfrastructureServices(IServiceCollection services)
+        {
+            // 日志服务
+            services.AddLogging(builder =>
+            {
+                builder.AddConsole();
+                builder.AddDebug();
+
+                // 可以根据配置添加更多日志提供程序
+                // builder.AddFile("logs/app.log"); // 需要额外的日志库
+            });
+
+            // 可以在这里添加其他基础设施服务
+            // services.AddSingleton<IConfigurationService, ConfigurationService>();
+            // services.AddSingleton<ICacheService, MemoryCacheService>();
+        }
+
+        #endregion
     }
 }

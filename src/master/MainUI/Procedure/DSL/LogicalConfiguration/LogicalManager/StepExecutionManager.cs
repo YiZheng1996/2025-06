@@ -11,24 +11,29 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
     /// <remarks>
     /// 构造函数 - 获取所有方法实例
     /// </remarks>
-    public class StepExecutionManager(List<ChildModel> steps)
+    public class StepExecutionManager(
+    List<ChildModel> steps,
+    SystemMethods systemMethods,
+    VariableMethods variableMethods,
+    PLCMethods plcMethods,
+    DetectionMethods detectionMethods,
+    FlowControlMethods flowControlMethods,
+    ReportMethods reportMethods)
     {
         #region 字段和属性
 
         private readonly List<ChildModel> _steps = steps ?? throw new ArgumentNullException(nameof(steps));
-        private bool _isExecuting;
-        private int _currentStepIndex;
-
-        // 通过依赖注入获取所有方法实例
-        private readonly SystemMethods _systemMethods = DSLServiceContainer.GetService<SystemMethods>();
-        private readonly VariableMethods _variableMethods = DSLServiceContainer.GetService<VariableMethods>();
-        private readonly PLCMethods _plcMethods = DSLServiceContainer.GetService<PLCMethods>();
-        private readonly DetectionMethods _detectionMethods = DSLServiceContainer.GetService<DetectionMethods>();
-        private readonly FlowControlMethods _flowControlMethods = DSLServiceContainer.GetService<FlowControlMethods>();
-        private readonly ReportMethods _reportMethods = DSLServiceContainer.GetService<ReportMethods>();
+        private readonly SystemMethods _systemMethods = systemMethods ?? throw new ArgumentNullException(nameof(systemMethods));
+        private readonly VariableMethods _variableMethods = variableMethods ?? throw new ArgumentNullException(nameof(variableMethods));
+        private readonly PLCMethods _plcMethods = plcMethods ?? throw new ArgumentNullException(nameof(plcMethods));
+        private readonly DetectionMethods _detectionMethods = detectionMethods ?? throw new ArgumentNullException(nameof(detectionMethods));
+        private readonly FlowControlMethods _flowControlMethods = flowControlMethods ?? throw new ArgumentNullException(nameof(flowControlMethods));
+        private readonly ReportMethods _reportMethods = reportMethods ?? throw new ArgumentNullException(nameof(reportMethods));
 
         public event Action<ChildModel, int> StepStatusChanged;
 
+        private bool _isExecuting;
+        private int _currentStepIndex;
         /// <summary>
         /// 当前步骤索引
         /// </summary>
@@ -43,21 +48,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         /// 总步骤数
         /// </summary>
         public int TotalSteps => _steps.Count;
-
-        #endregion
-        #region 构造函数
-
-        #endregion
-
-        #region 静态工厂方法
-
-        /// <summary>
-        /// 静态工厂方法 - 通过服务容器创建实例
-        /// </summary>
-        public static StepExecutionManager Create(List<ChildModel> steps)
-        {
-            return new StepExecutionManager(steps);
-        }
 
         #endregion
 

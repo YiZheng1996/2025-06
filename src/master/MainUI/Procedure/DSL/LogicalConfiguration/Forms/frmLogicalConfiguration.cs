@@ -23,7 +23,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly GlobalVariableManager _variableManager;
         private readonly ILogger<FrmLogicalConfiguration> _logger;
 
-       // 原有的私有字段
+        // 原有的私有字段
         private readonly DataGridViewManager _gridManager;
         private StepExecutionManager _executionManager;
         private bool _isExecuting;
@@ -62,9 +62,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 设置事件处理程序
                 RegisterEventHandlers();
 
-                // 验证依赖注入容器
-                ValidateDependencyInjection();
-
                 _logger.LogInformation("工作流配置窗体初始化完成");
             }
             catch (Exception ex)
@@ -73,22 +70,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 MessageHelper.MessageOK($"构造函数加载数据错误：{ex.Message}", TType.Error);
                 throw; // 重新抛出异常，让调用方处理
             }
-        }
-
-        /// <summary>
-        /// 兼容性构造函数（用于现有代码）
-        /// 
-        /// 这个构造函数使用服务定位器模式获取依赖
-        /// 新代码不应该使用这个构造函数
-        /// </summary>
-        public FrmLogicalConfiguration(string path, string modelType, string modelName, string processName)
-            : this(
-                Program.ServiceProvider.GetRequiredService<IWorkflowStateService>(),
-                Program.ServiceProvider.GetRequiredService<GlobalVariableManager>(),
-                Program.ServiceProvider.GetRequiredService<ILogger<FrmLogicalConfiguration>>(),
-                path, modelType, modelName, processName)
-        {
-            // 所有逻辑都委托给主构造函数
         }
 
         #endregion
@@ -133,7 +114,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         /// <summary>
-        /// 注册事件处理程序 - 使用新的事件
+        /// 注册事件处理程序
         /// </summary>
         private void RegisterEventHandlers()
         {
@@ -145,6 +126,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 _workflowState.VariableRemoved += OnVariableRemoved;
                 _workflowState.StepAdded += OnStepAdded;
                 _workflowState.StepRemoved += OnStepRemoved;
+
+                // 订阅ToolTreeView的事件
+                ToolTreeView.ItemDrag += ToolTreeView_ItemDrag;
+                ToolTreeView.NodeMouseDoubleClick += ToolTreeView_NodeMouseDoubleClick;
+
+                // 订阅DataGridView的事件
+                ProcessDataGridView.DragDrop += ProcessDataGridView_DragDrop;
+                ProcessDataGridView.DragEnter += ProcessDataGridView_DragEnter;
 
                 _logger.LogDebug("事件处理程序注册完成");
             }
@@ -271,34 +260,50 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
-        #endregion
+        // 工具箱拖放事件处理
+        private void ToolTreeView_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (e.Item is TreeNode node && node.Parent != null)
+            {
+                ToolTreeView.DoDragDrop(e.Item, DragDropEffects.Copy);
+            }
+        }
 
-        #region 依赖注入验证
-        /// <summary>
-        /// 验证依赖注入容器是否正常工作
-        /// </summary>
-        private void ValidateDependencyInjection()
+        // 双击工具箱节点打开对应表单
+        private void ToolTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Node != null) // 确保节点非空
+            {
+                FormSet.OpenFormByName(e.Node.Text, this);
+            }
+        }
+
+        // DataGridView拖放事件处理
+        private void ProcessDataGridView_DragDrop(object sender, DragEventArgs e)
         {
             try
             {
-                // 验证服务容器配置
-                bool isValid = DSLServiceContainer.ValidateConfiguration();
-
-                if (isValid)
+                if (e.Data.GetDataPresent(typeof(TreeNode)))
                 {
-                    NlogHelper.Default.Info("依赖注入容器验证成功");
-                }
-                else
-                {
-                    NlogHelper.Default.Error("依赖注入容器验证失败");
-                    MessageHelper.MessageOK("系统初始化失败：依赖注入容器配置错误", TType.Error);
+                    var node = (TreeNode)e.Data.GetData(typeof(TreeNode));
+                    if (node?.Parent != null)
+                    {
+                        AddStepToForm(node.Text, ProcessDataGridView.Rows.Count + 1);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("依赖注入容器验证异常", ex);
-                MessageHelper.MessageOK($"系统初始化失败：{ex.Message}", TType.Error);
+                NlogHelper.Default.Error("拖拽步骤错误", ex);
+                MessageHelper.MessageOK($"拖拽步骤错误：{ex.Message}", TType.Error);
             }
+        }
+
+        // DataGridView拖放进入事件处理
+        private void ProcessDataGridView_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = e.Data.GetDataPresent(typeof(TreeNode)) ?
+                DragDropEffects.Copy : DragDropEffects.None;
         }
 
         #endregion
@@ -373,16 +378,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region 事件
-        private void ToolTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            if (e.Node != null) // 确保节点非空
-            {
-                FormSet.OpenFormByName(e.Node.Text, this);
-            }
-        }
-        #endregion
-
         #region JSON文件处理
         // 创建JSON文件，如果不存在则创建并写入默认结构
         private static async Task CreateJsonFileAsync(string modelType, string modelName, string processName)
@@ -408,8 +403,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     await Task.CompletedTask;
                 });
             }
-            // 更新SingletonStatus实例状态
-            UpdateSingletonStatus(modelType, modelName, processName);
         }
 
         /// <summary>
@@ -450,14 +443,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             };
         }
 
-        // 更新SingletonStatus实例的状态
-        private static void UpdateSingletonStatus(string modelType, string modelName, string processName)
-        {
-            var status = SingletonStatus.Instance;
-            status.ModelTypeName = modelType;
-            status.ModelName = modelName;
-            status.ItemName = processName;
-        }
         #endregion
 
         #region 变量初始化
@@ -483,7 +468,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     AssignmentType = VariableAssignmentType.None
                 }).Cast<object>().ToList();
 
-                SingletonStatus.Instance.Obj = enhancedVarItems;
+                //SingletonStatus.Instance.Obj = enhancedVarItems;
             }
             catch (Exception ex)
             {
@@ -493,46 +478,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region 拖放操作
-        // 工具箱拖放事件处理
-        private void ToolTreeView_ItemDrag(object sender, ItemDragEventArgs e)
-        {
-            if (e.Item is TreeNode node && node.Parent != null)
-            {
-                ToolTreeView.DoDragDrop(e.Item, DragDropEffects.Copy);
-            }
-        }
 
-        // DataGridView拖放事件处理
-        private void ProcessDataGridView_DragDrop(object sender, DragEventArgs e)
-        {
-            try
-            {
-                if (e.Data.GetDataPresent(typeof(TreeNode)))
-                {
-                    var node = (TreeNode)e.Data.GetData(typeof(TreeNode));
-                    if (node?.Parent != null)
-                    {
-                        AddStepToForm(node.Text, ProcessDataGridView.Rows.Count + 1);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error("拖拽步骤错误", ex);
-                MessageHelper.MessageOK($"拖拽步骤错误：{ex.Message}", TType.Error);
-            }
-        }
-
-        // DataGridView拖放进入事件处理
-        private void ProcessDataGridView_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = e.Data.GetDataPresent(typeof(TreeNode)) ?
-                DragDropEffects.Copy : DragDropEffects.None;
-        }
-        #endregion
-
-        #region 步骤操作 - 使用新服务
+        #region 步骤操作
 
         /// <summary>
         /// 添加步骤到表单 - 新版本
@@ -679,8 +626,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                     _logger.LogInformation("开始执行步骤序列，共 {StepCount} 个步骤", stepCount);
 
-                    // 使用依赖注入工厂创建执行管理器
-                    var factory = DSLServiceContainer.GetService<Func<List<ChildModel>, StepExecutionManager>>();
+                    var factory = Program.ServiceProvider.GetRequiredService<Func<List<ChildModel>, StepExecutionManager>>();
                     _executionManager = factory(steps);
 
                     _executionManager.StepStatusChanged += UpdateStepStatus;
