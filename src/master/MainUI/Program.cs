@@ -1,5 +1,4 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration;
-using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
@@ -74,7 +73,6 @@ namespace MainUI
             ConfigureServices(services);
 
             ServiceProvider = services.BuildServiceProvider();
-
         }
 
         /// <summary>
@@ -211,13 +209,21 @@ namespace MainUI
         private static void RegisterCoreServices(IServiceCollection services)
         {
             // 工作流服务
-            services.AddWorkflowServices(options =>
+            services.AddWorkflowServices(
+                configureOptions: options =>
             {
                 options.EnableEventLogging = true;
                 options.EnablePerformanceMonitoring = false;
                 options.MaxVariableCacheSize = 1000;
                 options.MaxStepCacheSize = 500;
-            });
+            },
+             configureConfigOptions: options =>
+             {
+                 options.ConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                      "Modules\\MyModules.ini");
+                 options.EnableFileWatching = true;
+                 options.CacheTimeoutMinutes = 30;
+             });
 
             // 全局变量管理器
             services.AddSingleton<GlobalVariableManager>();
@@ -269,19 +275,9 @@ namespace MainUI
 
                 builder.ClearProviders(); // 清除默认提供者
                 builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                builder.AddNLog(); // 添加NLog提供者
+                builder.AddNLog(); // 添加NLog
             });
 
-            // 显式注册一些常用的Logger类型
-            //services.AddSingleton(provider =>
-            //    provider.GetRequiredService<ILoggerFactory>().CreateLogger<BaseParameterForm>());
-
-            //services.AddSingleton(provider =>
-            //    provider.GetRequiredService<ILoggerFactory>().CreateLogger<Form_DelayTime>());
-
-            // 可以在这里添加其他基础设施服务
-            // services.AddSingleton<IConfigurationService, ConfigurationService>();
-            // services.AddSingleton<ICacheService, MemoryCacheService>();
         }
 
         #endregion

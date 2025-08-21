@@ -44,13 +44,24 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
         /// <returns>服务集合</returns>
         public static IServiceCollection AddWorkflowServices(
             this IServiceCollection services,
-            Action<WorkflowServiceOptions> configureOptions)
+            Action<WorkflowServiceOptions> configureOptions = null,
+            Action<PLCConfigurationOptions> configureConfigOptions = null)
         {
             // 配置选项
-            services.Configure(configureOptions);
+            if (configureOptions != null)
+            {
+                services.Configure(configureOptions);
+            }
+            if (configureConfigOptions != null)
+            {
+                services.Configure(configureConfigOptions);
+            }
 
             // 注册主要服务
             services.AddSingleton<IWorkflowStateService, WorkflowStateService>();
+            services.AddSingleton<IPLCConfigurationService, PLCConfigurationService>();
+            services.AddSingleton<IPLCModuleProvider, PLCModuleProvider>();
+            services.AddSingleton<IPLCManager, PLCManager>();
 
             return services;
         }

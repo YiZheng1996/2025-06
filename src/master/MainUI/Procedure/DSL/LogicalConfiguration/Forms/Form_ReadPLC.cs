@@ -16,6 +16,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly IWorkflowStateService _workflowState;
         private readonly GlobalVariableManager _variableManager;
         private readonly ILogger<Form_ReadPLC> _logger;
+        private readonly IPLCManager _pLCManager;
 
         // 窗体私有字段
         private Parameter_ReadPLC _currentParameter;
@@ -35,12 +36,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         public Form_ReadPLC(
             IWorkflowStateService workflowState,
             GlobalVariableManager variableManager,
-            ILogger<Form_ReadPLC> logger)
+            ILogger<Form_ReadPLC> logger,
+            IPLCManager pLCManager)
         {
             _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
             _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
+            _pLCManager = pLCManager ?? throw new ArgumentNullException(nameof(pLCManager));
             InitializeComponent();
             InitializeForm();
 
@@ -428,7 +430,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 try
                 {
                     var variables = _variableManager.GetAllVariables();
-                 
+
                     // 清空并重新加载
                     ColVariable.Items.Clear();
 
@@ -459,21 +461,22 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
+                var plc = _pLCManager.ModelsContent;
                 TreeViewPLC.Nodes.Clear();
-                foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
-                {
-                    // 创建主节点(Key)
-                    TreeNode parentNode = new(kvp.Key);
+                //foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
+                //{
+                //    // 创建主节点(Key)
+                //    TreeNode parentNode = new(kvp.Key);
 
-                    // 添加子节点(Value)
-                    foreach (var value in kvp.Value)
-                    {
-                        // 如果Key是"ServerName"，则不添加到TreeView中
-                        if (value.Key != "ServerName")
-                            parentNode.Nodes.Add(value.Key);
-                    }
-                    TreeViewPLC.Nodes.Add(parentNode);
-                }
+                //    // 添加子节点(Value)
+                //    foreach (var value in kvp.Value)
+                //    {
+                //        // 如果Key是"ServerName"，则不添加到TreeView中
+                //        if (value.Key != "ServerName")
+                //            parentNode.Nodes.Add(value.Key);
+                //    }
+                //    TreeViewPLC.Nodes.Add(parentNode);
+                //}
                 // 默认全部展开
                 TreeViewPLC.ExpandAll();
             }

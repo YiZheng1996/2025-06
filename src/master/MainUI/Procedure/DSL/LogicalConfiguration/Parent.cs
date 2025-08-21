@@ -1,5 +1,8 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration
 {
+    /// <summary>
+    /// 父级模型类，用于描述产品类型、型号和项点名称
+    /// </summary>
     public class Parent
     {
         /// <summary>

@@ -168,7 +168,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 加载数据到临时存储和网格
                     foreach (var step in parent.ChildSteps)
                     {
-                        ProcessDataGridView.Rows.Add(step.StepName, step.StepNum);
                         _workflowState.AddStep(new ChildModel
                         {
                             StepName = step.StepName,
@@ -316,7 +315,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             if (e.Node != null) // 确保节点非空
             {
-                _formService.OpenFormByName(e.Node.Text, this);
+                _formService.OpenFormByName(this, e.Node.Text, this);
             }
         }
 
@@ -368,7 +367,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         _workflowState.StepNum = e.RowIndex;
                         _workflowState.StepName = stepName;
 
-                        _formService.OpenFormByName(stepName, this);
+                        _formService.OpenFormByName(this, stepName, this);
                     }
                 }
             }

@@ -88,7 +88,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             return dataSource.SourceType switch
             {
                 DataSourceType.Variable => await GetVariableValue(dataSource.VariableName),
-                DataSourceType.PLC => await PointPLCManager.Instance.ReadPLCForDetectionAsync(dataSource.PlcConfig),
+                //DataSourceType.PLC => await PointPLCManager.Instance.ReadPLCForDetectionAsync(dataSource.PlcConfig),
                 //DataSourceType.Expression => await EvaluateExpression(dataSource.Expression,
                 //                        GlobalVariableManager.GetAllVariables()),
                 _ => throw new NotSupportedException($"不支持的数据源类型: {dataSource.SourceType}"),

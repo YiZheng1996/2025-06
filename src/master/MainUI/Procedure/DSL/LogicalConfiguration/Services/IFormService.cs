@@ -7,12 +7,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
     /// </summary>
     public interface IFormService
     {
-         /// <summary>
+        /// <summary>
         /// 根据名称打开窗体
         /// </summary>
         /// <param name="formName">窗体名称</param>
         /// <param name="parent">父窗体</param>
-        void OpenFormByName(string formName, Form parent = null);
+        void OpenFormByName(Form parentform, string formName, Form parent = null);
 
         /// <summary>
         /// 创建指定类型的窗体

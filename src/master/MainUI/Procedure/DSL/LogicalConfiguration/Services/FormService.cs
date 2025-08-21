@@ -16,7 +16,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
         /// <summary>
         /// 根据名称打开窗体
         /// </summary>
-        public void OpenFormByName(string formName, Form parent = null)
+        public void OpenFormByName(Form parentform, string formName, Form parent = null)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                     }
 
                     // 显示窗体
-                    form.Show();
+                    VarHelper.ShowDialogWithOverlay(parentform, form);
                     _logger.LogInformation("窗体打开成功: {FormName}", formName);
                 }
             }
@@ -102,8 +102,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                     var workflowState = _serviceProvider.GetRequiredService<IWorkflowStateService>();
                     var variableManager = _serviceProvider.GetRequiredService<GlobalVariableManager>();
                     var logger = _serviceProvider.GetRequiredService<ILogger<Form_ReadPLC>>();
-
-                    return (T)(object)new Form_ReadPLC(workflowState, variableManager, logger);
+                    var pLCManager = _serviceProvider.GetRequiredService<IPLCManager>();
+                    
+                    return (T)(object)new Form_ReadPLC(workflowState, variableManager, logger, pLCManager);
                 }
                 else if (typeof(T) == typeof(Form_WritePLC))
                 {
