@@ -24,7 +24,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         #endregion
 
-      #region 构造函数
+        #region 构造函数
 
         /// <summary>
         /// 依赖注入构造函数
@@ -33,7 +33,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <param name="variableManager">变量管理器</param>
         /// <param name="logger">日志服务</param>
         public Form_ReadPLC(
-            IWorkflowStateService workflowState, 
+            IWorkflowStateService workflowState,
             GlobalVariableManager variableManager,
             ILogger<Form_ReadPLC> logger)
         {
@@ -372,8 +372,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowState.GetSteps();
+                int idx = _workflowState.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     var paramObj = steps[idx].StepParameter;
@@ -427,8 +427,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             {
                 try
                 {
-                    var variables = GlobalVariableManager.GetAllVariablesStatic();
-
+                    var variables = _variableManager.GetAllVariables();
+                 
                     // 清空并重新加载
                     ColVariable.Items.Clear();
 
@@ -581,7 +581,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 try
                 {
                     var stepInfo = _workflowState.GetStep(_currentStepIndex); ;
-                  
+
                     // 1. 获取要删除的变量名
                     string targetVarName = DataGridViewPLCList.Rows[rowIndex].Cells["ColVariable"].Value?.ToString();
 

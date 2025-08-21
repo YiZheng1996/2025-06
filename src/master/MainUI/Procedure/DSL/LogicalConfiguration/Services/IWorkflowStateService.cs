@@ -131,6 +131,12 @@
         /// <returns>如果索引有效返回 true，否则返回 false</returns>
         bool ValidateStepIndex(int stepIndex);
 
+        /// <summary>
+        /// 更新指定步骤的参数
+        /// </summary>
+        /// <param name="stepIndex">步骤索引</param>
+        /// <param name="parameter">新的参数对象</param>
+        void UpdateStepParameter(int stepIndex, object parameter);
         #endregion
 
         #region 变量管理方法

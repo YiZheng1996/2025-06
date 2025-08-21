@@ -1,14 +1,23 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
     /// <summary>
     /// 检测工具方法集合
     /// </summary>
-    public class DetectionMethods : DSLMethodBase
+    public class DetectionMethods(IWorkflowStateService workflowState, ILogger<DetectionMethods> logger
+        , GlobalVariableManager variableManager) : DSLMethodBase
     {
+        private readonly IWorkflowStateService _workflowState = workflowState;
+
+        private readonly ILogger<DetectionMethods> _logger = logger;
+
+        private readonly GlobalVariableManager _variableManager = variableManager;
+
         public override string Category => "检测工具";
         public override string Description => "提供各种检测和验证功能";
 
@@ -74,7 +83,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// <summary>
         /// 获取检测数据值
         /// </summary>
-        private static async Task<object> GetDetectionValue(DataSourceConfig dataSource)
+        private async Task<object> GetDetectionValue(DataSourceConfig dataSource)
         {
             return dataSource.SourceType switch
             {
@@ -89,10 +98,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// <summary>
         /// 获取变量值
         /// </summary>
-        private static async Task<object> GetVariableValue(string variableName)
+        private async Task<object> GetVariableValue(string variableName)
         {
-            var singleton = SingletonStatus.Instance;
-            var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
+            var variables = _variableManager.GetAllVariables();
             var variable = variables.FirstOrDefault(v => v.VarName == variableName) ??
                 throw new ArgumentException($"变量 {variableName} 不存在");
             await Task.CompletedTask;
@@ -243,12 +251,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// <summary>
         /// 处理检测结果
         /// </summary>
-        private static async Task ProcessDetectionResult(DetectionResult result, Parameter_Detection param)
+        private async Task ProcessDetectionResult(DetectionResult result, Parameter_Detection param)
         {
             try
             {
-                var singleton = SingletonStatus.Instance;
-                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
+                var variables = _variableManager.GetAllVariables();
 
                 // 保存检测结果到变量
                 if (param.ResultHandling.SaveToVariable && !string.IsNullOrEmpty(param.ResultHandling.ResultVariableName))
@@ -322,10 +329,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         /// <summary>
         /// 保存或更新变量
         /// </summary>
-        private static async Task SaveOrUpdateVariable(string variableName, object value)
+        private  async Task SaveOrUpdateVariable(string variableName, object value)
         {
-            var singleton = SingletonStatus.Instance;
-            var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
+            var variables = _variableManager.GetAllVariables();
             var existingVar = variables.FirstOrDefault(v => v.VarName == variableName);
 
             if (existingVar != null)
@@ -334,13 +340,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             }
             else
             {
-                var newVar = new VarItem
+                var newVar = new VarItem_Enhanced
                 {
                     VarName = variableName,
                     VarValue = (string)value,
                     VarType = value?.GetType().Name ?? "String"
                 };
-                singleton.Obj.Add(newVar);
+                _variableManager.AddOrUpdateVariable(newVar);
             }
 
             await Task.CompletedTask;

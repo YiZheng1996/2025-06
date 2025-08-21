@@ -1,7 +1,21 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_LoopConfiguration : UIForm
     {
+        private readonly ILogger _logger;
+        private readonly IWorkflowStateService _workflowStateService;
+        public Form_LoopConfiguration(IWorkflowStateService workflowStateService, ILogger<Form_LoopConfiguration> logger)
+        {
+            _logger = logger;
+            _workflowStateService = workflowStateService;
+            InitializeComponent();
+            InitializeUI();
+        }
+
         public Form_LoopConfiguration()
         {
             InitializeComponent();
@@ -55,12 +69,9 @@
 
         private void LoadVariables()
         {
-            // 从SingletonStatus加载变量列表
             try
             {
-                var singleton = SingletonStatus.Instance;
-                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().Select(v => v.VarName).ToArray();
-
+                var variables = _workflowStateService.GetAllVariables().ToArray();
                 cmbWhileVar.Items.Clear();
                 cmbWhileVar.Items.AddRange(variables);
 

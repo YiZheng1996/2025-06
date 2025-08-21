@@ -1,15 +1,22 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_WritePLC : UIForm
     {
-        public Form_WritePLC()
+        private readonly IWorkflowStateService _workflowStateService;
+        private readonly ILogger<Form_WritePLC> _logger;
+
+        public Form_WritePLC(IWorkflowStateService workflowStateService, ILogger<Form_WritePLC> logger)
         {
             InitializeComponent();
+            _workflowStateService = workflowStateService;
+            _logger = logger;
             LoadWritePLCParameters();
             InitializePointLocationPLC();
         }
@@ -21,8 +28,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps() ;
+                int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     var paramObj = steps[idx].StepParameter;
@@ -134,8 +141,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps();
+                int idx = _workflowStateService.StepNum;
 
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
@@ -233,8 +240,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 try
                 {
                     // 获取当前步骤
-                    var steps = SingletonStatus.Instance.IempSteps;
-                    int idx = SingletonStatus.Instance.StepNum;
+                    var steps = _workflowStateService.GetSteps();
+                    int idx = _workflowStateService.StepNum;
                     if (steps == null || idx < 0 || idx >= steps.Count)
                     {
                         MessageHelper.MessageOK("当前步骤无效，无法删除。", TType.Warn);

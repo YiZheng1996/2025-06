@@ -1,17 +1,22 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
     /// <summary>
     /// 变量管理方法集合
     /// </summary>
-    public class VariableMethods : DSLMethodBase
+    public class VariableMethods(IWorkflowStateService workflowStateService, 
+        GlobalVariableManager globalVariableManager) : DSLMethodBase
     {
         public override string Category => "变量管理";
 
         public override string Description => "提供变量定义、赋值等变量管理功能";
+
+        private readonly IWorkflowStateService _workflowStateService = workflowStateService;
+        private readonly GlobalVariableManager _globalVariableManager = globalVariableManager;
 
         /// <summary>
         /// 变量定义方法
@@ -20,8 +25,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         {
             return await ExecuteWithLogging(param, () =>
             {
-                var singleton = SingletonStatus.Instance;
-                var variables = GlobalVariableManager.GetAllVariablesStatic();
+                var variables = _globalVariableManager.GetAllVariables();
 
                 // 检查变量是否已存在
                 var existingVar = variables.FirstOrDefault(v => v.VarName == param.VarName);
@@ -43,7 +47,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                         IsAssignedByStep = false,
                         AssignmentType = VariableAssignmentType.None
                     };
-                    singleton.Obj.Add(newVar);
+                    _workflowStateService.AddVariable(newVar);
                     return Task.FromResult(true);
                 }
             }, false); // 默认返回false
@@ -56,10 +60,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
         {
             return await ExecuteWithLogging(param, async () =>
             {
-                var targetVar = GlobalVariableManager.FindVariableByNameStatic(param.TargetVarName) ?? 
+                var targetVar = _globalVariableManager.FindVariableByName(param.TargetVarName) ??
                     throw new ArgumentException($"目标变量不存在: {param.TargetVarName}");
 
-                // 执行赋值逻辑
                 string newValue = await CalculateAssignmentValue(param);
                 targetVar.UpdateValue(newValue, $"变量赋值: {param.TargetVarName}");
 

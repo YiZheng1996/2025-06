@@ -1,12 +1,19 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_SaveReport : UIForm
     {
-        public Form_SaveReport()
+        private readonly IWorkflowStateService _workflowStateService;
+        private readonly ILogger<Form_SaveReport> _logger;
+        public Form_SaveReport(IWorkflowStateService workflowStateService, ILogger<Form_SaveReport> logger)
         {
+            _workflowStateService = workflowStateService;
+            _logger = logger;
+
             InitializeComponent();
             InitForm();
         }
@@ -16,8 +23,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps();
+                int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     var paramObj = steps[idx].StepParameter;
@@ -71,8 +78,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps(); ;
+                int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     steps[idx].StepParameter = new Parameter_SaveReport { ReportPath = txtRePortPath.Text };
@@ -89,7 +96,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 NlogHelper.Default.Error("保存参数错误", ex);
                 MessageHelper.MessageOK("保存参数错误。" + ex.Message, AntdUI.TType.Error);
             }
-            
+
         }
     }
 }

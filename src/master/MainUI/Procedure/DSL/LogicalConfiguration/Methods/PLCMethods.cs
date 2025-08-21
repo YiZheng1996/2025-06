@@ -1,16 +1,19 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
     /// <summary>
     /// PLC通信方法集合
     /// </summary>
-    public class PLCMethods : DSLMethodBase
+    public class PLCMethods(IWorkflowStateService _workflowStateService) : DSLMethodBase
     {
         public override string Category => "PLC通信";
         public override string Description => "提供PLC读写等硬件交互功能";
+
+        private readonly IWorkflowStateService _workflowStateService = _workflowStateService;
 
         /// <summary>
         /// PLC读取方法 - 使用新的统一错误处理
@@ -24,7 +27,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                     throw new ArgumentException("PLC读取参数为空");
                 }
 
-                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
+                var variables = _workflowStateService.GetVariables<VarItem_Enhanced>().ToList();
                 int successCount = 0;
 
                 foreach (var plc in param.Items)

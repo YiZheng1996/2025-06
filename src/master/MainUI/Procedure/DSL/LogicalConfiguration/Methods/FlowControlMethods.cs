@@ -1,15 +1,18 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
 {
     /// <summary>
     /// 流程控制方法集合
     /// </summary>
-    public class FlowControlMethods : DSLMethodBase
+    public class FlowControlMethods(IWorkflowStateService workflowStateService) : DSLMethodBase
     {
         public override string Category => "流程控制";
         public override string Description => "提供条件判断、循环等流程控制功能";
+
+        private readonly IWorkflowStateService _workflowStateService = workflowStateService;
 
         /// <summary>
         /// 条件评估方法 - 返回下一步骤索引
@@ -20,14 +23,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             return await ExecuteWithLogging(param, async () =>
             {
                 // 获取变量值
-                var singleton = SingletonStatus.Instance;
-                var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
-                var variable = variables.FirstOrDefault(v => v.VarName == param.VarName);
-
-                if (variable == null)
-                {
+                var variables = _workflowStateService.GetVariables<VarItem_Enhanced>().ToList();
+                var variable = variables.FirstOrDefault(v => v.VarName == param.VarName) ?? 
                     throw new ArgumentException($"变量 {param.VarName} 不存在");
-                }
 
                 // 执行条件比较
                 bool conditionResult = await EvaluateConditionInternal(variable.VarValue, param.Operator, param.Value);

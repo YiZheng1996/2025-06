@@ -1,9 +1,22 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_Detection : UIForm
     {
+        private readonly ILogger _logger;
+        private readonly IWorkflowStateService _workflowStateService;
+        public Form_Detection(IWorkflowStateService workflowStateService, ILogger<Form_Detection> logger)
+        {
+            _logger = logger;
+            _workflowStateService = workflowStateService;
+            InitializeComponent();
+            InitializeForm();
+        }
+
         private Parameter_Detection _parameter;
 
         public Form_Detection()
@@ -346,7 +359,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             // 这里需要将参数保存到当前流程步骤中
             // 具体实现需要根据流程管理器的接口来调整
-            var singleton = SingletonStatus.Instance;
+            _workflowStateService.GetAllVariables(); // 示例调用，实际应为保存参数的方法
             // 保存逻辑...
         }
 

@@ -136,7 +136,6 @@
             BtnDelete.TabIndex = 15;
             BtnDelete.Text = "删除";
             BtnDelete.TipsFont = new Font("宋体", 14.25F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            BtnDelete.Click += BtnDelete_Click;
             // 
             // uiSymbolButton1
             // 

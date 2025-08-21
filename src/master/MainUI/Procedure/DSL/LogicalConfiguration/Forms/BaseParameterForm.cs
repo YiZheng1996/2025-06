@@ -1,5 +1,7 @@
 ﻿using AntdUI;
-using Newtonsoft.Json;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
@@ -10,10 +12,48 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
     {
         private bool _isLoading = true;
 
+        // 依赖注入的服务
+        protected readonly IWorkflowStateService _workflowState;
+        protected readonly Microsoft.Extensions.Logging.ILogger _logger;
+
         #region 构造函数和生命周期
 
-        // 无参构造函数
-        public BaseParameterForm() { }
+        // 保留无参构造函数供设计器使用
+        public BaseParameterForm()
+        {
+            // 设计时模式检查
+            if (DesignMode)
+            {
+                // 设计时不需要实际的服务
+                return;
+            }
+
+            // 运行时如果没有通过DI构造函数创建，尝试从全局服务提供者获取
+            try
+            {
+                _workflowState = Program.ServiceProvider?.GetService<IWorkflowStateService>();
+                _logger = Program.ServiceProvider?.GetService<ILogger<BaseParameterForm>>();
+
+                if (_workflowState == null || _logger == null)
+                {
+                    throw new InvalidOperationException(
+                        "无法获取必需的服务。请使用依赖注入构造函数创建此窗体，或确保已正确配置服务提供者。");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 如果在构造函数中无法获取服务，记录错误但不抛出异常
+                // 这样至少可以让设计器工作
+                System.Diagnostics.Debug.WriteLine($"BaseParameterForm构造函数警告: {ex.Message}");
+            }
+        }
+
+        // 依赖注入构造函数（推荐在运行时使用）
+        protected BaseParameterForm(IWorkflowStateService workflowState, Microsoft.Extensions.Logging.ILogger logger)
+        {
+            _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -21,15 +61,27 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
             if (DesignMode) return;
 
+            // 运行时检查服务是否可用
+            if (_workflowState == null || _logger == null)
+            {
+                MessageBox.Show("窗体初始化失败：缺少必需的服务。请检查依赖注入配置。",
+                    "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 _isLoading = true;
+                _logger.LogDebug("开始加载参数: {FormType}", GetType().Name);
+
                 LoadParameters();
                 _isLoading = false;
+
+                _logger.LogDebug("参数加载完成: {FormType}", GetType().Name);
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("加载参数失败", ex);
+                _logger.LogError(ex, "加载参数失败: {FormType}", GetType().Name);
                 MessageHelper.MessageOK($"加载参数失败：{ex.Message}", TType.Error);
             }
         }
@@ -43,7 +95,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// </summary>
         protected virtual void LoadParameters()
         {
-            if (DesignMode) return;
+            if (DesignMode || _workflowState == null) return;
 
             var currentStep = GetCurrentStepSafely();
             if (currentStep?.StepParameter != null)
@@ -54,7 +106,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 }
                 catch (Exception ex)
                 {
-                    NlogHelper.Default.Error("参数转换失败", ex);
+                    _logger?.LogError(ex, "参数转换失败: {FormType}", GetType().Name);
                     SetDefaultValues();
                 }
             }
@@ -99,37 +151,44 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// </summary>
         protected virtual void SaveParameters()
         {
-            if (DesignMode) return;
+            if (DesignMode || _workflowState == null) return;
 
             try
             {
                 var currentStep = GetCurrentStepSafely();
                 if (currentStep == null)
                 {
+                    _logger?.LogWarning("步骤索引无效，无法保存参数: StepNum={StepNum}", _workflowState.StepNum);
                     MessageHelper.MessageOK("步骤索引无效，无法保存参数。", TType.Error);
                     return;
                 }
 
                 if (!ValidateParameters())
                 {
+                    _logger?.LogWarning("参数验证失败: {FormType}", GetType().Name);
                     return;
                 }
 
                 var parameter = CollectParameters();
                 if (parameter != null)
                 {
-                    currentStep.StepParameter = parameter;
+                    _workflowState.UpdateStepParameter(_workflowState.StepNum, parameter);
+
+                    _logger?.LogInformation("参数保存成功: {FormType}, StepNum={StepNum}",
+                        GetType().Name, _workflowState.StepNum);
+
                     MessageHelper.MessageOK("参数已暂存，主界面点击保存后才会写入文件。", TType.Info);
                     Close();
                 }
                 else
                 {
+                    _logger?.LogError("收集参数失败: {FormType}", GetType().Name);
                     MessageHelper.MessageOK("收集参数失败。", TType.Error);
                 }
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("保存参数失败", ex);
+                _logger?.LogError(ex, "保存参数失败: {FormType}", GetType().Name);
                 MessageHelper.MessageOK($"保存参数失败：{ex.Message}", TType.Error);
             }
         }
@@ -139,110 +198,51 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// </summary>
         protected ChildModel GetCurrentStepSafely()
         {
-            if (DesignMode) return null;
+            if (_workflowState == null) return null;
 
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowState.GetSteps();
+                int idx = _workflowState.StepNum;
 
-                if (steps == null || idx < 0 || idx >= steps.Count)
+                if (steps != null && idx >= 0 && idx < steps.Count)
                 {
-                    return null;
+                    return steps[idx];
                 }
 
-                return steps[idx];
+                _logger?.LogWarning("步骤索引超出范围: Index={Index}, Count={Count}", idx, steps?.Count ?? 0);
+                return null;
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("获取当前步骤失败", ex);
+                _logger?.LogError(ex, "获取当前步骤失败");
                 return null;
             }
         }
+
+        #endregion
+
+        #region 受保护的辅助方法
 
         /// <summary>
         /// 检查是否正在加载中
         /// </summary>
         protected bool IsLoading => _isLoading;
 
-        #endregion
-
-        #region 通用事件处理
-
-        protected virtual void OnSaveClick(object sender, EventArgs e)
-        {
-            SaveParameters();
-        }
-
-        protected virtual void OnCancelClick(object sender, EventArgs e)
-        {
-            Close();
-        }
-
-        protected virtual void OnResetClick(object sender, EventArgs e)
-        {
-            if (DesignMode) return;
-
-            if (MessageHelper.MessageYes("确定要重置所有参数吗？") == DialogResult.Yes)
-            {
-                SetDefaultValues();
-            }
-        }
-
-        #endregion
-
-        #region 辅助方法
+        /// <summary>
+        /// 获取工作流状态服务（供子类使用）
+        /// </summary>
+        protected IWorkflowStateService WorkflowState => _workflowState;
 
         /// <summary>
-        /// 通用JSON参数转换方法
+        /// 获取日志服务（供子类使用）
         /// </summary>
-        protected T ConvertJsonParameter<T>(object stepParameter) where T : class, new()
-        {
-            if (DesignMode) return new T();
-            if (stepParameter == null) return new T();
-
-            if (stepParameter is T directParam)
-                return directParam;
-
-            try
-            {
-                var json = stepParameter.ToString();
-                return JsonConvert.DeserializeObject<T>(json) ?? new T();
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"JSON参数转换失败: {typeof(T).Name}", ex);
-                return new T();
-            }
-        }
+        protected Microsoft.Extensions.Logging.ILogger Logger => _logger;
 
         /// <summary>
-        /// 显示验证错误信息
+        /// 检查服务是否可用
         /// </summary>
-        protected void ShowValidationError(string message, Control focusControl = null)
-        {
-            MessageHelper.MessageOK(message, TType.Warn);
-            focusControl?.Focus();
-        }
-
-        /// <summary>
-        /// 安全获取控件文本
-        /// </summary>
-        protected string GetControlText(Control control)
-        {
-            return control?.Text?.Trim() ?? "";
-        }
-
-        /// <summary>
-        /// 安全设置控件文本
-        /// </summary>
-        protected void SetControlText(Control control, string text)
-        {
-            if (control != null)
-            {
-                control.Text = text ?? "";
-            }
-        }
+        protected bool IsServiceAvailable => _workflowState != null && _logger != null;
 
         #endregion
     }

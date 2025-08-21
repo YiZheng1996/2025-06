@@ -1,4 +1,6 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,8 +8,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     public partial class Form_SystemPrompt : UIForm
     {
-        public Form_SystemPrompt()
+        private readonly IWorkflowStateService _workflowStateService;
+        private readonly ILogger<Form_SystemPrompt> _logger;
+        public Form_SystemPrompt(IWorkflowStateService workflowStateService, ILogger<Form_SystemPrompt> logger)
         {
+            _workflowStateService = workflowStateService;
+            _logger = logger;
+
             InitializeComponent();
             InitForm();
         }
@@ -17,8 +24,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps();
+                int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     var paramObj = steps[idx].StepParameter;
@@ -57,8 +64,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = SingletonStatus.Instance.IempSteps;
-                int idx = SingletonStatus.Instance.StepNum;
+                var steps = _workflowStateService.GetSteps();
+                int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     steps[idx].StepParameter = new Parameter_SystemPrompt { Message = txtPromptContent.Text };

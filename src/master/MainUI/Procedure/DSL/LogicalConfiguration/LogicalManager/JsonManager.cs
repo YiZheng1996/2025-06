@@ -1,3 +1,4 @@
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -95,7 +96,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         }
 
         #region Form²Ù×÷
-        public static async Task AddParentAsync(SingletonStatus singleton)
+        public static async Task AddParentAsync(IWorkflowStateService singleton)
         {
             await UpdateConfigAsync(async config =>
             {
@@ -117,7 +118,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
             return config.Form;
         }
 
-        public static async Task AddChildAsync(SingletonStatus singleton, ChildModel item)
+        public static async Task AddChildAsync(IWorkflowStateService singleton, ChildModel item)
         {
             await UpdateConfigAsync(async config =>
             {

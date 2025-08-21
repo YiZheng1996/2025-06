@@ -1,5 +1,4 @@
 ﻿using AntdUI;
-using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +21,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly IWorkflowStateService _workflowState;
         private readonly GlobalVariableManager _variableManager;
         private readonly ILogger<FrmLogicalConfiguration> _logger;
+        private readonly IFormService _formService;
 
         // 原有的私有字段
         private readonly DataGridViewManager _gridManager;
@@ -33,6 +33,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             IWorkflowStateService workflowState,
             GlobalVariableManager variableManager,
             ILogger<FrmLogicalConfiguration> logger,
+            IFormService formService,
             string path,
             string modelType,
             string modelName,
@@ -42,6 +43,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
             _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _formService = formService ?? throw new ArgumentNullException(nameof(formService));
 
             try
             {
@@ -101,8 +103,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 初始化变量
                 InitializeVariables();
 
-                // 初始化实验步骤
-                //LoadStepsToGrid();
+                // 加载已保存的步骤到DataGridView
+                LoadStepsToGrid();
 
                 _logger.LogDebug("配置初始化完成");
             }
@@ -134,6 +136,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 订阅DataGridView的事件
                 ProcessDataGridView.DragDrop += ProcessDataGridView_DragDrop;
                 ProcessDataGridView.DragEnter += ProcessDataGridView_DragEnter;
+                ProcessDataGridView.CellDoubleClick += ProcessDataGridView_CellDoubleClick;
 
                 _logger.LogDebug("事件处理程序注册完成");
             }
@@ -141,6 +144,45 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             {
                 _logger.LogError(ex, "注册事件处理程序时发生错误");
                 throw;
+            }
+        }
+
+        // 加载已存在的Json数据到DataGridView控件中
+        private async void LoadStepsToGrid()
+        {
+            try
+            {
+                var config = await JsonManager.GetOrCreateConfigAsync();
+                // 找到当前项点的 Parent
+                var parent = config.Form.FirstOrDefault(p =>
+                    p.ModelTypeName == _workflowState.ModelTypeName &&
+                    p.ModelName == _workflowState.ModelName &&
+                    p.ItemName == _workflowState.ItemName);
+
+                if (parent?.ChildSteps != null)
+                {
+                    // 清空临时数据和网格
+                    _workflowState.ClearSteps();
+                    ProcessDataGridView.Rows.Clear();
+
+                    // 加载数据到临时存储和网格
+                    foreach (var step in parent.ChildSteps)
+                    {
+                        ProcessDataGridView.Rows.Add(step.StepName, step.StepNum);
+                        _workflowState.AddStep(new ChildModel
+                        {
+                            StepName = step.StepName,
+                            Status = step.Status,
+                            StepNum = step.StepNum,
+                            StepParameter = step.StepParameter
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                NlogHelper.Default.Error("加载步骤数据错误", ex);
+                MessageHelper.MessageOK($"加载步骤数据错误：{ex.Message}", TType.Error);
             }
         }
 
@@ -274,7 +316,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             if (e.Node != null) // 确保节点非空
             {
-                FormSet.OpenFormByName(e.Node.Text, this);
+                _formService.OpenFormByName(e.Node.Text, this);
             }
         }
 
@@ -306,6 +348,36 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 DragDropEffects.Copy : DragDropEffects.None;
         }
 
+        /// <summary>
+        /// 双击DataGridView单元格打开步骤配置界面
+        /// </summary>
+        private void ProcessDataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (e.RowIndex >= 0)
+                {
+                    var row = ProcessDataGridView.Rows[e.RowIndex];
+                    string stepName = row.Cells[0].Value?.ToString();
+
+                    if (!string.IsNullOrEmpty(stepName))
+                    {
+                        _logger.LogDebug("打开步骤配置: {StepName}, 行索引: {RowIndex}", stepName, e.RowIndex);
+
+                        // 使用新的线程安全属性设置
+                        _workflowState.StepNum = e.RowIndex;
+                        _workflowState.StepName = stepName;
+
+                        _formService.OpenFormByName(stepName, this);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "打开步骤参数配置界面时发生错误");
+                MessageHelper.MessageOK($"打开步骤参数配置界面错误：{ex.Message}", TType.Error);
+            }
+        }
         #endregion
 
         #region 工具箱初始化
@@ -468,7 +540,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     AssignmentType = VariableAssignmentType.None
                 }).Cast<object>().ToList();
 
-                //SingletonStatus.Instance.Obj = enhancedVarItems;
+                // 清空现有变量并添加新变量
+                _workflowState.ClearVariables();
+                foreach (var variable in enhancedVarItems)
+                {
+                    _workflowState.AddVariable(variable);
+                }
             }
             catch (Exception ex)
             {
@@ -477,7 +554,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
         #endregion
-
 
         #region 步骤操作
 
@@ -498,7 +574,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     StepParameter = 0
                 };
 
-                // 使用新的线程安全方法
+                // 添加步骤
                 _workflowState.AddStep(newStep);
 
                 _logger.LogInformation("步骤添加成功: {StepName}", stepName);
@@ -510,36 +586,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
-        /// <summary>
-        /// 双击DataGridView单元格打开步骤配置界面
-        /// </summary>
-        private void ProcessDataGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            try
-            {
-                if (e.RowIndex >= 0)
-                {
-                    var row = ProcessDataGridView.Rows[e.RowIndex];
-                    string stepName = row.Cells[0].Value?.ToString();
-
-                    if (!string.IsNullOrEmpty(stepName))
-                    {
-                        _logger.LogDebug("打开步骤配置: {StepName}, 行索引: {RowIndex}", stepName, e.RowIndex);
-
-                        // 使用新的线程安全属性设置
-                        _workflowState.StepNum = e.RowIndex;
-                        _workflowState.StepName = stepName;
-
-                        FormSet.OpenFormByName(stepName, this);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "打开步骤参数配置界面时发生错误");
-                MessageHelper.MessageOK($"打开步骤参数配置界面错误：{ex.Message}", TType.Error);
-            }
-        }
 
         // 添加步骤按钮点击事件处理
         private void toolDeleteStep_Click(object sender, EventArgs e)
@@ -575,8 +621,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                     // 使用新的线程安全方法获取变量
                     config.Variable.Clear();
-                    var variables = _workflowState.GetAllVariables();
-                    config.Variable.AddRange(variables.Cast<VarItem>());
+                    var variables = _variableManager.GetAllVariables();
+                    config.Variable.AddRange(variables.Cast<VarItem_Enhanced>());
 
                     // 使用新的线程安全方法获取步骤
                     config.Form[0].ChildSteps.Clear();
@@ -656,10 +702,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        // 退出
+        private void BtnClose_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
         #endregion
 
         #region 执行和停止操作
-
 
         /// <summary>
         /// 更新步骤状态显示

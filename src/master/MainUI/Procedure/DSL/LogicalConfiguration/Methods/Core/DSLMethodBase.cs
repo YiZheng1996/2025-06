@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core
 {
     /// <summary>
-    /// DSL方法基类 - 使用新的统一错误处理
+    /// DSL方法基类 - 统一错误处理
     /// </summary>
     public abstract class DSLMethodBase : IDSLMethod
     {

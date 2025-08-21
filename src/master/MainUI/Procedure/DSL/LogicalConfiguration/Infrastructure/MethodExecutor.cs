@@ -1,7 +1,7 @@
 ﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure
 {
     /// <summary>
-    /// 方法执行器 - 统一的错误处理和日志记录
+    /// 方法执行器
     /// </summary>
     public static class MethodExecutor
     {

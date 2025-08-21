@@ -1,9 +1,13 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     /// <summary>
-    /// 延时参数配置表单 - 解决方法冲突问题
+    /// 延时参数配置表单
     /// </summary>
     public partial class Form_DelayTime : BaseParameterForm, IParameterForm<Parameter_DelayTime>
     {
@@ -16,28 +20,46 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         #region 构造函数
 
+        // 保留无参构造函数供设计器使用
         public Form_DelayTime()
+        {
+            InitializeComponent();
+
+            // 只有在非设计时模式才进行初始化
+            if (!DesignMode)
+            {
+                InitializeForm();
+            }
+        }
+
+        // 依赖注入构造函数（推荐在运行时使用）
+        public Form_DelayTime(IWorkflowStateService workflowState, ILogger<Form_DelayTime> logger)
+            : base(workflowState, logger)
         {
             InitializeComponent();
             InitializeForm();
         }
 
-        public Form_DelayTime(Parameter_DelayTime parameter) : this()
+        // 支持带参数的构造函数
+        public Form_DelayTime(IWorkflowStateService workflowState, ILogger<Form_DelayTime> logger, Parameter_DelayTime parameter)
+            : base(workflowState, logger)
         {
+            InitializeComponent();
             Parameter = parameter ?? new Parameter_DelayTime();
+            InitializeForm();
         }
 
         private void InitializeForm()
         {
-            Parameter = new Parameter_DelayTime();
+            if (DesignMode) return;
+
+            Parameter ??= new Parameter_DelayTime();
             BindEvents();
         }
 
         private void BindEvents()
         {
             if (BtnSave != null) BtnSave.Click += OnSaveClick;
-            //if (BtnCancel != null) BtnCancel.Click += OnCancelClick;
-            //if (BtnReset != null) BtnReset.Click += OnResetClick;
 
             // 绑定输入验证事件
             if (txtTime != null)
@@ -53,6 +75,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         protected override void LoadParameterFromStep(object stepParameter)
         {
+            if (!IsServiceAvailable) return;
+
             Parameter = ConvertParameter(stepParameter);
             PopulateControls(Parameter);
         }
@@ -65,58 +89,54 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         protected override bool ValidateParameters()
         {
-            // 调用接口的类型安全验证方法
             return ValidateTypedParameters();
         }
 
         protected override object CollectParameters()
         {
-            // 调用接口的类型安全收集方法
             return CollectTypedParameters();
         }
 
         #endregion
 
-        #region 实现泛型接口 - 使用新的方法名
+        #region IParameterForm<Parameter_DelayTime> 实现
 
-        /// <summary>
-        /// 填充控件
-        /// </summary>
         public void PopulateControls(Parameter_DelayTime parameter)
         {
-            if (parameter == null) return;
+            if (parameter == null || DesignMode) return;
 
-            SetControlText(txtTime, parameter.T.ToString());
+            try
+            {
+                if (txtTime != null)
+                {
+                    txtTime.Text = parameter.T.ToString();
+                }
+
+                Logger?.LogDebug("控件填充完成: DelayTime={DelayTime}", parameter.T);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "填充控件失败");
+                if (!DesignMode)
+                {
+                    MessageHelper.MessageOK("填充控件失败：" + ex.Message, TType.Error);
+                }
+            }
         }
 
-        /// <summary>
-        /// 验证参数 - 接口方法，新命名
-        /// </summary>
         public bool ValidateTypedParameters()
         {
-            string timeText = GetControlText(txtTime);
+            if (DesignMode) return true;
 
-            if (string.IsNullOrEmpty(timeText))
+            if (txtTime == null || string.IsNullOrWhiteSpace(txtTime.Text))
             {
-                ShowValidationError("请输入延时时间。", txtTime);
+                MessageHelper.MessageOK("请输入延时时间", TType.Warn);
                 return false;
             }
 
-            if (!double.TryParse(timeText, out double delayTime))
+            if (!double.TryParse(txtTime.Text, out double delayTime) || delayTime <= 0)
             {
-                ShowValidationError("请输入有效的数字。", txtTime);
-                return false;
-            }
-
-            if (delayTime < 0)
-            {
-                ShowValidationError("延时时间不能为负数。", txtTime);
-                return false;
-            }
-
-            if (delayTime > 3600000) // 最大1小时
-            {
-                ShowValidationError("延时时间不能超过1小时(3600000毫秒)。", txtTime);
+                MessageHelper.MessageOK("延时时间必须是大于0的数字", TType.Warn);
                 return false;
             }
 
@@ -124,45 +144,75 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         /// <summary>
-        /// 收集参数 - 接口方法
+        /// 收集的类型参数
         /// </summary>
+        /// <returns></returns>
         public Parameter_DelayTime CollectTypedParameters()
         {
-            string timeText = GetControlText(txtTime);
+            if (DesignMode) return new Parameter_DelayTime();
 
-            if (double.TryParse(timeText, out double delayTime))
+            try
             {
-                return new Parameter_DelayTime { T = delayTime };
-            }
+                var parameter = new Parameter_DelayTime
+                {
+                    T = txtTime != null ? double.Parse(txtTime.Text) : DEFAULT_DELAY_TIME
+                };
 
-            return new Parameter_DelayTime { T = DEFAULT_DELAY_TIME };
+                Logger?.LogDebug("参数收集完成: DelayTime={DelayTime}", parameter.T);
+                return parameter;
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "收集参数失败");
+                return new Parameter_DelayTime { T = DEFAULT_DELAY_TIME };
+            }
         }
 
-        /// <summary>
-        /// 转换参数
-        /// </summary>
         public Parameter_DelayTime ConvertParameter(object stepParameter)
         {
-            return ConvertJsonParameter<Parameter_DelayTime>(stepParameter);
+            try
+            {
+                if (stepParameter is Parameter_DelayTime param)
+                {
+                    return param;
+                }
+                else if (stepParameter != null)
+                {
+                    var jsonObject = JObject.Parse(stepParameter.ToString());
+                    return jsonObject.ToObject<Parameter_DelayTime>() ?? new Parameter_DelayTime();
+                }
+
+                return new Parameter_DelayTime();
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "参数转换失败");
+                return new Parameter_DelayTime();
+            }
         }
 
         #endregion
 
-        #region 输入验证事件
+        #region 事件处理
+
+        private void OnSaveClick(object sender, EventArgs e)
+        {
+            if (DesignMode) return;
+            SaveParameters();
+        }
 
         private void txtTime_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // 只允许数字、小数点、退格键
-            if (!char.IsControl(e.KeyChar) &&
-                !char.IsDigit(e.KeyChar) &&
-                e.KeyChar != '.')
+            if (DesignMode) return;
+
+            // 只允许输入数字和小数点
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != '.')
             {
                 e.Handled = true;
-                return;
             }
 
             // 只允许一个小数点
-            if (e.KeyChar == '.' && txtTime.Text.Contains('.'))
+            if (e.KeyChar == '.' && (sender as TextBox)?.Text.IndexOf('.') > -1)
             {
                 e.Handled = true;
             }
@@ -170,14 +220,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         private void txtTime_Leave(object sender, EventArgs e)
         {
-            if (IsLoading || DesignMode) return;
+            if (DesignMode || IsLoading || !IsServiceAvailable) return;
 
-            string timeText = GetControlText(txtTime);
-
-            if (!string.IsNullOrEmpty(timeText) &&
-                double.TryParse(timeText, out double value))
+            if (txtTime != null && double.TryParse(txtTime.Text, out double value))
             {
-                SetControlText(txtTime, value.ToString("F1"));
+                Parameter.T = value;
             }
         }
 

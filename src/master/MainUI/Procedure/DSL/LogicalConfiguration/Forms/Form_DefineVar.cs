@@ -1,47 +1,30 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    public partial class Form_DefineVar : UIForm
+    public partial class Form_DefineVar : BaseParameterForm, IParameterForm<Parameter_DefineVar>
     {
-        private readonly IWorkflowStateService _workflowState;
-        private readonly GlobalVariableManager _variableManager;
-        private readonly ILogger<Form_DefineVar> _logger;
-
         #region 构造函数
+        private readonly GlobalVariableManager _variableManager;
+
+        public Parameter_DefineVar Parameter
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+
         /// <summary>
         /// 使用依赖注入的构造函数
         /// </summary>
-        public Form_DefineVar(IWorkflowStateService workflowState, GlobalVariableManager variableManager,
-            ILogger<Form_DefineVar> logger)
+        public Form_DefineVar(GlobalVariableManager variableManager)
         {
-            _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
             _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             InitializeComponent();
             LoadVariables();
-        }
-
-        /// <summary>
-        /// 兼容性构造函数（无参数）
-        /// </summary>
-        public Form_DefineVar() : this(
-            Program.ServiceProvider.GetRequiredService<IWorkflowStateService>(),
-            Program.ServiceProvider.GetRequiredService<GlobalVariableManager>(),
-            Program.ServiceProvider.GetRequiredService<ILogger<Form_DefineVar>>())
-        {
-        }
-
-        /// <summary>
-        /// 兼容性构造函数（带SingletonStatus参数）
-        /// </summary>
-        public Form_DefineVar(SingletonStatus singleton) : this()
-        {
-            // 忽略传入的 singleton 参数，使用依赖注入的服务
         }
 
         #endregion
@@ -49,7 +32,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #region 变量操作方法
 
         /// <summary>
-        /// 加载变量列表 - 新版本
+        /// 加载变量列表
         /// </summary>
         private void LoadVariables()
         {
@@ -77,7 +60,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         /// <summary>
-        /// 删除变量 - 新版本
+        /// 删除变量
         /// </summary>
         private void Clean_Click(object sender, EventArgs e)
         {
@@ -120,7 +103,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         /// <summary>
-        /// 保存变量 - 新版本
+        /// 保存变量
         /// </summary>
         private async void Save_Click(object sender, EventArgs e)
         {
@@ -226,6 +209,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 _logger.LogError(ex, "保存变量时发生错误");
                 MessageHelper.MessageOK($"保存失败：{ex.Message}", TType.Error);
             }
+        }
+
+        public void PopulateControls(Parameter_DefineVar parameter)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IParameterForm<Parameter_DefineVar>.SetDefaultValues()
+        {
+            SetDefaultValues();
+        }
+
+        public bool ValidateTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Parameter_DefineVar CollectTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Parameter_DefineVar ConvertParameter(object stepParameter)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

@@ -1,11 +1,11 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration;
 using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
-using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using System.Configuration;
 
 namespace MainUI
@@ -75,8 +75,6 @@ namespace MainUI
 
             ServiceProvider = services.BuildServiceProvider();
 
-            // 设置兼容性服务定位器（临时解决方案）
-            ServiceLocator.SetServiceProvider(ServiceProvider);
         }
 
         /// <summary>
@@ -230,7 +228,7 @@ namespace MainUI
         /// </summary>
         private static void RegisterDSLServices(IServiceCollection services)
         {
-            // DSL方法类
+            // DSL方法类注册
             services.AddSingleton<SystemMethods>();
             services.AddSingleton<VariableMethods>();
             services.AddSingleton<PLCMethods>();
@@ -251,13 +249,8 @@ namespace MainUI
             // 主窗体
             services.AddTransient<frmMainMenu>();
 
-            // DSL配置相关窗体
-            services.AddTransient<FrmLogicalConfiguration>();
-            services.AddTransient<Form_DefineVar>();
-            services.AddTransient<Form_ReadPLC>();
-
-            // 窗体工厂
-            services.AddSingleton<FormFactory>();
+            // 窗体集合管理类
+            services.AddSingleton<IFormService, FormService>();
 
             // UI管理器
             services.AddTransient<DataGridViewManager>();
@@ -274,9 +267,17 @@ namespace MainUI
                 builder.AddConsole();
                 builder.AddDebug();
 
-                // 可以根据配置添加更多日志提供程序
-                // builder.AddFile("logs/app.log"); // 需要额外的日志库
+                builder.ClearProviders(); // 清除默认提供者
+                builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                builder.AddNLog(); // 添加NLog提供者
             });
+
+            // 显式注册一些常用的Logger类型
+            //services.AddSingleton(provider =>
+            //    provider.GetRequiredService<ILoggerFactory>().CreateLogger<BaseParameterForm>());
+
+            //services.AddSingleton(provider =>
+            //    provider.GetRequiredService<ILoggerFactory>().CreateLogger<Form_DelayTime>());
 
             // 可以在这里添加其他基础设施服务
             // services.AddSingleton<IConfigurationService, ConfigurationService>();

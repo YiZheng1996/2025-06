@@ -1,4 +1,6 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
     /// <summary>
     /// PLC读取参数
@@ -20,19 +22,34 @@
         [Newtonsoft.Json.JsonIgnore]
         public VarItem_Enhanced TargetVariable { get; set; }
 
-        // 为了向后兼容，保留名称属性
+        private IWorkflowStateService _workflowStateService;
+
+        // 这个属性需要重新设计，建议通过工厂模式或服务来解析
         public string TargetVarName
         {
             get => TargetVariable?.VarName ?? "";
             set
             {
-                // 通过名称查找变量并设置引用
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var variables = SingletonStatus.Instance.GetObjOfType<VarItem_Enhanced>().ToList();
-                    TargetVariable = variables.FirstOrDefault(v => v.VarName == value);
+                    // 延迟解析，在实际使用时通过服务解析
+                    _targetVarName = value;
                 }
             }
         }
+
+        private string _targetVarName;
+
+        // 添加解析方法，由使用方调用
+        public void ResolveTargetVariable(IWorkflowStateService workflowStateService)
+        {
+            if (!string.IsNullOrEmpty(_targetVarName))
+            {
+                var variables = workflowStateService.GetVariables<VarItem_Enhanced>();
+                TargetVariable = variables.FirstOrDefault(v => v.VarName == _targetVarName);
+            }
+        }
+
+
     }
 }

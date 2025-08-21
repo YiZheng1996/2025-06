@@ -21,10 +21,10 @@
 
         // 三个独立的读写锁，用于保护不同类型的数据
         // 这样可以提高并发性能，因为不同类型的数据可以并行访问
-        private readonly ReaderWriterLockSlim _configLock = new ReaderWriterLockSlim();    // 保护配置数据
-        private readonly ReaderWriterLockSlim _variablesLock = new ReaderWriterLockSlim(); // 保护变量集合
-        private readonly ReaderWriterLockSlim _stepsLock = new ReaderWriterLockSlim();     // 保护步骤集合
-        private readonly object _eventLock = new object();                                  // 保护事件触发
+        private readonly ReaderWriterLockSlim _configLock = new();    // 保护配置数据
+        private readonly ReaderWriterLockSlim _variablesLock = new(); // 保护变量集合
+        private readonly ReaderWriterLockSlim _stepsLock = new();     // 保护步骤集合
+        private readonly object _eventLock = new object();   // 保护事件触发
 
         // 配置相关的私有字段
         // 使用私有字段 + 属性的模式来控制访问
@@ -41,8 +41,8 @@
 
         // 数据集合，使用 List 因为需要保持顺序
         // 注意：List<T> 不是线程安全的，所以需要锁保护
-        private readonly List<object> _variables = new List<object>();
-        private readonly List<ChildModel> _steps = new List<ChildModel>();
+        private readonly List<object> _variables = [];
+        private readonly List<ChildModel> _steps = [];
 
         // 资源释放标志
         private bool _disposed = false;
@@ -383,7 +383,7 @@
             try
             {
                 // 创建副本，确保线程安全
-                return new List<ChildModel>(_steps);
+                return [.. _steps];
             }
             finally
             {
@@ -446,6 +446,23 @@
             return stepIndex >= 0 && stepIndex < count;
         }
 
+        /// <summary>
+        /// 更新指定步骤的参数
+        /// </summary>
+        /// <param name="stepIndex">步骤索引</param>
+        /// <param name="parameter">新的参数对象</param>
+        public void UpdateStepParameter(int stepIndex, object parameter)
+        {
+            var steps = GetSteps();
+            if (steps != null && stepIndex >= 0 && stepIndex < steps.Count)
+            {
+                steps[stepIndex].StepParameter = parameter;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(stepIndex), "步骤索引超出范围");
+            }
+        }
         #endregion
 
         #region 变量管理实现
