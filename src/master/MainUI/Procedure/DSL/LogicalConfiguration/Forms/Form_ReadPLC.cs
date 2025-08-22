@@ -2,8 +2,11 @@
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 using static MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager.GlobalVariableManager;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
@@ -17,6 +20,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly GlobalVariableManager _variableManager;
         private readonly ILogger<Form_ReadPLC> _logger;
         private readonly IPLCManager _pLCManager;
+        private readonly IPLCConfigurationService _pLCConfigurationService;
 
         // 窗体私有字段
         private Parameter_ReadPLC _currentParameter;
@@ -43,6 +47,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pLCManager = pLCManager ?? throw new ArgumentNullException(nameof(pLCManager));
+            _pLCConfigurationService = Program.ServiceProvider.GetService<IPLCConfigurationService>();
             InitializeComponent();
             InitializeForm();
 
@@ -56,7 +61,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 初始化窗体
         /// </summary>
-        private void InitializeForm()
+        private async void InitializeForm()
         {
             try
             {
@@ -65,8 +70,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 获取当前步骤信息
                 _currentStepIndex = _workflowState.StepNum;
 
-                // 加载PLC点位
-                InitializePointLocationPLC();
 
                 // 加载当前步骤的参数
                 LoadCurrentStepParameter();
@@ -76,6 +79,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                 // 加载写入PLC参数
                 LoadWritePLCParameters();
+
+                // 加载PLC点位
+                await InitializePointLocationPLC();
 
                 _logger.LogDebug("窗体初始化完成，当前步骤: {StepIndex}", _currentStepIndex);
             }
@@ -457,26 +463,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 加载全部PLC点位
         /// </summary>
-        private void InitializePointLocationPLC()
+        private async Task InitializePointLocationPLC()
         {
             try
             {
-                var plc = _pLCManager.ModelsContent;
                 TreeViewPLC.Nodes.Clear();
-                //foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
-                //{
-                //    // 创建主节点(Key)
-                //    TreeNode parentNode = new(kvp.Key);
+                var plcs = await _pLCManager.GetModuleTagsAsync();
+                foreach (var kvp in plcs)
+                {
+                    // 创建主节点(Key)
+                    TreeNode parentNode = new(kvp.Key);
 
-                //    // 添加子节点(Value)
-                //    foreach (var value in kvp.Value)
-                //    {
-                //        // 如果Key是"ServerName"，则不添加到TreeView中
-                //        if (value.Key != "ServerName")
-                //            parentNode.Nodes.Add(value.Key);
-                //    }
-                //    TreeViewPLC.Nodes.Add(parentNode);
-                //}
+                    // 添加子节点(Value)
+                    foreach (var value in kvp.Value)
+                    {
+                        // 如果Key是"ServerName"，则不添加到TreeView中
+                        if (value != "ServerName")
+                            parentNode.Nodes.Add(value);
+                    }
+                    TreeViewPLC.Nodes.Add(parentNode);
+                }
                 // 默认全部展开
                 TreeViewPLC.ExpandAll();
             }

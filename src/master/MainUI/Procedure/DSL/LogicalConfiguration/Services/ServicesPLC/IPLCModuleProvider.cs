@@ -1,6 +1,6 @@
 ﻿using RW.Modules;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
     /// <summary>
     /// PLC模块提供者接口 - 负责模块的创建和管理

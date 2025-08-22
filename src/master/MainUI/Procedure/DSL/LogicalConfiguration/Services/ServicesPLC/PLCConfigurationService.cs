@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
     /// <summary>
     /// PLC配置服务实现
@@ -61,7 +61,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
         /// <summary>
         /// 配置变更事件
         /// </summary>
-        public event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
+        public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
         /// <summary>
         /// 异步加载配置文件

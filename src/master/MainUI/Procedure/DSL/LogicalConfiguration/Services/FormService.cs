@@ -1,5 +1,6 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
 using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

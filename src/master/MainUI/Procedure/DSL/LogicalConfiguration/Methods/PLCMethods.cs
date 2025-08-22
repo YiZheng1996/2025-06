@@ -2,6 +2,7 @@
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods.Core;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.Logging;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods

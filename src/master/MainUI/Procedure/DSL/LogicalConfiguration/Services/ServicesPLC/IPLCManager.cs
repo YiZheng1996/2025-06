@@ -1,6 +1,7 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+using RW.Modules;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
     /// <summary>
     /// PLC管理器接口 - 定义所有PLC操作的契约
@@ -19,14 +20,22 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
         /// </summary>
         bool IsPLCInitialized { get; }
 
-        /// <summary>
-        /// 获取模块配置内容字典（只读）
-        /// </summary>
-        IReadOnlyDictionary<string, Dictionary<string, string>> ModelsContent { get; }
-
         #endregion
 
         #region 异步PLC操作接口
+
+        /// <summary>
+        /// 获取所有模块的点位信息
+        /// </summary>
+        /// <returns>模块点位字典，Key为模块名，Value为点位列表</returns>
+        Task<Dictionary<string, List<string>>> GetModuleTagsAsync();
+
+        /// <summary>
+        /// 获取指定模块的点位信息
+        /// </summary>
+        /// <param name="moduleName">模块名称</param>
+        /// <returns>点位列表</returns>
+        Task<List<string>> GetModuleTagsAsync(string moduleName);
 
         /// <summary>
         /// 异步读取单个PLC点位值

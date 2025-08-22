@@ -15,14 +15,21 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
     /// </summary>
     public class PlcReadItem
     {
-        public string PlcModuleName { get; set; }   // PLC模块名称
-        public string PlcKeyName { get; set; }      // PLC键名称
+        /// <summary>
+        /// PLC模块名称
+        /// </summary>
+        public string PlcModuleName { get; set; }
+
+        /// <summary>
+        /// PLC键值对
+        /// </summary>
+        public string PlcKeyName { get; set; }
 
         // 运行时解析的变量引用（不序列化）
         [Newtonsoft.Json.JsonIgnore]
         public VarItem_Enhanced TargetVariable { get; set; }
 
-        private IWorkflowStateService _workflowStateService;
+        //private IWorkflowStateService _workflowStateService;
 
         // 这个属性需要重新设计，建议通过工厂模式或服务来解析
         public string TargetVarName

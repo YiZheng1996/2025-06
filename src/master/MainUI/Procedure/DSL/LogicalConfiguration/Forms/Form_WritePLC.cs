@@ -1,5 +1,4 @@
 ﻿using AntdUI;
-using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = _workflowStateService.GetSteps() ;
+                var steps = _workflowStateService.GetSteps();
                 int idx = _workflowStateService.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
@@ -82,20 +81,20 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 TreeViewPLC.Nodes.Clear();
-                //foreach (var kvp in PointPLCManager.Instance.DicModelsContent)
-                //{
-                //    // 创建主节点(Key)
-                //    TreeNode parentNode = new(kvp.Key);
+                foreach (var kvp in ModuleComponent.Instance.Modules)
+                {
+                    // 创建主节点(Key)
+                    TreeNode parentNode = new(kvp.Key);
 
-                //    // 添加子节点(Value)
-                //    foreach (var value in kvp.Value)
-                //    {
-                //        // 如果Key是"ServerName"，则不添加到TreeView中
-                //        if (value.Key != "ServerName")
-                //            parentNode.Nodes.Add(value.Key);
-                //    }
-                //    TreeViewPLC.Nodes.Add(parentNode);
-                //}
+                    // 添加子节点(Value)
+                    foreach (var value in kvp.Value.Values)
+                    {
+                        // 如果Key是"ServerName"，则不添加到TreeView中
+                        if (value.Key != "ServerName")
+                            parentNode.Nodes.Add(value.Key);
+                    }
+                    TreeViewPLC.Nodes.Add(parentNode);
+                }
                 // 默认全部展开
                 TreeViewPLC.ExpandAll();
             }

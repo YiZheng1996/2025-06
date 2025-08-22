@@ -14,7 +14,7 @@ namespace MainUI.CurrencyHelper
         /// <summary>
         /// 获取或设置所有的模块对象，只含公共模块.严禁修改，可通过partial编写扩展方法
         /// </summary>
-        protected Dictionary<string, BaseModule> Modules { get; set; } = [];
+        public Dictionary<string, BaseModule> Modules { get; set; } = [];
 
         private static readonly string configPath = Application.StartupPath + @"Modules\MyModules.ini";
 

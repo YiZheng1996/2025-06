@@ -1,4 +1,4 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
     /// <summary>
     /// PLC配置服务接口 - 专门处理配置文件读写
@@ -32,7 +32,7 @@
         /// <summary>
         /// 配置变更事件
         /// </summary>
-        event EventHandler<ConfigurationChangedEventArgs>? ConfigurationChanged;
+        event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
     }
 
     /// <summary>

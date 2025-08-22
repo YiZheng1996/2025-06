@@ -210,7 +210,7 @@ namespace MainUI
         {
             // 工作流服务
             services.AddWorkflowServices(
-                configureOptions: options =>
+             configureOptions: options =>
             {
                 options.EnableEventLogging = true;
                 options.EnablePerformanceMonitoring = false;

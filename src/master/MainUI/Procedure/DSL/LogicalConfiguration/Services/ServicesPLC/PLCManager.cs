@@ -1,12 +1,14 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RW.Model;
 using RW.Modules;
+using System.Collections.Generic;
 
-namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
     /// <summary>
-    /// PLC管理器实现 - 依赖注入版本
+    /// PLC管理器实现
     /// 
     /// 重构要点：
     /// 1. 完全移除单例模式
@@ -57,15 +59,92 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                                        _lazyModules.Value.IsCompletedSuccessfully &&
                                        _lazyModules.Value.Result.Count > 0;
 
-        /// <summary>
-        /// 获取模块配置内容字典（只读）
-        /// </summary>
-        public IReadOnlyDictionary<string, Dictionary<string, string>> ModelsContent =>
-            _configurationService.Configuration;
+        ///// <summary>
+        ///// 获取模块配置内容字典（只读）
+        ///// </summary>
+        //public IReadOnlyDictionary<string, Dictionary<string, string>> ModelsContent =>
+        //    _configurationService.Configuration;
 
         #endregion
 
         #region PLC操作实现
+        /// <summary>
+        /// 获取所有模块的点位信息
+        /// </summary>
+        public async Task<Dictionary<string, List<string>>> GetModuleTagsAsync()
+        {
+
+            //var aa = await _configurationService.
+            //    LoadConfigurationAsync(_options.ConfigurationPath);
+
+            var result = new Dictionary<string, List<string>>();
+
+            try
+            {
+                _logger.LogInformation("开始获取所有模块点位信息");
+
+                var modules = await GetModulesAsync();
+
+                foreach (var kvp in modules)
+                {
+                    if (modules.TryGetValue(kvp.Key, out var config))
+                    {
+                        List<string> tag = [];
+                        foreach (var tags in kvp.Value.Values)
+                        {
+                            if (tags.Key != "ServerName")
+                                tag.Add(tags.Key);
+                        }
+                        result.TryAdd(kvp.Key, tag);
+                    }
+                }
+
+                _logger.LogInformation("成功获取 {ModuleCount} 个模块的点位信息，总点位数: {TagCount}",
+                    result.Count, result.Values.Sum(tags => tags.Count));
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取模块点位信息失败");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定模块的点位信息
+        /// </summary>
+        public async Task<List<string>> GetModuleTagsAsync(string moduleName)
+        {
+            if (string.IsNullOrWhiteSpace(moduleName))
+                throw new ArgumentException("模块名称不能为空", nameof(moduleName));
+            List<string> tags = [];
+            try
+            {
+                _logger.LogDebug("获取模块 {ModuleName} 的点位信息", moduleName);
+
+                var module = await GetModuleAsync(moduleName);
+                if (module == null)
+                {
+                    _logger.LogWarning("未找到指定模块: {ModuleName}", moduleName);
+                    return [];
+                }
+
+                var configTags = module.Values.Where(k => k.ToString() != "ServerName").ToList();
+                foreach (var tag in configTags)
+                {
+                    tags.Add(tag.Key);
+                }
+                _logger.LogDebug("模块 {ModuleName} 共有 {TagCount} 个点位", moduleName, tags.Count);
+
+                return tags;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "获取模块 {ModuleName} 点位信息失败", moduleName);
+                throw;
+            }
+        }
 
         /// <summary>
         /// 异步读取单个PLC点位值
@@ -83,11 +162,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 _logger.LogDebug("开始读取PLC值: {ModuleName}.{Address}", moduleName, address);
 
                 // 获取模块
-                var module = await GetModuleAsync(moduleName, cancellationToken);
-                if (module == null)
-                {
+                var module = await GetModuleAsync(moduleName, cancellationToken) ??
                     throw new InvalidOperationException($"未找到指定的PLC模块: {moduleName}");
-                }
 
                 // 执行读取操作（包装为异步）
                 var result = await Task.Run(() => module.Read(address), cancellationToken);
@@ -346,7 +422,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 {
                     TotalModules = modules.Count,
                     OnlineModules = onlineCount,
-                    ConfiguredAddresses = ModelsContent.Sum(kvp => Math.Max(0, kvp.Value.Count - 1)), // 减去ServerName
                     LastUpdateTime = DateTime.Now
                 };
             }
