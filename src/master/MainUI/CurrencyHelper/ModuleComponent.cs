@@ -30,7 +30,7 @@ namespace MainUI.CurrencyHelper
         {
             try
             {
-                //Encoding.RegisterProvider 方法来注册自定义编码提供程序
+                // 注册自定义编码提供程序
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 Encoding encoding = Encoding.GetEncoding("GB2312");
 

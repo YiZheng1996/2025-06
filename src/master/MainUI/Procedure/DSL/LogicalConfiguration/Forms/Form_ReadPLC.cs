@@ -6,7 +6,6 @@ using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 using static MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager.GlobalVariableManager;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
@@ -50,7 +49,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _pLCConfigurationService = Program.ServiceProvider.GetService<IPLCConfigurationService>();
             InitializeComponent();
             InitializeForm();
-
             _logger.LogDebug("Form_ReadPLC 初始化完成");
         }
 
@@ -61,7 +59,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 初始化窗体
         /// </summary>
-        private async void InitializeForm()
+        private void InitializeForm()
         {
             try
             {
@@ -69,7 +67,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
                 // 获取当前步骤信息
                 _currentStepIndex = _workflowState.StepNum;
-
 
                 // 加载当前步骤的参数
                 LoadCurrentStepParameter();
@@ -81,7 +78,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 LoadWritePLCParameters();
 
                 // 加载PLC点位
-                await InitializePointLocationPLC();
+                InitializePointLocationPLC();
 
                 _logger.LogDebug("窗体初始化完成，当前步骤: {StepIndex}", _currentStepIndex);
             }
@@ -463,13 +460,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 加载全部PLC点位
         /// </summary>
-        private async Task InitializePointLocationPLC()
+        private async void InitializePointLocationPLC()
         {
             try
             {
                 TreeViewPLC.Nodes.Clear();
-                var plcs = await _pLCManager.GetModuleTagsAsync();
-                foreach (var kvp in plcs)
+                var configs2 = TestAA.Instance.DicModelsContent;
+                var configs = await _pLCManager.GetModuleTagsAsync();
+                foreach (var kvp in configs2)
                 {
                     // 创建主节点(Key)
                     TreeNode parentNode = new(kvp.Key);
@@ -477,9 +475,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 添加子节点(Value)
                     foreach (var value in kvp.Value)
                     {
-                        // 如果Key是"ServerName"，则不添加到TreeView中
-                        if (value != "ServerName")
-                            parentNode.Nodes.Add(value);
+                        parentNode.Nodes.Add(value.Key);
                     }
                     TreeViewPLC.Nodes.Add(parentNode);
                 }

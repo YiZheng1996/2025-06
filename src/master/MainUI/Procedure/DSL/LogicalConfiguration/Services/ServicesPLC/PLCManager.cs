@@ -1,9 +1,7 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RW.Model;
 using RW.Modules;
-using System.Collections.Generic;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 {
@@ -73,10 +71,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
         /// </summary>
         public async Task<Dictionary<string, List<string>>> GetModuleTagsAsync()
         {
-
-            //var aa = await _configurationService.
-            //    LoadConfigurationAsync(_options.ConfigurationPath);
-
             var result = new Dictionary<string, List<string>>();
 
             try
@@ -92,8 +86,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
                         List<string> tag = [];
                         foreach (var tags in kvp.Value.Values)
                         {
-                            if (tags.Key != "ServerName")
-                                tag.Add(tags.Key);
+                            var key = tags.Key;
+                            var value = tags.Value;
+                            tag.Add(tags.Key);
                         }
                         result.TryAdd(kvp.Key, tag);
                     }
