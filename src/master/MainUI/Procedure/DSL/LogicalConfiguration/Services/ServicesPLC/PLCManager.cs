@@ -57,15 +57,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
                                        _lazyModules.Value.IsCompletedSuccessfully &&
                                        _lazyModules.Value.Result.Count > 0;
 
-        ///// <summary>
-        ///// 获取模块配置内容字典（只读）
-        ///// </summary>
-        //public IReadOnlyDictionary<string, Dictionary<string, string>> ModelsContent =>
-        //    _configurationService.Configuration;
-
         #endregion
 
         #region PLC操作实现
+
         /// <summary>
         /// 获取所有模块的点位信息
         /// </summary>
@@ -75,29 +70,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 
             try
             {
-                _logger.LogInformation("开始获取所有模块点位信息");
+                _logger.LogInformation("开始获取所有模块点位信息，使用TestAA配置服务");
 
-                var modules = await GetModulesAsync();
-
-                foreach (var kvp in modules)
-                {
-                    if (modules.TryGetValue(kvp.Key, out var config))
-                    {
-                        List<string> tag = [];
-                        foreach (var tags in kvp.Value.Values)
-                        {
-                            var key = tags.Key;
-                            var value = tags.Value;
-                            tag.Add(tags.Key);
-                        }
-                        result.TryAdd(kvp.Key, tag);
-                    }
-                }
+                var configuredTags = await GetTagsFromConfigurationAsync();
 
                 _logger.LogInformation("成功获取 {ModuleCount} 个模块的点位信息，总点位数: {TagCount}",
                     result.Count, result.Values.Sum(tags => tags.Count));
 
-                return result;
+                return result = configuredTags;
             }
             catch (Exception ex)
             {
@@ -469,6 +449,48 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
         #endregion
 
         #region 专用业务实现
+
+        /// <summary>
+        /// 从IPLCConfigurationService配置服务获取点位信息
+        /// </summary>
+        private Task<Dictionary<string, List<string>>> GetTagsFromConfigurationAsync()
+        {
+            var result = new Dictionary<string, List<string>>();
+
+            try
+            {
+                _logger.LogDebug("从TestAA配置服务获取点位信息");
+
+                var configuration = _configurationService.Configuration;
+
+                foreach (var moduleConfig in configuration)
+                {
+                    var moduleName = moduleConfig.Key;
+                    var moduleParams = moduleConfig.Value;
+
+                    // 过滤掉非点位配置项
+                    var tags = moduleParams
+                        .Where(kvp => kvp.Key != "ServerName")
+                        .Select(kvp => kvp.Key)
+                        .ToList();
+
+                    if (tags.Count > 0)
+                    {
+                        result[moduleName] = tags;
+                        _logger.LogDebug("从配置获取模块 {ModuleName} 的 {TagCount} 个点位",
+                            moduleName, tags.Count);
+                    }
+                }
+
+                return Task.FromResult(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "从配置服务获取点位信息时发生错误，将尝试从模块获取");
+                return Task.FromResult(new Dictionary<string, List<string>>());
+            }
+        }
+
 
         /// <summary>
         /// 检测工具专用的PLC读取方法

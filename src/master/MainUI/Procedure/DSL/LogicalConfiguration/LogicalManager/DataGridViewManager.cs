@@ -1,19 +1,46 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using Microsoft.Extensions.Logging;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
 
-    /// <summary>
-    /// DataGridView管理器类
-    /// </summary>
-    internal class DataGridViewManager(DataGridView grid, List<ChildModel> tempSteps)
+    public class DataGridViewManager(
+        DataGridView grid,
+        IWorkflowStateService workflowState)
     {
+        private readonly DataGridView _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+
+        private readonly IWorkflowStateService _workflowState = workflowState ??
+            throw new ArgumentNullException(nameof(workflowState));
+
+        /// <summary>
+        /// 获取选中下标
+        /// </summary>
+        /// <returns></returns>
+        public int SelectedRows()
+        {
+            if (_grid.SelectedRows.Count > 0)
+            {
+                return grid.SelectedRows[0].Index;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 清空表格
+        /// </summary>
+        public void Clears()
+        {
+            grid.Rows.Clear();
+        }
 
         /// <summary>
         /// 添加行数据到DataGridView
         /// </summary>
-        /// <param name="stepName"></param>
         public void AddRow(string stepName)
         {
-            grid.Rows.Add(stepName, grid.Rows.Count + 1);
+            var steps = _workflowState.GetSteps();
+            _grid.Rows.Add(stepName, steps.Count);
         }
 
         /// <summary>
@@ -21,19 +48,20 @@
         /// </summary>
         public void DeleteSelectedRow()
         {
-            if (grid.SelectedRows.Count > 0)
+            if (_grid.SelectedRows.Count > 0)
             {
-                var selectedRow = grid.SelectedRows[0];
+                var selectedRow = _grid.SelectedRows[0];
                 int index = selectedRow.Index;
 
-                // 从临时存储中删除
-                tempSteps.RemoveAt(index);
+                // 从工作流状态中删除
+                if (_workflowState.RemoveStepAt(index))
+                {
+                    // 从网格中删除
+                    _grid.Rows.Remove(selectedRow);
 
-                // 从网格中删除
-                grid.Rows.Remove(selectedRow);
-
-                // 重新排序
-                ReorderRows();
+                    // 重新排序
+                    ReorderRows();
+                }
             }
         }
 
@@ -43,18 +71,19 @@
         private void ReorderRows()
         {
             // 更新网格中的步骤号
-            for (int i = 0; i < grid.Rows.Count; i++)
+            for (int i = 0; i < _grid.Rows.Count; i++)
             {
-                if (grid.Rows[i].Cells["ColStepNum"] != null)
+                if (_grid.Rows[i].Cells["ColStepNum"] != null)
                 {
-                    grid.Rows[i].Cells["ColStepNum"].Value = i + 1;
+                    _grid.Rows[i].Cells["ColStepNum"].Value = i + 1;
                 }
             }
 
-            // 更新临时存储中的步骤号
-            for (int i = 0; i < tempSteps.Count; i++)
+            // 更新工作流状态中的步骤号
+            var steps = _workflowState.GetSteps();
+            for (int i = 0; i < steps.Count; i++)
             {
-                tempSteps[i].StepNum = i + 1;
+                steps[i].StepNum = i + 1;
             }
         }
 
@@ -64,10 +93,10 @@
         /// <param name="dataGridView">控件名</param>
         /// <param name="columnName">列名</param>
         /// <returns></returns>
-        public static bool HasDuplicateValuesInColumn(DataGridView dataGridView, string columnName)
+        public bool HasDuplicateValuesInColumn(string columnName)
         {
             // 使用LINQ查询找到重复的项
-            var duplicateValues = dataGridView.Rows
+            var duplicateValues = _grid.Rows
                 .Cast<DataGridViewRow>() // 将Rows集合转换为IEnumerable<DataGridViewRow>
                 .Select(row => row.Cells[columnName].Value) // 选择指定列的值
                 .GroupBy(value => value) // 对值进行分组

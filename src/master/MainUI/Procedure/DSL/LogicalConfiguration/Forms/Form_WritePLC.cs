@@ -1,23 +1,39 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    public partial class Form_WritePLC : UIForm
+    public partial class Form_WritePLC : BaseParameterForm, IParameterForm<Form_WritePLC>
     {
-        private readonly IWorkflowStateService _workflowStateService;
-        private readonly ILogger<Form_WritePLC> _logger;
+        private readonly IPLCManager _pLCManager;
 
-        public Form_WritePLC(IWorkflowStateService workflowStateService, ILogger<Form_WritePLC> logger)
+        public Form_WritePLC Parameter
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
+
+        public Form_WritePLC()
         {
             InitializeComponent();
-            _workflowStateService = workflowStateService;
-            _logger = logger;
+
+            // 只有在非设计时模式才进行初始化
+            if (!DesignMode)
+            {
+                LoadWritePLCParameters();
+                InitializePointLocationPLC();
+            }
+        }
+
+        public Form_WritePLC(IPLCManager pLCManager)
+        {
+            InitializeComponent();
             LoadWritePLCParameters();
             InitializePointLocationPLC();
+            _pLCManager = pLCManager ?? throw new ArgumentNullException(nameof(pLCManager));
         }
 
         /// <summary>
@@ -27,8 +43,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = _workflowStateService.GetSteps();
-                int idx = _workflowStateService.StepNum;
+                var steps = _workflowState.GetSteps();
+                int idx = _workflowState.StepNum;
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
                     var paramObj = steps[idx].StepParameter;
@@ -48,7 +64,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                         }
                         catch (Exception ex)
                         {
-                            NlogHelper.Default.Error("参数反序列化失败", ex);
+                            _logger.LogError(ex, "参数反序列化失败");
                             param = new Parameter_WritePLC();
                         }
                     }
@@ -68,7 +84,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("加载PLC参数错误", ex);
+                _logger.LogError(ex, "加载PLC参数错误");
                 MessageHelper.MessageOK("加载PLC参数错误：" + ex.Message, TType.Error);
             }
         }
@@ -76,22 +92,21 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 加载全部PLC点位
         /// </summary>
-        private void InitializePointLocationPLC()
+        private async void InitializePointLocationPLC()
         {
             try
             {
                 TreeViewPLC.Nodes.Clear();
-                foreach (var kvp in ModuleComponent.Instance.Modules)
+                var configs = await _pLCManager.GetModuleTagsAsync();
+                foreach (var kvp in configs)
                 {
                     // 创建主节点(Key)
                     TreeNode parentNode = new(kvp.Key);
 
                     // 添加子节点(Value)
-                    foreach (var value in kvp.Value.Values)
+                    foreach (var value in kvp.Value)
                     {
-                        // 如果Key是"ServerName"，则不添加到TreeView中
-                        if (value.Key != "ServerName")
-                            parentNode.Nodes.Add(value.Key);
+                        parentNode.Nodes.Add(value);
                     }
                     TreeViewPLC.Nodes.Add(parentNode);
                 }
@@ -100,7 +115,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("加载全部PLC点位错误", ex);
+                _logger.LogError(ex, "加载全部PLC点位错误");
                 MessageHelper.MessageOK($"加载全部PLC点位错误：{ex.Message}", TType.Error);
             }
         }
@@ -125,7 +140,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error("拖拽步骤错误", ex);
+                _logger.LogError("拖拽步骤错误", ex);
                 MessageHelper.MessageOK($"拖拽步骤错误：{ex.Message}", TType.Error);
             }
         }
@@ -140,8 +155,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                var steps = _workflowStateService.GetSteps();
-                int idx = _workflowStateService.StepNum;
+                var steps = _workflowState.GetSteps();
+                int idx = _workflowState.StepNum;
 
                 if (steps != null && idx >= 0 && idx < steps.Count)
                 {
@@ -208,7 +223,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
             catch (Exception ex)
             {
-                NlogHelper.Default.Error($"保存PLC写入错误", ex);
+                _logger.LogError(ex, "保存PLC写入错误");
                 MessageHelper.MessageOK($"保存PLC写入错误：{ex.Message}", TType.Error);
             }
         }
@@ -239,8 +254,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 try
                 {
                     // 获取当前步骤
-                    var steps = _workflowStateService.GetSteps();
-                    int idx = _workflowStateService.StepNum;
+                    var steps = _workflowState.GetSteps();
+                    int idx = _workflowState.StepNum;
                     if (steps == null || idx < 0 || idx >= steps.Count)
                     {
                         MessageHelper.MessageOK("当前步骤无效，无法删除。", TType.Warn);
@@ -295,10 +310,35 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 }
                 catch (Exception ex)
                 {
-                    NlogHelper.Default.Error($"删除失败", ex);
+                    _logger.LogError(ex, "删除失败");
                     MessageHelper.MessageOK($"删除失败：{ex.Message}", TType.Error);
                 }
             }
+        }
+
+        public void PopulateControls(Form_WritePLC parameter)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IParameterForm<Form_WritePLC>.SetDefaultValues()
+        {
+            SetDefaultValues();
+        }
+
+        public bool ValidateTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Form_WritePLC CollectTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Form_WritePLC ConvertParameter(object stepParameter)
+        {
+            throw new NotImplementedException();
         }
     }
 }

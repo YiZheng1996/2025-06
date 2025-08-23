@@ -104,15 +104,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                     var variableManager = _serviceProvider.GetRequiredService<GlobalVariableManager>();
                     var logger = _serviceProvider.GetRequiredService<ILogger<Form_ReadPLC>>();
                     var pLCManager = _serviceProvider.GetRequiredService<IPLCManager>();
-                    
+
                     return (T)(object)new Form_ReadPLC(workflowState, variableManager, logger, pLCManager);
                 }
                 else if (typeof(T) == typeof(Form_WritePLC))
                 {
-                    var workflowState = _serviceProvider.GetRequiredService<IWorkflowStateService>();
-                    var logger = _serviceProvider.GetRequiredService<ILogger<Form_WritePLC>>();
-
-                    return (T)(object)new Form_WritePLC(workflowState, logger);
+                    var plcManager = _serviceProvider.GetRequiredService<IPLCManager>();
+                    return (T)(object)new Form_WritePLC(plcManager);
                 }
                 else if (typeof(T) == typeof(Form_DelayTime))
                 {

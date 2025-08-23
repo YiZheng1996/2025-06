@@ -575,7 +575,6 @@
             _variablesLock.EnterReadLock();
             try
             {
-                // 使用 LINQ 的 FirstOrDefault 方法
                 // 找到第一个符合条件的变量，没有则返回 null
                 return _variables.OfType<T>().FirstOrDefault(predicate);
             }

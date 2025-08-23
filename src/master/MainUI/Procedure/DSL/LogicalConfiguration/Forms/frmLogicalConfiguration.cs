@@ -58,8 +58,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 InitializeToolbox();
 
                 // 使用服务创建DataGridView管理器
-                var steps = _workflowState.GetSteps();
-                _gridManager = new DataGridViewManager(ProcessDataGridView, steps);
+                _gridManager = new DataGridViewManager(ProcessDataGridView, _workflowState);
 
                 // 设置事件处理程序
                 RegisterEventHandlers();
@@ -163,7 +162,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 {
                     // 清空临时数据和网格
                     _workflowState.ClearSteps();
-                    ProcessDataGridView.Rows.Clear();
+                    _gridManager.Clears();
 
                     // 加载数据到临时存储和网格
                     foreach (var step in parent.ChildSteps)
@@ -292,6 +291,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     return;
                 }
 
+                _gridManager.DeleteSelectedRow();
                 // 更新网格显示
                 RefreshStepGrid();
             }
@@ -557,7 +557,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #region 步骤操作
 
         /// <summary>
-        /// 添加步骤到表单 - 新版本
+        /// 添加步骤到表单
         /// </summary>
         private void AddStepToForm(string stepName, int stepNumber)
         {
@@ -589,14 +589,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         // 添加步骤按钮点击事件处理
         private void toolDeleteStep_Click(object sender, EventArgs e)
         {
-            _gridManager.DeleteSelectedRow();
+            int selectIndex = _gridManager.SelectedRows();
+            if (selectIndex >= 0)
+            {
+                if (_workflowState.RemoveStepAt(selectIndex))
+                {
+                    // 重新排序工作流状态中的步骤号
+                    var steps = _workflowState.GetSteps();
+                    for (int i = 0; i < steps.Count; i++)
+                    {
+                        steps[i].StepNum = i + 1;
+                    }
+                }
+            }
         }
         #endregion
 
         #region 按钮操作 - 使用新服务
 
         /// <summary>
-        /// 保存按钮点击事件 - 新版本
+        /// 保存按钮点击事件
         /// </summary>
         private async void BtnSave_Click(object sender, EventArgs e)
         {

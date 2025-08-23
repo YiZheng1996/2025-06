@@ -3,7 +3,6 @@ using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using static MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager.GlobalVariableManager;
@@ -19,7 +18,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly GlobalVariableManager _variableManager;
         private readonly ILogger<Form_ReadPLC> _logger;
         private readonly IPLCManager _pLCManager;
-        private readonly IPLCConfigurationService _pLCConfigurationService;
 
         // 窗体私有字段
         private Parameter_ReadPLC _currentParameter;
@@ -46,7 +44,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _variableManager = variableManager ?? throw new ArgumentNullException(nameof(variableManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pLCManager = pLCManager ?? throw new ArgumentNullException(nameof(pLCManager));
-            _pLCConfigurationService = Program.ServiceProvider.GetService<IPLCConfigurationService>();
             InitializeComponent();
             InitializeForm();
             _logger.LogDebug("Form_ReadPLC 初始化完成");
@@ -465,9 +462,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 TreeViewPLC.Nodes.Clear();
-                var configs2 = TestAA.Instance.DicModelsContent;
                 var configs = await _pLCManager.GetModuleTagsAsync();
-                foreach (var kvp in configs2)
+                foreach (var kvp in configs)
                 {
                     // 创建主节点(Key)
                     TreeNode parentNode = new(kvp.Key);
@@ -475,7 +471,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     // 添加子节点(Value)
                     foreach (var value in kvp.Value)
                     {
-                        parentNode.Nodes.Add(value.Key);
+                        parentNode.Nodes.Add(value);
                     }
                     TreeViewPLC.Nodes.Add(parentNode);
                 }
