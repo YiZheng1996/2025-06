@@ -51,17 +51,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
             if (_grid.SelectedRows.Count > 0)
             {
                 var selectedRow = _grid.SelectedRows[0];
-                int index = selectedRow.Index;
+                //int index = selectedRow.Index;
 
-                // 从工作流状态中删除
-                if (_workflowState.RemoveStepAt(index))
-                {
-                    // 从网格中删除
-                    _grid.Rows.Remove(selectedRow);
+                //// 从工作流状态中删除
+                //if (_workflowState.RemoveStepAt(index))
+                //{
+                // 从网格中删除
+                _grid.Rows.Remove(selectedRow);
 
-                    // 重新排序
-                    ReorderRows();
-                }
+                // 重新排序
+                ReorderRows();
+                //}
             }
         }
 

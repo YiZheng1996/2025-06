@@ -190,33 +190,15 @@ namespace MainUI
         /// </summary>
         private static void ConfigureServices(IServiceCollection services)
         {
-            // 注册核心服务
-            RegisterCoreServices(services);
-
-            // 注册DSL相关服务
-            RegisterDSLServices(services);
-
-            // 注册UI相关服务
-            RegisterUIServices(services);
-
-            // 注册基础设施服务
-            RegisterInfrastructureServices(services);
-        }
-
-        /// <summary>
-        /// 注册核心服务
-        /// </summary>
-        private static void RegisterCoreServices(IServiceCollection services)
-        {
             // 工作流服务
             services.AddWorkflowServices(
              configureOptions: options =>
-            {
-                options.EnableEventLogging = true;
-                options.EnablePerformanceMonitoring = false;
-                options.MaxVariableCacheSize = 1000;
-                options.MaxStepCacheSize = 500;
-            },
+             {
+                 options.EnableEventLogging = true;
+                 options.EnablePerformanceMonitoring = false;
+                 options.MaxVariableCacheSize = 1000;
+                 options.MaxStepCacheSize = 500;
+             },
              configureConfigOptions: options =>
              {
                  options.ConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
@@ -227,13 +209,7 @@ namespace MainUI
 
             // 全局变量管理器
             services.AddSingleton<GlobalVariableManager>();
-        }
 
-        /// <summary>
-        /// 注册DSL相关服务
-        /// </summary>
-        private static void RegisterDSLServices(IServiceCollection services)
-        {
             // DSL方法类注册
             services.AddSingleton<SystemMethods>();
             services.AddSingleton<VariableMethods>();
@@ -242,31 +218,10 @@ namespace MainUI
             services.AddSingleton<FlowControlMethods>();
             services.AddSingleton<ReportMethods>();
 
-            // 步骤执行管理器工厂
-            services.AddTransient<Func<List<ChildModel>, StepExecutionManager>>(provider =>
-                steps => ActivatorUtilities.CreateInstance<StepExecutionManager>(provider, steps));
-        }
+            services.AddTransient<frmMainMenu>();// 主窗体
+            services.AddSingleton<IFormService, FormService>();// 窗体集合管理类
+            services.AddTransient<DataGridViewManager>(); // UI管理器
 
-        /// <summary>
-        /// 注册UI相关服务
-        /// </summary>
-        private static void RegisterUIServices(IServiceCollection services)
-        {
-            // 主窗体
-            services.AddTransient<frmMainMenu>();
-
-            // 窗体集合管理类
-            services.AddSingleton<IFormService, FormService>();
-
-            // UI管理器
-            services.AddTransient<DataGridViewManager>();
-        }
-
-        /// <summary>
-        /// 注册基础设施服务
-        /// </summary>
-        private static void RegisterInfrastructureServices(IServiceCollection services)
-        {
             // 日志服务
             services.AddLogging(builder =>
             {
@@ -277,6 +232,10 @@ namespace MainUI
                 builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                 builder.AddNLog(); // 添加NLog
             });
+
+            // 步骤执行管理器工厂
+            services.AddTransient<Func<List<ChildModel>, StepExecutionManager>>(provider =>
+                steps => ActivatorUtilities.CreateInstance<StepExecutionManager>(provider, steps));
 
         }
 

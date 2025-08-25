@@ -58,7 +58,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 services.Configure(configureConfigOptions);
             }
 
-            // 注册主要服务
+            // 注册主要服务及PLC相关服务
             services.AddSingleton<IWorkflowStateService, WorkflowStateService>();
             services.AddSingleton<IPLCConfigurationService, PLCConfigurationService>();
             services.AddSingleton<IPLCModuleProvider, PLCModuleProvider>();

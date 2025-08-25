@@ -23,7 +23,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly ILogger<FrmLogicalConfiguration> _logger;
         private readonly IFormService _formService;
 
-        // 原有的私有字段
+        // 命名元组存储配置参数，减少字段数量
+        private readonly (string Path, string ModelType, string ModelName, string ProcessName) _configuration;
+
+        // UI管理器
         private readonly DataGridViewManager _gridManager;
         private StepExecutionManager _executionManager;
         private bool _isExecuting;
@@ -47,12 +50,30 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
             try
             {
-                _logger.LogInformation("正在初始化工作流配置窗体");
-
                 InitializeComponent();
 
-                // 初始化配置
-                InitializeConfiguration(path, modelType, modelName, processName);
+                _logger.LogDebug("开始初始化配置: {ModelType}/{ModelName}/{ProcessName}",
+                    modelType, modelName, processName);
+
+                // 设置JSON文件路径
+                JsonManager.FilePath = path;
+
+                // 更新窗体标题
+                Text = $"产品类型：{modelType}，产品型号：{modelName}，项点名称：{processName}";
+
+                // 创建配置文件
+                CreateJsonFileAsync(modelType, modelName, processName).Wait();
+
+                // 更新配置
+                _workflowState.UpdateConfiguration(modelType, modelName, processName);
+
+                // 初始化变量
+                InitializeVariables();
+
+                // 加载已保存的步骤到DataGridView
+                LoadStepsToGrid();
+
+                _logger.LogDebug("配置初始化完成");
 
                 // 加载工具箱
                 InitializeToolbox();
@@ -77,42 +98,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         #region 初始化方法
 
-        /// <summary>
-        /// 初始化配置 - 使用新的服务
-        /// </summary>
-        private void InitializeConfiguration(string path, string modelType, string modelName, string processName)
-        {
-            try
-            {
-                _logger.LogDebug("开始初始化配置: {ModelType}/{ModelName}/{ProcessName}",
-                    modelType, modelName, processName);
-
-                // 设置JSON文件路径
-                JsonManager.FilePath = path;
-
-                // 更新窗体标题
-                Text = $"产品类型：{modelType}，产品型号：{modelName}，项点名称：{processName}";
-
-                // 创建配置文件
-                CreateJsonFileAsync(modelType, modelName, processName).Wait();
-
-                // 使用新服务更新配置
-                _workflowState.UpdateConfiguration(modelType, modelName, processName);
-
-                // 初始化变量
-                InitializeVariables();
-
-                // 加载已保存的步骤到DataGridView
-                LoadStepsToGrid();
-
-                _logger.LogDebug("配置初始化完成");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "初始化配置时发生错误");
-                throw;
-            }
-        }
 
         /// <summary>
         /// 注册事件处理程序
@@ -292,8 +277,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 }
 
                 _gridManager.DeleteSelectedRow();
-                // 更新网格显示
-                RefreshStepGrid();
             }
             catch (Exception ex)
             {
@@ -315,7 +298,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             if (e.Node != null) // 确保节点非空
             {
-                _formService.OpenFormByName(this, e.Node.Text, this);
+                switch (e.Node.Text)
+                {
+                    case "变量定义":
+                        _formService.OpenFormByName(this, e.Node.Text, this);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -586,7 +576,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
 
-        // 添加步骤按钮点击事件处理
+        // 删除步骤按钮点击事件处理
         private void toolDeleteStep_Click(object sender, EventArgs e)
         {
             int selectIndex = _gridManager.SelectedRows();
@@ -605,7 +595,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
         #endregion
 
-        #region 按钮操作 - 使用新服务
+        #region 按钮操作
 
         /// <summary>
         /// 保存按钮点击事件
