@@ -79,6 +79,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                     case "系统提示":
                         form = CreateForm<Form_SystemPrompt>();
                         break;
+                    case "检测工具":
+                        form = CreateForm<Form_Detection>();
+                        break;
                     default:
                         _logger.LogWarning("未知的窗体类型: {FormName}", formName);
                         MessageBox.Show($"未知的窗体类型: {formName}", "错误",
@@ -110,7 +113,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
 
         /// <summary>
         /// 创建指定类型的窗体
-        /// 使用字典映射替代大量if-else，统一服务获取逻辑
         /// </summary>
         public T CreateForm<T>() where T : Form
         {
@@ -141,16 +143,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
             // 所有窗体创建都使用预加载的服务，避免重复获取
             return typeof(T).Name switch
             {
-                // 系统提示窗体
-                nameof(Form_SystemPrompt) => (T)(object)new Form_SystemPrompt(
-                    _workflowState,  // 预加载的服务
-                    GetSpecificLogger<Form_SystemPrompt>()),
-
-                // 延时配置窗体
-                nameof(Form_DelayTime) => (T)(object)new Form_DelayTime(
-                    _workflowState,
-                    GetSpecificLogger<Form_DelayTime>()),
-
                 // 变量定义窗体
                 nameof(Form_DefineVar) => (T)(object)new Form_DefineVar(
                     _variableManager),
@@ -166,7 +158,29 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 nameof(Form_WritePLC) => (T)(object)new Form_WritePLC(
                     _plcManager),
 
-                // 其他窗体可以继续添加...
+                // 延时配置窗体
+                nameof(Form_DelayTime) => (T)(object)new Form_DelayTime(
+                    _workflowState,
+                    GetSpecificLogger<Form_DelayTime>()),
+
+                // 读取单元格 配置窗体
+                nameof(Form_ReadCells) => (T)(object)new Form_ReadCells(),
+
+                // 写入单元格 配置窗体
+                nameof(Form_WriteCells) => (T)(object)new Form_WriteCells(),
+
+                // 保存报表 配置窗体
+                nameof(Form_SaveReport) => (T)(object)new Form_SaveReport(_workflowState,
+                    GetSpecificLogger<Form_SaveReport>()),
+
+                // 系统提示窗体
+                nameof(Form_SystemPrompt) => (T)(object)new Form_SystemPrompt(
+                    _workflowState,  // 预加载的服务
+                    GetSpecificLogger<Form_SystemPrompt>()),
+
+                // 检测工具窗体
+                nameof(Form_Detection) => (T)(object)new Form_Detection(),
+
 
                 // 未知窗体类型
                 _ => throw new NotSupportedException($"不支持的窗体类型: {typeof(T).Name}")

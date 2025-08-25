@@ -1,6 +1,9 @@
 ﻿
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
+    /// <summary>
+    /// 条件参数模型类，用于描述条件判断的各个组成部分
+    /// </summary>
     public class Parameter_Condition
     {
         /// <summary>

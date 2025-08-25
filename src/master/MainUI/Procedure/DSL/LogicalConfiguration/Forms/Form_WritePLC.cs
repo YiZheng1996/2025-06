@@ -275,7 +275,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
             catch (Exception ex)
             {
-                _logger.LogError("拖拽步骤错误", ex);
+                _logger.LogError(ex, "拖拽步骤错误");
                 MessageHelper.MessageOK($"拖拽步骤错误：{ex.Message}", TType.Error);
             }
         }
@@ -359,7 +359,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         #endregion
 
-        #region 私有辅助方法
+        #region 辅助方法
 
         /// <summary>
         /// 从UI界面收集PLC项目数据

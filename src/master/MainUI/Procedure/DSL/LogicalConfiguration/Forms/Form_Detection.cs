@@ -5,7 +5,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    public partial class Form_Detection : UIForm
+    public partial class Form_Detection : BaseParameterForm, IParameterForm<Parameter_DefineVar>
     {
         private readonly ILogger _logger;
         private readonly IWorkflowStateService _workflowStateService;
@@ -18,6 +18,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         private Parameter_Detection _parameter;
+
+        public Parameter_DefineVar Parameter
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
 
         public Form_Detection()
         {
@@ -367,6 +373,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             SaveFormToParameter();
             return _parameter;
+        }
+
+        public void PopulateControls(Parameter_DefineVar parameter)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IParameterForm<Parameter_DefineVar>.SetDefaultValues()
+        {
+            SetDefaultValues();
+        }
+
+        public bool ValidateTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Parameter_DefineVar CollectTypedParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Parameter_DefineVar ConvertParameter(object stepParameter)
+        {
+            throw new NotImplementedException();
         }
     }
 }
