@@ -1,34 +1,21 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
-using MainUI.Procedure.DSL.LogicalConfiguration.Services;
-using Microsoft.Extensions.Logging;
-using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
-    public partial class Form_Detection : BaseParameterForm, IParameterForm<Parameter_DefineVar>
+    public partial class Form_Detection : BaseParameterForm, IParameterForm<Parameter_Detection>
     {
-        private readonly ILogger _logger;
-        private readonly IWorkflowStateService _workflowStateService;
-        public Form_Detection(IWorkflowStateService workflowStateService, ILogger<Form_Detection> logger)
+        public Form_Detection()
         {
-            _logger = logger;
-            _workflowStateService = workflowStateService;
             InitializeComponent();
             InitializeForm();
         }
 
         private Parameter_Detection _parameter;
 
-        public Parameter_DefineVar Parameter
+        public Parameter_Detection Parameter
         {
             get => throw new NotImplementedException();
             set => throw new NotImplementedException();
-        }
-
-        public Form_Detection()
-        {
-            InitializeComponent();
-            InitializeForm();
         }
 
         public Form_Detection(Parameter_Detection parameter) : this()
@@ -47,22 +34,30 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private void InitializeComboBoxes()
         {
             // 初始化检测类型下拉框
-            cmbDetectionType.DataSource = Enum.GetValues(typeof(DetectionType));
+            cmbDetectionType.DataSource = EnumHelper.GetDisplayItems<DetectionType>();
+            cmbDetectionType.DisplayMember = "DisplayName";
+            cmbDetectionType.ValueMember = "Value";
 
             // 初始化数据源类型下拉框
-            cmbDataSourceType.DataSource = Enum.GetValues(typeof(DataSourceType));
+            cmbDataSourceType.DataSource = EnumHelper.GetDisplayItems<DataSourceType>();
+            cmbDataSourceType.DisplayMember = "DisplayName";
+            cmbDataSourceType.ValueMember = "Value";
 
             // 初始化比较操作符下拉框
-            cmbOperator.DataSource = Enum.GetValues(typeof(ComparisonOperator));
+            cmbOperator.DataSource = EnumHelper.GetDisplayItems<ComparisonOperator>();
+            cmbOperator.DisplayMember = "DisplayName";
+            cmbOperator.ValueMember = "Value";
 
             // 初始化失败处理行为下拉框
-            cmbFailureAction.DataSource = Enum.GetValues(typeof(FailureAction));
+            cmbFailureAction.DataSource = EnumHelper.GetDisplayItems<FailureAction>();
+            cmbFailureAction.DisplayMember = "DisplayName";
+            cmbFailureAction.ValueMember = "Value";
 
             // 设置默认值
-            cmbDetectionType.SelectedItem = DetectionType.ValueRange;
-            cmbDataSourceType.SelectedItem = DataSourceType.Variable;
-            cmbOperator.SelectedItem = ComparisonOperator.GreaterThan;
-            cmbFailureAction.SelectedItem = FailureAction.Continue;
+            cmbDetectionType.SelectedValue = DetectionType.ValueRange;
+            cmbDataSourceType.SelectedValue = DataSourceType.Variable;
+            cmbOperator.SelectedValue = ComparisonOperator.GreaterThan;
+            cmbFailureAction.SelectedValue = FailureAction.Continue;
         }
 
         private void SetupEventHandlers()
@@ -82,17 +77,17 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
             // 基本信息
             txtDetectionName.Text = _parameter.DetectionName;
-            cmbDetectionType.SelectedItem = _parameter.Type;
+            cmbDetectionType.SelectedValue = _parameter.Type;
             numTimeout.Value = _parameter.TimeoutMs;
             numRetryCount.Value = _parameter.RetryCount;
             numRetryInterval.Value = _parameter.RetryIntervalMs;
 
             // 数据源配置
-            cmbDataSourceType.SelectedItem = _parameter.DataSource.SourceType;
+            cmbDataSourceType.SelectedValue = _parameter.DataSource.SourceType;
             txtVariableName.Text = _parameter.DataSource.VariableName;
             txtPlcModule.Text = _parameter.DataSource.PlcConfig.ModuleName;
             txtPlcAddress.Text = _parameter.DataSource.PlcConfig.Address;
-            txtDataType.Text = _parameter.DataSource.PlcConfig.DataType;
+            //txtDataType.Text = _parameter.DataSource.PlcConfig.DataType;
             txtExpression.Text = _parameter.DataSource.Expression;
 
             // 检测条件
@@ -100,7 +95,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             numMaxValue.Value = (decimal)_parameter.Condition.MaxValue;
             txtTargetValue.Text = _parameter.Condition.TargetValue;
             numThreshold.Value = (decimal)_parameter.Condition.ThresholdValue;
-            cmbOperator.SelectedItem = _parameter.Condition.Operator;
+            cmbOperator.SelectedValue = _parameter.Condition.Operator;
             numTolerance.Value = (decimal)_parameter.Condition.Tolerance;
             txtCustomExpression.Text = _parameter.Condition.CustomExpression;
 
@@ -109,7 +104,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             txtResultVariable.Text = _parameter.ResultHandling.ResultVariableName;
             chkSaveValue.Checked = _parameter.ResultHandling.SaveValueToVariable;
             txtValueVariable.Text = _parameter.ResultHandling.ValueVariableName;
-            cmbFailureAction.SelectedItem = _parameter.ResultHandling.OnFailure;
+            cmbFailureAction.SelectedValue = _parameter.ResultHandling.OnFailure;
             numFailureStep.Value = _parameter.ResultHandling.FailureStepIndex;
             numSuccessStep.Value = _parameter.ResultHandling.SuccessStepIndex;
             chkShowResult.Checked = _parameter.ResultHandling.ShowResult;
@@ -119,23 +114,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             UpdateFormLayout();
         }
 
+        /// <summary>
+        /// 保存表单数据到参数对象
+        /// </summary>
         private void SaveFormToParameter()
         {
             if (_parameter == null) return;
 
             // 基本信息
             _parameter.DetectionName = txtDetectionName.Text;
-            _parameter.Type = (DetectionType)cmbDetectionType.SelectedItem;
+            _parameter.Type = (DetectionType)cmbDetectionType.SelectedValue;
             _parameter.TimeoutMs = (int)numTimeout.Value;
             _parameter.RetryCount = (int)numRetryCount.Value;
             _parameter.RetryIntervalMs = (int)numRetryInterval.Value;
 
             // 数据源配置
-            _parameter.DataSource.SourceType = (DataSourceType)cmbDataSourceType.SelectedItem;
+            _parameter.DataSource.SourceType = (DataSourceType)cmbDataSourceType.SelectedValue;
             _parameter.DataSource.VariableName = txtVariableName.Text;
             _parameter.DataSource.PlcConfig.ModuleName = txtPlcModule.Text;
             _parameter.DataSource.PlcConfig.Address = txtPlcAddress.Text;
-            _parameter.DataSource.PlcConfig.DataType = txtDataType.Text;
+            //_parameter.DataSource.PlcConfig.DataType = txtDataType.Text;
             _parameter.DataSource.Expression = txtExpression.Text;
 
             // 检测条件
@@ -143,7 +141,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _parameter.Condition.MaxValue = (double)numMaxValue.Value;
             _parameter.Condition.TargetValue = txtTargetValue.Text;
             _parameter.Condition.ThresholdValue = (double)numThreshold.Value;
-            _parameter.Condition.Operator = (ComparisonOperator)cmbOperator.SelectedItem;
+            _parameter.Condition.Operator = (ComparisonOperator)cmbOperator.SelectedValue;
             _parameter.Condition.Tolerance = (double)numTolerance.Value;
             _parameter.Condition.CustomExpression = txtCustomExpression.Text;
 
@@ -152,31 +150,35 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             _parameter.ResultHandling.ResultVariableName = txtResultVariable.Text;
             _parameter.ResultHandling.SaveValueToVariable = chkSaveValue.Checked;
             _parameter.ResultHandling.ValueVariableName = txtValueVariable.Text;
-            _parameter.ResultHandling.OnFailure = (FailureAction)cmbFailureAction.SelectedItem;
+            _parameter.ResultHandling.OnFailure = (FailureAction)cmbFailureAction.SelectedValue;
             _parameter.ResultHandling.FailureStepIndex = (int)numFailureStep.Value;
             _parameter.ResultHandling.SuccessStepIndex = (int)numSuccessStep.Value;
             _parameter.ResultHandling.ShowResult = chkShowResult.Checked;
             _parameter.ResultHandling.MessageTemplate = txtMessageTemplate.Text;
         }
 
+        // 检测类型、数据源类型、失败处理方式变化时更新界面布局
         private void CmbDetectionType_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateFormLayout();
         }
 
+        // DataSource类型变化时更新界面布局
         private void CmbDataSourceType_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateDataSourceLayout();
         }
 
+        // 失败处理方式变化时更新界面布局
         private void CmbFailureAction_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateFailureActionLayout();
         }
 
+        // 根据检测类型显示相应的条件配置面板
         private void UpdateFormLayout()
         {
-            var detectionType = (DetectionType)cmbDetectionType.SelectedItem;
+            var detectionType = (DetectionType)cmbDetectionType.SelectedValue;
 
             // 隐藏所有条件面板
             pnlRangeCondition.Visible = false;
@@ -203,9 +205,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        // 根据数据源类型显示相应的配置面板
         private void UpdateDataSourceLayout()
         {
-            var sourceType = (DataSourceType)cmbDataSourceType.SelectedItem;
+            var sourceType = (DataSourceType)cmbDataSourceType.SelectedValue;
 
             // 隐藏所有数据源配置面板
             pnlVariableSource.Visible = false;
@@ -227,14 +230,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
         }
 
+        // 根据失败处理方式显示相应的配置面板
         private void UpdateFailureActionLayout()
         {
-            var failureAction = (FailureAction)cmbFailureAction.SelectedItem;
+            var failureAction = (FailureAction)cmbFailureAction.SelectedValue;
 
             // 根据失败处理方式显示相应的配置
             pnlJumpStep.Visible = failureAction == FailureAction.Jump;
         }
 
+        // 测试检测按钮点击事件
         private async void BtnTestDetection_Click(object sender, EventArgs e)
         {
             try
@@ -267,7 +272,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             try
             {
                 // 这里调用实际的检测方法进行测试
-                //return await MethodCollection.Method_Detection(_parameter);
                 return await Task.FromResult(true);
             }
             catch (Exception ex)
@@ -307,6 +311,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             Close();
         }
 
+        // 输入验证
         private bool ValidateInput()
         {
             // 检测名称不能为空
@@ -318,7 +323,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
 
             // 根据数据源类型验证相应的输入
-            var sourceType = (DataSourceType)cmbDataSourceType.SelectedItem;
+            var sourceType = (DataSourceType)cmbDataSourceType.SelectedValue;
             switch (sourceType)
             {
                 case DataSourceType.Variable:
@@ -348,7 +353,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             }
 
             // 验证检测条件
-            var detectionType = (DetectionType)cmbDetectionType.SelectedItem;
+            var detectionType = (DetectionType)cmbDetectionType.SelectedValue;
             if (detectionType == DetectionType.ValueRange)
             {
                 if (numMinValue.Value >= numMaxValue.Value)
@@ -361,26 +366,31 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             return true;
         }
 
+        // 将参数保存到当前流程步骤中
         private void SaveParameterToProcess()
         {
             // 这里需要将参数保存到当前流程步骤中
             // 具体实现需要根据流程管理器的接口来调整
-            _workflowStateService.GetAllVariables(); // 示例调用，实际应为保存参数的方法
+            WorkflowState.GetAllVariables(); // 示例调用，实际应为保存参数的方法
             // 保存逻辑...
         }
 
+        /// <summary>
+        /// 获取配置好的参数对象
+        /// </summary>
+        /// <returns></returns>
         public Parameter_Detection GetParameter()
         {
             SaveFormToParameter();
             return _parameter;
         }
 
-        public void PopulateControls(Parameter_DefineVar parameter)
+        public void PopulateControls(Parameter_Detection parameter)
         {
             throw new NotImplementedException();
         }
 
-        void IParameterForm<Parameter_DefineVar>.SetDefaultValues()
+        void IParameterForm<Parameter_Detection>.SetDefaultValues()
         {
             SetDefaultValues();
         }
@@ -390,14 +400,15 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             throw new NotImplementedException();
         }
 
-        public Parameter_DefineVar CollectTypedParameters()
+        public Parameter_Detection CollectTypedParameters()
         {
             throw new NotImplementedException();
         }
 
-        public Parameter_DefineVar ConvertParameter(object stepParameter)
+        public Parameter_Detection ConvertParameter(object stepParameter)
         {
             throw new NotImplementedException();
         }
+
     }
 }

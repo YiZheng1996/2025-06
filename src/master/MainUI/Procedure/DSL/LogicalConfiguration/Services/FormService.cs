@@ -22,8 +22,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
         public FormService(IServiceProvider serviceProvider, ILogger<FormService> logger)
         {
             // 在构造函数中预加载常用服务
-            // 原因：避免每个方法都重复获取相同的服务实例
-            // 优势：提高性能，减少代码重复，降低出错概率
+            // 避免每个方法都重复获取相同的服务实例
+            // 提高性能，减少代码重复，降低出错概率
             try
             {
                 _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

@@ -1,5 +1,6 @@
 ﻿using AntdUI;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
+using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 
         // 依赖注入的服务
         protected readonly IWorkflowStateService _workflowState;
+        protected readonly IPLCManager _plcManager;
         protected readonly Microsoft.Extensions.Logging.ILogger _logger;
 
         #region 构造函数和生命周期
@@ -49,7 +51,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         }
 
         // 依赖注入构造函数（推荐在运行时使用）
-        protected BaseParameterForm(IWorkflowStateService workflowState, Microsoft.Extensions.Logging.ILogger logger)
+        protected BaseParameterForm(IWorkflowStateService workflowState,
+            Microsoft.Extensions.Logging.ILogger logger,
+            IPLCManager plcManager = null)
         {
             _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

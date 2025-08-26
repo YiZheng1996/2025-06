@@ -1,4 +1,5 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
+﻿using Sunny.UI;
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     partial class Form_Detection
     {
@@ -28,52 +29,42 @@
         /// </summary>
         private void InitializeComponent()
         {
-            grpBasicInfo = new GroupBox();
             lblDetectionName = new Label();
-            txtDetectionName = new TextBox();
+            txtDetectionName = new UITextBox();
             lblDetectionType = new Label();
-            cmbDetectionType = new ComboBox();
             lblTimeout = new Label();
-            numTimeout = new NumericUpDown();
             lblRetryCount = new Label();
-            numRetryCount = new NumericUpDown();
             lblRetryInterval = new Label();
-            numRetryInterval = new NumericUpDown();
-            grpDataSource = new GroupBox();
-            lblDataSourceType = new Label();
-            cmbDataSourceType = new ComboBox();
-            pnlVariableSource = new Panel();
-            lblVariableName = new Label();
-            txtVariableName = new TextBox();
             pnlPlcSource = new Panel();
-            lblPlcModule = new Label();
-            txtPlcModule = new TextBox();
-            lblPlcAddress = new Label();
-            txtPlcAddress = new TextBox();
-            lblDataType = new Label();
-            txtDataType = new TextBox();
             pnlExpressionSource = new Panel();
+            txtExpression = new UITextBox();
             lblExpression = new Label();
-            txtExpression = new TextBox();
-            grpCondition = new GroupBox();
+            txtPlcAddress = new UITextBox();
+            txtPlcModule = new UITextBox();
+            lblPlcModule = new Label();
+            lblPlcAddress = new Label();
+            lblDataSourceType = new Label();
+            pnlVariableSource = new Panel();
+            txtVariableName = new UITextBox();
+            lblVariableName = new Label();
             pnlRangeCondition = new Panel();
+            numMaxValue = new AntdUI.InputNumber();
+            numMinValue = new AntdUI.InputNumber();
             lblMinValue = new Label();
-            numMinValue = new NumericUpDown();
             lblMaxValue = new Label();
-            numMaxValue = new NumericUpDown();
             pnlEqualityCondition = new Panel();
+            numTolerance = new AntdUI.InputNumber();
+            txtTargetValue = new UITextBox();
             lblTargetValue = new Label();
-            txtTargetValue = new TextBox();
             lblTolerance = new Label();
-            numTolerance = new NumericUpDown();
             pnlThresholdCondition = new Panel();
+            numThreshold = new AntdUI.InputNumber();
             lblOperator = new Label();
-            cmbOperator = new ComboBox();
+            cmbOperator = new UIComboBox();
             lblThreshold = new Label();
-            numThreshold = new NumericUpDown();
             pnlCustomCondition = new Panel();
+            txtCustomExpression = new UITextBox();
             lblCustomExpression = new Label();
-            txtCustomExpression = new TextBox();
             grpResultHandling = new GroupBox();
             chkSaveResult = new CheckBox();
             lblResultVariable = new Label();
@@ -94,468 +85,514 @@
             btnOK = new Button();
             btnCancel = new Button();
             btnTestDetection = new Button();
-            grpBasicInfo.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numTimeout).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numRetryCount).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numRetryInterval).BeginInit();
-            grpDataSource.SuspendLayout();
-            pnlVariableSource.SuspendLayout();
+            grpBasicInfo = new UIPanel();
+            numRetryInterval = new AntdUI.InputNumber();
+            numRetryCount = new AntdUI.InputNumber();
+            numTimeout = new AntdUI.InputNumber();
+            cmbDetectionType = new UIComboBox();
+            uiLine2 = new UILine();
+            uiLine1 = new UILine();
+            grpDataSource = new UIPanel();
+            cmbDataSourceType = new UIComboBox();
+            uiLine3 = new UILine();
+            grpCondition = new UIPanel();
             pnlPlcSource.SuspendLayout();
             pnlExpressionSource.SuspendLayout();
-            grpCondition.SuspendLayout();
+            pnlVariableSource.SuspendLayout();
             pnlRangeCondition.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numMinValue).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numMaxValue).BeginInit();
             pnlEqualityCondition.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numTolerance).BeginInit();
             pnlThresholdCondition.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numThreshold).BeginInit();
             pnlCustomCondition.SuspendLayout();
             grpResultHandling.SuspendLayout();
             pnlJumpStep.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numFailureStep).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numSuccessStep).BeginInit();
+            grpBasicInfo.SuspendLayout();
+            grpDataSource.SuspendLayout();
+            grpCondition.SuspendLayout();
             SuspendLayout();
-            // 
-            // grpBasicInfo
-            // 
-            grpBasicInfo.Controls.Add(lblDetectionName);
-            grpBasicInfo.Controls.Add(txtDetectionName);
-            grpBasicInfo.Controls.Add(lblDetectionType);
-            grpBasicInfo.Controls.Add(cmbDetectionType);
-            grpBasicInfo.Controls.Add(lblTimeout);
-            grpBasicInfo.Controls.Add(numTimeout);
-            grpBasicInfo.Controls.Add(lblRetryCount);
-            grpBasicInfo.Controls.Add(numRetryCount);
-            grpBasicInfo.Controls.Add(lblRetryInterval);
-            grpBasicInfo.Controls.Add(numRetryInterval);
-            grpBasicInfo.Location = new Point(12, 40);
-            grpBasicInfo.Name = "grpBasicInfo";
-            grpBasicInfo.Size = new Size(760, 120);
-            grpBasicInfo.TabIndex = 0;
-            grpBasicInfo.TabStop = false;
-            grpBasicInfo.Text = "基本信息";
             // 
             // lblDetectionName
             // 
             lblDetectionName.AutoSize = true;
-            lblDetectionName.Location = new Point(20, 28);
+            lblDetectionName.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            lblDetectionName.Location = new Point(45, 19);
             lblDetectionName.Name = "lblDetectionName";
-            lblDetectionName.Size = new Size(79, 16);
+            lblDetectionName.Size = new Size(82, 23);
             lblDetectionName.TabIndex = 0;
             lblDetectionName.Text = "检测名称:";
             // 
             // txtDetectionName
             // 
-            txtDetectionName.Location = new Point(110, 25);
+            txtDetectionName.FillColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtDetectionName.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.Font = new Font("微软雅黑", 12.75F);
+            txtDetectionName.Location = new Point(135, 17);
+            txtDetectionName.Margin = new Padding(4, 5, 4, 5);
+            txtDetectionName.MinimumSize = new Size(1, 16);
             txtDetectionName.Name = "txtDetectionName";
-            txtDetectionName.Size = new Size(200, 26);
+            txtDetectionName.Padding = new Padding(5);
+            txtDetectionName.RectColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtDetectionName.ShowText = false;
+            txtDetectionName.Size = new Size(184, 30);
             txtDetectionName.TabIndex = 1;
+            txtDetectionName.TextAlignment = ContentAlignment.MiddleLeft;
+            txtDetectionName.Watermark = "请输入";
+            txtDetectionName.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtDetectionName.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
             // lblDetectionType
             // 
             lblDetectionType.AutoSize = true;
-            lblDetectionType.Location = new Point(330, 28);
+            lblDetectionType.Font = new Font("微软雅黑", 12.75F);
+            lblDetectionType.Location = new Point(402, 21);
             lblDetectionType.Name = "lblDetectionType";
-            lblDetectionType.Size = new Size(79, 16);
+            lblDetectionType.Size = new Size(82, 23);
             lblDetectionType.TabIndex = 2;
             lblDetectionType.Text = "检测类型:";
-            // 
-            // cmbDetectionType
-            // 
-            cmbDetectionType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbDetectionType.FormattingEnabled = true;
-            cmbDetectionType.Location = new Point(420, 25);
-            cmbDetectionType.Name = "cmbDetectionType";
-            cmbDetectionType.Size = new Size(150, 24);
-            cmbDetectionType.TabIndex = 3;
             // 
             // lblTimeout
             // 
             lblTimeout.AutoSize = true;
-            lblTimeout.Location = new Point(20, 76);
+            lblTimeout.Font = new Font("微软雅黑", 12.75F);
+            lblTimeout.Location = new Point(21, 73);
             lblTimeout.Name = "lblTimeout";
-            lblTimeout.Size = new Size(111, 16);
+            lblTimeout.Size = new Size(118, 23);
             lblTimeout.TabIndex = 4;
             lblTimeout.Text = "超时时间(ms):";
-            // 
-            // numTimeout
-            // 
-            numTimeout.Location = new Point(133, 73);
-            numTimeout.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
-            numTimeout.Name = "numTimeout";
-            numTimeout.Size = new Size(100, 26);
-            numTimeout.TabIndex = 5;
-            numTimeout.Value = new decimal(new int[] { 5000, 0, 0, 0 });
             // 
             // lblRetryCount
             // 
             lblRetryCount.AutoSize = true;
-            lblRetryCount.Location = new Point(253, 76);
+            lblRetryCount.Font = new Font("微软雅黑", 12.75F);
+            lblRetryCount.Location = new Point(270, 73);
             lblRetryCount.Name = "lblRetryCount";
-            lblRetryCount.Size = new Size(79, 16);
+            lblRetryCount.Size = new Size(82, 23);
             lblRetryCount.TabIndex = 6;
             lblRetryCount.Text = "重试次数:";
-            // 
-            // numRetryCount
-            // 
-            numRetryCount.Location = new Point(343, 73);
-            numRetryCount.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            numRetryCount.Name = "numRetryCount";
-            numRetryCount.Size = new Size(80, 26);
-            numRetryCount.TabIndex = 7;
             // 
             // lblRetryInterval
             // 
             lblRetryInterval.AutoSize = true;
-            lblRetryInterval.Location = new Point(443, 76);
+            lblRetryInterval.Font = new Font("微软雅黑", 12.75F);
+            lblRetryInterval.Location = new Point(464, 73);
             lblRetryInterval.Name = "lblRetryInterval";
-            lblRetryInterval.Size = new Size(111, 16);
+            lblRetryInterval.Size = new Size(118, 23);
             lblRetryInterval.TabIndex = 8;
             lblRetryInterval.Text = "重试间隔(ms):";
             // 
-            // numRetryInterval
-            // 
-            numRetryInterval.Location = new Point(557, 73);
-            numRetryInterval.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
-            numRetryInterval.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
-            numRetryInterval.Name = "numRetryInterval";
-            numRetryInterval.Size = new Size(100, 26);
-            numRetryInterval.TabIndex = 9;
-            numRetryInterval.Value = new decimal(new int[] { 1000, 0, 0, 0 });
-            // 
-            // grpDataSource
-            // 
-            grpDataSource.Controls.Add(lblDataSourceType);
-            grpDataSource.Controls.Add(cmbDataSourceType);
-            grpDataSource.Controls.Add(pnlVariableSource);
-            grpDataSource.Controls.Add(pnlPlcSource);
-            grpDataSource.Controls.Add(pnlExpressionSource);
-            grpDataSource.Location = new Point(12, 171);
-            grpDataSource.Name = "grpDataSource";
-            grpDataSource.Size = new Size(760, 150);
-            grpDataSource.TabIndex = 10;
-            grpDataSource.TabStop = false;
-            grpDataSource.Text = "数据源配置";
-            // 
-            // lblDataSourceType
-            // 
-            lblDataSourceType.AutoSize = true;
-            lblDataSourceType.Location = new Point(20, 28);
-            lblDataSourceType.Name = "lblDataSourceType";
-            lblDataSourceType.Size = new Size(95, 16);
-            lblDataSourceType.TabIndex = 0;
-            lblDataSourceType.Text = "数据源类型:";
-            // 
-            // cmbDataSourceType
-            // 
-            cmbDataSourceType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbDataSourceType.FormattingEnabled = true;
-            cmbDataSourceType.Location = new Point(110, 25);
-            cmbDataSourceType.Name = "cmbDataSourceType";
-            cmbDataSourceType.Size = new Size(150, 24);
-            cmbDataSourceType.TabIndex = 1;
-            // 
-            // pnlVariableSource
-            // 
-            pnlVariableSource.Controls.Add(lblVariableName);
-            pnlVariableSource.Controls.Add(txtVariableName);
-            pnlVariableSource.Location = new Point(20, 55);
-            pnlVariableSource.Name = "pnlVariableSource";
-            pnlVariableSource.Size = new Size(720, 80);
-            pnlVariableSource.TabIndex = 2;
-            // 
-            // lblVariableName
-            // 
-            lblVariableName.AutoSize = true;
-            lblVariableName.Location = new Point(6, 13);
-            lblVariableName.Name = "lblVariableName";
-            lblVariableName.Size = new Size(63, 16);
-            lblVariableName.TabIndex = 0;
-            lblVariableName.Text = "变量名:";
-            // 
-            // txtVariableName
-            // 
-            txtVariableName.Location = new Point(76, 10);
-            txtVariableName.Name = "txtVariableName";
-            txtVariableName.Size = new Size(200, 26);
-            txtVariableName.TabIndex = 1;
-            // 
             // pnlPlcSource
             // 
-            pnlPlcSource.Controls.Add(lblPlcModule);
-            pnlPlcSource.Controls.Add(txtPlcModule);
-            pnlPlcSource.Controls.Add(lblPlcAddress);
+            pnlPlcSource.Controls.Add(pnlExpressionSource);
             pnlPlcSource.Controls.Add(txtPlcAddress);
-            pnlPlcSource.Controls.Add(lblDataType);
-            pnlPlcSource.Controls.Add(txtDataType);
-            pnlPlcSource.Location = new Point(20, 55);
+            pnlPlcSource.Controls.Add(txtPlcModule);
+            pnlPlcSource.Controls.Add(lblPlcModule);
+            pnlPlcSource.Controls.Add(lblPlcAddress);
+            pnlPlcSource.Location = new Point(19, 58);
             pnlPlcSource.Name = "pnlPlcSource";
-            pnlPlcSource.Size = new Size(720, 80);
+            pnlPlcSource.Size = new Size(679, 80);
             pnlPlcSource.TabIndex = 3;
             pnlPlcSource.Visible = false;
             // 
-            // lblPlcModule
-            // 
-            lblPlcModule.AutoSize = true;
-            lblPlcModule.Location = new Point(0, 13);
-            lblPlcModule.Name = "lblPlcModule";
-            lblPlcModule.Size = new Size(71, 16);
-            lblPlcModule.TabIndex = 0;
-            lblPlcModule.Text = "PLC模块:";
-            // 
-            // txtPlcModule
-            // 
-            txtPlcModule.Location = new Point(70, 10);
-            txtPlcModule.Name = "txtPlcModule";
-            txtPlcModule.Size = new Size(150, 26);
-            txtPlcModule.TabIndex = 1;
-            // 
-            // lblPlcAddress
-            // 
-            lblPlcAddress.AutoSize = true;
-            lblPlcAddress.Location = new Point(240, 13);
-            lblPlcAddress.Name = "lblPlcAddress";
-            lblPlcAddress.Size = new Size(71, 16);
-            lblPlcAddress.TabIndex = 2;
-            lblPlcAddress.Text = "PLC地址:";
-            // 
-            // txtPlcAddress
-            // 
-            txtPlcAddress.Location = new Point(310, 10);
-            txtPlcAddress.Name = "txtPlcAddress";
-            txtPlcAddress.Size = new Size(150, 26);
-            txtPlcAddress.TabIndex = 3;
-            // 
-            // lblDataType
-            // 
-            lblDataType.AutoSize = true;
-            lblDataType.Location = new Point(480, 13);
-            lblDataType.Name = "lblDataType";
-            lblDataType.Size = new Size(79, 16);
-            lblDataType.TabIndex = 4;
-            lblDataType.Text = "数据类型:";
-            // 
-            // txtDataType
-            // 
-            txtDataType.Location = new Point(550, 10);
-            txtDataType.Name = "txtDataType";
-            txtDataType.Size = new Size(100, 26);
-            txtDataType.TabIndex = 5;
-            txtDataType.Text = "Float";
-            // 
             // pnlExpressionSource
             // 
-            pnlExpressionSource.Controls.Add(lblExpression);
             pnlExpressionSource.Controls.Add(txtExpression);
-            pnlExpressionSource.Location = new Point(20, 55);
+            pnlExpressionSource.Controls.Add(lblExpression);
+            pnlExpressionSource.Location = new Point(0, 0);
             pnlExpressionSource.Name = "pnlExpressionSource";
-            pnlExpressionSource.Size = new Size(720, 80);
+            pnlExpressionSource.Size = new Size(679, 80);
             pnlExpressionSource.TabIndex = 4;
             pnlExpressionSource.Visible = false;
+            // 
+            // txtExpression
+            // 
+            txtExpression.FillColor = Color.FromArgb(218, 220, 230);
+            txtExpression.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtExpression.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtExpression.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtExpression.Font = new Font("微软雅黑", 12.75F);
+            txtExpression.Location = new Point(88, 10);
+            txtExpression.Margin = new Padding(4, 5, 4, 5);
+            txtExpression.MinimumSize = new Size(1, 16);
+            txtExpression.Name = "txtExpression";
+            txtExpression.Padding = new Padding(5);
+            txtExpression.RectColor = Color.FromArgb(218, 220, 230);
+            txtExpression.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtExpression.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtExpression.ShowText = false;
+            txtExpression.Size = new Size(400, 30);
+            txtExpression.TabIndex = 6;
+            txtExpression.TextAlignment = ContentAlignment.MiddleLeft;
+            txtExpression.Watermark = "请输入";
+            txtExpression.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtExpression.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
             // lblExpression
             // 
             lblExpression.AutoSize = true;
-            lblExpression.Location = new Point(0, 13);
+            lblExpression.Font = new Font("微软雅黑", 12.75F);
+            lblExpression.Location = new Point(16, 13);
             lblExpression.Name = "lblExpression";
-            lblExpression.Size = new Size(63, 16);
+            lblExpression.Size = new Size(65, 23);
             lblExpression.TabIndex = 0;
             lblExpression.Text = "表达式:";
             // 
-            // txtExpression
+            // txtPlcAddress
             // 
-            txtExpression.Location = new Point(70, 10);
-            txtExpression.Name = "txtExpression";
-            txtExpression.PlaceholderText = "例: {变量1} + {变量2} * 2";
-            txtExpression.Size = new Size(400, 26);
-            txtExpression.TabIndex = 1;
+            txtPlcAddress.FillColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.Font = new Font("微软雅黑", 12.75F);
+            txtPlcAddress.Location = new Point(412, 10);
+            txtPlcAddress.Margin = new Padding(4, 5, 4, 5);
+            txtPlcAddress.MinimumSize = new Size(1, 16);
+            txtPlcAddress.Name = "txtPlcAddress";
+            txtPlcAddress.Padding = new Padding(5);
+            txtPlcAddress.RectColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtPlcAddress.ShowText = false;
+            txtPlcAddress.Size = new Size(184, 30);
+            txtPlcAddress.TabIndex = 6;
+            txtPlcAddress.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPlcAddress.Watermark = "请输入";
+            txtPlcAddress.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtPlcAddress.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
-            // grpCondition
+            // txtPlcModule
             // 
-            grpCondition.Controls.Add(pnlRangeCondition);
-            grpCondition.Controls.Add(pnlEqualityCondition);
-            grpCondition.Controls.Add(pnlThresholdCondition);
-            grpCondition.Controls.Add(pnlCustomCondition);
-            grpCondition.Location = new Point(12, 325);
-            grpCondition.Name = "grpCondition";
-            grpCondition.Size = new Size(760, 150);
-            grpCondition.TabIndex = 20;
-            grpCondition.TabStop = false;
-            grpCondition.Text = "检测条件配置";
+            txtPlcModule.FillColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtPlcModule.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.Font = new Font("微软雅黑", 12.75F);
+            txtPlcModule.Location = new Point(91, 10);
+            txtPlcModule.Margin = new Padding(4, 5, 4, 5);
+            txtPlcModule.MinimumSize = new Size(1, 16);
+            txtPlcModule.Name = "txtPlcModule";
+            txtPlcModule.Padding = new Padding(5);
+            txtPlcModule.RectColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtPlcModule.ShowText = false;
+            txtPlcModule.Size = new Size(184, 30);
+            txtPlcModule.TabIndex = 5;
+            txtPlcModule.TextAlignment = ContentAlignment.MiddleLeft;
+            txtPlcModule.Watermark = "请输入";
+            txtPlcModule.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtPlcModule.WatermarkColor = Color.FromArgb(48, 48, 48);
+            // 
+            // lblPlcModule
+            // 
+            lblPlcModule.AutoSize = true;
+            lblPlcModule.Font = new Font("微软雅黑", 12.75F);
+            lblPlcModule.Location = new Point(6, 13);
+            lblPlcModule.Name = "lblPlcModule";
+            lblPlcModule.Size = new Size(78, 23);
+            lblPlcModule.TabIndex = 0;
+            lblPlcModule.Text = "PLC模块:";
+            // 
+            // lblPlcAddress
+            // 
+            lblPlcAddress.AutoSize = true;
+            lblPlcAddress.Font = new Font("微软雅黑", 12.75F);
+            lblPlcAddress.Location = new Point(331, 13);
+            lblPlcAddress.Name = "lblPlcAddress";
+            lblPlcAddress.Size = new Size(78, 23);
+            lblPlcAddress.TabIndex = 2;
+            lblPlcAddress.Text = "PLC地址:";
+            // 
+            // lblDataSourceType
+            // 
+            lblDataSourceType.AutoSize = true;
+            lblDataSourceType.Font = new Font("微软雅黑", 12.75F);
+            lblDataSourceType.Location = new Point(28, 16);
+            lblDataSourceType.Name = "lblDataSourceType";
+            lblDataSourceType.Size = new Size(99, 23);
+            lblDataSourceType.TabIndex = 0;
+            lblDataSourceType.Text = "数据源类型:";
+            // 
+            // pnlVariableSource
+            // 
+            pnlVariableSource.Controls.Add(txtVariableName);
+            pnlVariableSource.Controls.Add(lblVariableName);
+            pnlVariableSource.Location = new Point(19, 58);
+            pnlVariableSource.Name = "pnlVariableSource";
+            pnlVariableSource.Size = new Size(679, 80);
+            pnlVariableSource.TabIndex = 2;
+            // 
+            // txtVariableName
+            // 
+            txtVariableName.FillColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtVariableName.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.Font = new Font("微软雅黑", 12.75F);
+            txtVariableName.Location = new Point(78, 10);
+            txtVariableName.Margin = new Padding(4, 5, 4, 5);
+            txtVariableName.MinimumSize = new Size(1, 16);
+            txtVariableName.Name = "txtVariableName";
+            txtVariableName.Padding = new Padding(5);
+            txtVariableName.RectColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtVariableName.ShowText = false;
+            txtVariableName.Size = new Size(184, 30);
+            txtVariableName.TabIndex = 3;
+            txtVariableName.TextAlignment = ContentAlignment.MiddleLeft;
+            txtVariableName.Watermark = "请输入";
+            txtVariableName.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtVariableName.WatermarkColor = Color.FromArgb(48, 48, 48);
+            // 
+            // lblVariableName
+            // 
+            lblVariableName.AutoSize = true;
+            lblVariableName.Font = new Font("微软雅黑", 12.75F);
+            lblVariableName.Location = new Point(6, 13);
+            lblVariableName.Name = "lblVariableName";
+            lblVariableName.Size = new Size(65, 23);
+            lblVariableName.TabIndex = 0;
+            lblVariableName.Text = "变量名:";
             // 
             // pnlRangeCondition
             // 
-            pnlRangeCondition.Controls.Add(lblMinValue);
-            pnlRangeCondition.Controls.Add(numMinValue);
-            pnlRangeCondition.Controls.Add(lblMaxValue);
             pnlRangeCondition.Controls.Add(numMaxValue);
-            pnlRangeCondition.Location = new Point(20, 25);
+            pnlRangeCondition.Controls.Add(numMinValue);
+            pnlRangeCondition.Controls.Add(lblMinValue);
+            pnlRangeCondition.Controls.Add(lblMaxValue);
+            pnlRangeCondition.Location = new Point(19, 11);
             pnlRangeCondition.Name = "pnlRangeCondition";
-            pnlRangeCondition.Size = new Size(720, 110);
+            pnlRangeCondition.Size = new Size(679, 110);
             pnlRangeCondition.TabIndex = 0;
+            // 
+            // numMaxValue
+            // 
+            numMaxValue.BackColor = Color.FromArgb(218, 220, 230);
+            numMaxValue.Font = new Font("微软雅黑", 12.75F);
+            numMaxValue.Location = new Point(288, 5);
+            numMaxValue.Name = "numMaxValue";
+            numMaxValue.SelectionStart = 1;
+            numMaxValue.Size = new Size(109, 42);
+            numMaxValue.TabIndex = 446;
+            numMaxValue.Text = "0";
+            // 
+            // numMinValue
+            // 
+            numMinValue.BackColor = Color.FromArgb(218, 220, 230);
+            numMinValue.Font = new Font("微软雅黑", 12.75F);
+            numMinValue.Location = new Point(88, 5);
+            numMinValue.Name = "numMinValue";
+            numMinValue.SelectionStart = 1;
+            numMinValue.Size = new Size(109, 42);
+            numMinValue.TabIndex = 445;
+            numMinValue.Text = "0";
             // 
             // lblMinValue
             // 
             lblMinValue.AutoSize = true;
+            lblMinValue.Font = new Font("微软雅黑", 12.75F);
             lblMinValue.Location = new Point(15, 14);
             lblMinValue.Name = "lblMinValue";
-            lblMinValue.Size = new Size(63, 16);
+            lblMinValue.Size = new Size(65, 23);
             lblMinValue.TabIndex = 0;
             lblMinValue.Text = "最小值:";
-            // 
-            // numMinValue
-            // 
-            numMinValue.DecimalPlaces = 2;
-            numMinValue.Location = new Point(85, 11);
-            numMinValue.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            numMinValue.Minimum = new decimal(new int[] { 999999, 0, 0, int.MinValue });
-            numMinValue.Name = "numMinValue";
-            numMinValue.Size = new Size(100, 26);
-            numMinValue.TabIndex = 1;
             // 
             // lblMaxValue
             // 
             lblMaxValue.AutoSize = true;
+            lblMaxValue.Font = new Font("微软雅黑", 12.75F);
             lblMaxValue.Location = new Point(215, 14);
             lblMaxValue.Name = "lblMaxValue";
-            lblMaxValue.Size = new Size(63, 16);
+            lblMaxValue.Size = new Size(65, 23);
             lblMaxValue.TabIndex = 2;
             lblMaxValue.Text = "最大值:";
             // 
-            // numMaxValue
-            // 
-            numMaxValue.DecimalPlaces = 2;
-            numMaxValue.Location = new Point(285, 11);
-            numMaxValue.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            numMaxValue.Minimum = new decimal(new int[] { 999999, 0, 0, int.MinValue });
-            numMaxValue.Name = "numMaxValue";
-            numMaxValue.Size = new Size(100, 26);
-            numMaxValue.TabIndex = 3;
-            numMaxValue.Value = new decimal(new int[] { 100, 0, 0, 0 });
-            // 
             // pnlEqualityCondition
             // 
-            pnlEqualityCondition.Controls.Add(lblTargetValue);
-            pnlEqualityCondition.Controls.Add(txtTargetValue);
-            pnlEqualityCondition.Controls.Add(lblTolerance);
             pnlEqualityCondition.Controls.Add(numTolerance);
-            pnlEqualityCondition.Location = new Point(20, 25);
+            pnlEqualityCondition.Controls.Add(txtTargetValue);
+            pnlEqualityCondition.Controls.Add(lblTargetValue);
+            pnlEqualityCondition.Controls.Add(lblTolerance);
+            pnlEqualityCondition.Location = new Point(19, 11);
             pnlEqualityCondition.Name = "pnlEqualityCondition";
-            pnlEqualityCondition.Size = new Size(720, 110);
+            pnlEqualityCondition.Size = new Size(679, 110);
             pnlEqualityCondition.TabIndex = 1;
             pnlEqualityCondition.Visible = false;
+            // 
+            // numTolerance
+            // 
+            numTolerance.BackColor = Color.FromArgb(218, 220, 230);
+            numTolerance.Font = new Font("微软雅黑", 12.75F);
+            numTolerance.Location = new Point(331, 5);
+            numTolerance.Name = "numTolerance";
+            numTolerance.SelectionStart = 1;
+            numTolerance.Size = new Size(91, 42);
+            numTolerance.TabIndex = 446;
+            numTolerance.Text = "0";
+            numTolerance.Value = new decimal(new int[] { 100, 0, 0, 196608 });
+            // 
+            // txtTargetValue
+            // 
+            txtTargetValue.FillColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtTargetValue.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.Font = new Font("微软雅黑", 12.75F);
+            txtTargetValue.Location = new Point(87, 10);
+            txtTargetValue.Margin = new Padding(4, 5, 4, 5);
+            txtTargetValue.MinimumSize = new Size(1, 16);
+            txtTargetValue.Name = "txtTargetValue";
+            txtTargetValue.Padding = new Padding(5);
+            txtTargetValue.RectColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtTargetValue.ShowText = false;
+            txtTargetValue.Size = new Size(163, 30);
+            txtTargetValue.TabIndex = 4;
+            txtTargetValue.TextAlignment = ContentAlignment.MiddleLeft;
+            txtTargetValue.Watermark = "请输入";
+            txtTargetValue.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtTargetValue.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
             // lblTargetValue
             // 
             lblTargetValue.AutoSize = true;
-            lblTargetValue.Location = new Point(0, 13);
+            lblTargetValue.Font = new Font("微软雅黑", 12.75F);
+            lblTargetValue.Location = new Point(16, 13);
             lblTargetValue.Name = "lblTargetValue";
-            lblTargetValue.Size = new Size(63, 16);
+            lblTargetValue.Size = new Size(65, 23);
             lblTargetValue.TabIndex = 0;
             lblTargetValue.Text = "目标值:";
-            // 
-            // txtTargetValue
-            // 
-            txtTargetValue.Location = new Point(70, 10);
-            txtTargetValue.Name = "txtTargetValue";
-            txtTargetValue.Size = new Size(150, 26);
-            txtTargetValue.TabIndex = 1;
             // 
             // lblTolerance
             // 
             lblTolerance.AutoSize = true;
-            lblTolerance.Location = new Point(240, 13);
+            lblTolerance.Font = new Font("微软雅黑", 12.75F);
+            lblTolerance.Location = new Point(273, 13);
             lblTolerance.Name = "lblTolerance";
-            lblTolerance.Size = new Size(47, 16);
+            lblTolerance.Size = new Size(48, 23);
             lblTolerance.TabIndex = 2;
             lblTolerance.Text = "容差:";
             // 
-            // numTolerance
-            // 
-            numTolerance.DecimalPlaces = 3;
-            numTolerance.Location = new Point(310, 10);
-            numTolerance.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            numTolerance.Name = "numTolerance";
-            numTolerance.Size = new Size(100, 26);
-            numTolerance.TabIndex = 3;
-            numTolerance.Value = new decimal(new int[] { 1, 0, 0, 65536 });
-            // 
             // pnlThresholdCondition
             // 
+            pnlThresholdCondition.Controls.Add(numThreshold);
             pnlThresholdCondition.Controls.Add(lblOperator);
             pnlThresholdCondition.Controls.Add(cmbOperator);
             pnlThresholdCondition.Controls.Add(lblThreshold);
-            pnlThresholdCondition.Controls.Add(numThreshold);
-            pnlThresholdCondition.Location = new Point(20, 25);
+            pnlThresholdCondition.Location = new Point(19, 11);
             pnlThresholdCondition.Name = "pnlThresholdCondition";
-            pnlThresholdCondition.Size = new Size(720, 110);
+            pnlThresholdCondition.Size = new Size(679, 110);
             pnlThresholdCondition.TabIndex = 2;
             pnlThresholdCondition.Visible = false;
+            // 
+            // numThreshold
+            // 
+            numThreshold.BackColor = Color.FromArgb(218, 220, 230);
+            numThreshold.Font = new Font("微软雅黑", 12.75F);
+            numThreshold.Location = new Point(327, 5);
+            numThreshold.Name = "numThreshold";
+            numThreshold.SelectionStart = 1;
+            numThreshold.Size = new Size(83, 42);
+            numThreshold.TabIndex = 446;
+            numThreshold.Text = "0";
             // 
             // lblOperator
             // 
             lblOperator.AutoSize = true;
-            lblOperator.Location = new Point(0, 13);
+            lblOperator.Font = new Font("微软雅黑", 12.75F);
+            lblOperator.Location = new Point(12, 13);
             lblOperator.Name = "lblOperator";
-            lblOperator.Size = new Size(79, 16);
+            lblOperator.Size = new Size(82, 23);
             lblOperator.TabIndex = 0;
             lblOperator.Text = "比较操作:";
             // 
             // cmbOperator
             // 
-            cmbOperator.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbOperator.FormattingEnabled = true;
-            cmbOperator.Location = new Point(80, 10);
+            cmbOperator.BackColor = Color.Transparent;
+            cmbOperator.DataSource = null;
+            cmbOperator.FillColor = Color.FromArgb(218, 220, 230);
+            cmbOperator.FillColor2 = Color.FromArgb(218, 220, 230);
+            cmbOperator.FillDisableColor = Color.FromArgb(218, 220, 230);
+            cmbOperator.FilterMaxCount = 50;
+            cmbOperator.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            cmbOperator.ForeDisableColor = Color.FromArgb(48, 48, 48);
+            cmbOperator.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cmbOperator.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cmbOperator.Location = new Point(101, 10);
+            cmbOperator.Margin = new Padding(4, 5, 4, 5);
+            cmbOperator.MinimumSize = new Size(63, 0);
             cmbOperator.Name = "cmbOperator";
-            cmbOperator.Size = new Size(120, 24);
-            cmbOperator.TabIndex = 1;
+            cmbOperator.Padding = new Padding(0, 0, 30, 2);
+            cmbOperator.Radius = 10;
+            cmbOperator.RectColor = Color.Gray;
+            cmbOperator.RectDisableColor = Color.Gray;
+            cmbOperator.RectSides = ToolStripStatusLabelBorderSides.None;
+            cmbOperator.Size = new Size(140, 30);
+            cmbOperator.SymbolSize = 24;
+            cmbOperator.TabIndex = 125;
+            cmbOperator.TextAlignment = ContentAlignment.MiddleLeft;
+            cmbOperator.Watermark = "请选择";
+            cmbOperator.WatermarkActiveColor = Color.FromArgb(64, 64, 64);
+            cmbOperator.WatermarkColor = Color.FromArgb(64, 64, 64);
             // 
             // lblThreshold
             // 
             lblThreshold.AutoSize = true;
-            lblThreshold.Location = new Point(220, 13);
+            lblThreshold.Font = new Font("微软雅黑", 12.75F);
+            lblThreshold.Location = new Point(271, 14);
             lblThreshold.Name = "lblThreshold";
-            lblThreshold.Size = new Size(47, 16);
+            lblThreshold.Size = new Size(48, 23);
             lblThreshold.TabIndex = 2;
             lblThreshold.Text = "阈值:";
             // 
-            // numThreshold
-            // 
-            numThreshold.DecimalPlaces = 2;
-            numThreshold.Location = new Point(280, 10);
-            numThreshold.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
-            numThreshold.Minimum = new decimal(new int[] { 999999, 0, 0, int.MinValue });
-            numThreshold.Name = "numThreshold";
-            numThreshold.Size = new Size(100, 26);
-            numThreshold.TabIndex = 3;
-            // 
             // pnlCustomCondition
             // 
-            pnlCustomCondition.Controls.Add(lblCustomExpression);
             pnlCustomCondition.Controls.Add(txtCustomExpression);
-            pnlCustomCondition.Location = new Point(20, 25);
+            pnlCustomCondition.Controls.Add(lblCustomExpression);
+            pnlCustomCondition.Location = new Point(19, 11);
             pnlCustomCondition.Name = "pnlCustomCondition";
-            pnlCustomCondition.Size = new Size(720, 110);
+            pnlCustomCondition.Size = new Size(679, 110);
             pnlCustomCondition.TabIndex = 3;
             pnlCustomCondition.Visible = false;
+            // 
+            // txtCustomExpression
+            // 
+            txtCustomExpression.FillColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.FillColor2 = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.FillDisableColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.Font = new Font("微软雅黑", 12.75F);
+            txtCustomExpression.Location = new Point(148, 10);
+            txtCustomExpression.Margin = new Padding(4, 5, 4, 5);
+            txtCustomExpression.MinimumSize = new Size(1, 16);
+            txtCustomExpression.Name = "txtCustomExpression";
+            txtCustomExpression.Padding = new Padding(5);
+            txtCustomExpression.RectColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.RectDisableColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
+            txtCustomExpression.ShowText = false;
+            txtCustomExpression.Size = new Size(439, 30);
+            txtCustomExpression.TabIndex = 7;
+            txtCustomExpression.TextAlignment = ContentAlignment.MiddleLeft;
+            txtCustomExpression.Watermark = "请输入";
+            txtCustomExpression.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
+            txtCustomExpression.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
             // lblCustomExpression
             // 
             lblCustomExpression.AutoSize = true;
-            lblCustomExpression.Location = new Point(0, 13);
+            lblCustomExpression.Font = new Font("微软雅黑", 12.75F);
+            lblCustomExpression.Location = new Point(25, 13);
             lblCustomExpression.Name = "lblCustomExpression";
-            lblCustomExpression.Size = new Size(111, 16);
+            lblCustomExpression.Size = new Size(116, 23);
             lblCustomExpression.TabIndex = 0;
             lblCustomExpression.Text = "自定义表达式:";
-            // 
-            // txtCustomExpression
-            // 
-            txtCustomExpression.Location = new Point(110, 10);
-            txtCustomExpression.Name = "txtCustomExpression";
-            txtCustomExpression.PlaceholderText = "例: {value} > 10 && {value} < 50";
-            txtCustomExpression.Size = new Size(400, 26);
-            txtCustomExpression.TabIndex = 1;
             // 
             // grpResultHandling
             // 
@@ -571,9 +608,9 @@
             grpResultHandling.Controls.Add(chkShowResult);
             grpResultHandling.Controls.Add(lblMessageTemplate);
             grpResultHandling.Controls.Add(txtMessageTemplate);
-            grpResultHandling.Location = new Point(12, 485);
+            grpResultHandling.Location = new Point(13, 616);
             grpResultHandling.Name = "grpResultHandling";
-            grpResultHandling.Size = new Size(760, 180);
+            grpResultHandling.Size = new Size(707, 180);
             grpResultHandling.TabIndex = 30;
             grpResultHandling.TabStop = false;
             grpResultHandling.Text = "结果处理配置";
@@ -731,7 +768,7 @@
             // 
             // btnOK
             // 
-            btnOK.Location = new Point(601, 676);
+            btnOK.Location = new Point(550, 806);
             btnOK.Name = "btnOK";
             btnOK.Size = new Size(80, 30);
             btnOK.TabIndex = 40;
@@ -741,7 +778,7 @@
             // btnCancel
             // 
             btnCancel.DialogResult = DialogResult.Cancel;
-            btnCancel.Location = new Point(691, 676);
+            btnCancel.Location = new Point(640, 806);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(80, 30);
             btnCancel.TabIndex = 41;
@@ -750,57 +787,262 @@
             // 
             // btnTestDetection
             // 
-            btnTestDetection.Location = new Point(501, 676);
+            btnTestDetection.Location = new Point(450, 806);
             btnTestDetection.Name = "btnTestDetection";
             btnTestDetection.Size = new Size(90, 30);
             btnTestDetection.TabIndex = 42;
             btnTestDetection.Text = "测试检测";
             btnTestDetection.UseVisualStyleBackColor = true;
             // 
+            // grpBasicInfo
+            // 
+            grpBasicInfo.BackColor = Color.Transparent;
+            grpBasicInfo.Controls.Add(numRetryInterval);
+            grpBasicInfo.Controls.Add(numRetryCount);
+            grpBasicInfo.Controls.Add(numTimeout);
+            grpBasicInfo.Controls.Add(cmbDetectionType);
+            grpBasicInfo.Controls.Add(lblDetectionName);
+            grpBasicInfo.Controls.Add(txtDetectionName);
+            grpBasicInfo.Controls.Add(lblRetryInterval);
+            grpBasicInfo.Controls.Add(lblDetectionType);
+            grpBasicInfo.Controls.Add(lblRetryCount);
+            grpBasicInfo.Controls.Add(lblTimeout);
+            grpBasicInfo.FillColor = Color.White;
+            grpBasicInfo.FillColor2 = Color.White;
+            grpBasicInfo.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            grpBasicInfo.Location = new Point(13, 74);
+            grpBasicInfo.Margin = new Padding(4, 5, 4, 5);
+            grpBasicInfo.MinimumSize = new Size(1, 1);
+            grpBasicInfo.Name = "grpBasicInfo";
+            grpBasicInfo.Radius = 10;
+            grpBasicInfo.RectColor = Color.White;
+            grpBasicInfo.RectDisableColor = Color.White;
+            grpBasicInfo.Size = new Size(707, 119);
+            grpBasicInfo.TabIndex = 43;
+            grpBasicInfo.Text = null;
+            grpBasicInfo.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // numRetryInterval
+            // 
+            numRetryInterval.BackColor = Color.FromArgb(218, 220, 230);
+            numRetryInterval.Font = new Font("微软雅黑", 12.75F);
+            numRetryInterval.Location = new Point(588, 66);
+            numRetryInterval.Name = "numRetryInterval";
+            numRetryInterval.SelectionStart = 4;
+            numRetryInterval.Size = new Size(85, 42);
+            numRetryInterval.TabIndex = 446;
+            numRetryInterval.Text = "5000";
+            numRetryInterval.Value = new decimal(new int[] { 5000, 0, 0, 0 });
+            // 
+            // numRetryCount
+            // 
+            numRetryCount.BackColor = Color.FromArgb(218, 220, 230);
+            numRetryCount.Font = new Font("微软雅黑", 12.75F);
+            numRetryCount.Location = new Point(358, 66);
+            numRetryCount.Name = "numRetryCount";
+            numRetryCount.SelectionStart = 1;
+            numRetryCount.Size = new Size(83, 42);
+            numRetryCount.TabIndex = 445;
+            numRetryCount.Text = "0";
+            // 
+            // numTimeout
+            // 
+            numTimeout.BackColor = Color.FromArgb(218, 220, 230);
+            numTimeout.Font = new Font("微软雅黑", 12.75F);
+            numTimeout.Location = new Point(146, 66);
+            numTimeout.Name = "numTimeout";
+            numTimeout.SelectionStart = 5;
+            numTimeout.Size = new Size(109, 42);
+            numTimeout.TabIndex = 444;
+            numTimeout.Text = "30000";
+            numTimeout.Value = new decimal(new int[] { 30000, 0, 0, 0 });
+            // 
+            // cmbDetectionType
+            // 
+            cmbDetectionType.BackColor = Color.Transparent;
+            cmbDetectionType.DataSource = null;
+            cmbDetectionType.FillColor = Color.FromArgb(218, 220, 230);
+            cmbDetectionType.FillColor2 = Color.FromArgb(218, 220, 230);
+            cmbDetectionType.FillDisableColor = Color.FromArgb(218, 220, 230);
+            cmbDetectionType.FilterMaxCount = 50;
+            cmbDetectionType.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            cmbDetectionType.ForeDisableColor = Color.FromArgb(48, 48, 48);
+            cmbDetectionType.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cmbDetectionType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cmbDetectionType.Location = new Point(489, 17);
+            cmbDetectionType.Margin = new Padding(4, 5, 4, 5);
+            cmbDetectionType.MinimumSize = new Size(63, 0);
+            cmbDetectionType.Name = "cmbDetectionType";
+            cmbDetectionType.Padding = new Padding(0, 0, 30, 2);
+            cmbDetectionType.Radius = 10;
+            cmbDetectionType.RectColor = Color.Gray;
+            cmbDetectionType.RectDisableColor = Color.Gray;
+            cmbDetectionType.RectSides = ToolStripStatusLabelBorderSides.None;
+            cmbDetectionType.Size = new Size(184, 30);
+            cmbDetectionType.SymbolSize = 24;
+            cmbDetectionType.TabIndex = 123;
+            cmbDetectionType.TextAlignment = ContentAlignment.MiddleLeft;
+            cmbDetectionType.Watermark = "请选择";
+            cmbDetectionType.WatermarkActiveColor = Color.FromArgb(64, 64, 64);
+            cmbDetectionType.WatermarkColor = Color.FromArgb(64, 64, 64);
+            // 
+            // uiLine2
+            // 
+            uiLine2.BackColor = Color.Transparent;
+            uiLine2.EndCap = UILineCap.Circle;
+            uiLine2.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            uiLine2.ForeColor = Color.FromArgb(48, 48, 48);
+            uiLine2.LineColor = Color.White;
+            uiLine2.Location = new Point(3, 38);
+            uiLine2.MinimumSize = new Size(1, 1);
+            uiLine2.Name = "uiLine2";
+            uiLine2.Size = new Size(717, 29);
+            uiLine2.TabIndex = 443;
+            uiLine2.Text = "检测选择";
+            uiLine2.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // uiLine1
+            // 
+            uiLine1.BackColor = Color.Transparent;
+            uiLine1.EndCap = UILineCap.Circle;
+            uiLine1.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            uiLine1.ForeColor = Color.FromArgb(48, 48, 48);
+            uiLine1.LineColor = Color.White;
+            uiLine1.Location = new Point(3, 217);
+            uiLine1.MinimumSize = new Size(1, 1);
+            uiLine1.Name = "uiLine1";
+            uiLine1.Size = new Size(717, 29);
+            uiLine1.TabIndex = 445;
+            uiLine1.Text = "数据源配置";
+            uiLine1.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // grpDataSource
+            // 
+            grpDataSource.BackColor = Color.Transparent;
+            grpDataSource.Controls.Add(pnlPlcSource);
+            grpDataSource.Controls.Add(pnlVariableSource);
+            grpDataSource.Controls.Add(cmbDataSourceType);
+            grpDataSource.Controls.Add(lblDataSourceType);
+            grpDataSource.FillColor = Color.White;
+            grpDataSource.FillColor2 = Color.White;
+            grpDataSource.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            grpDataSource.Location = new Point(13, 253);
+            grpDataSource.Margin = new Padding(4, 5, 4, 5);
+            grpDataSource.MinimumSize = new Size(1, 1);
+            grpDataSource.Name = "grpDataSource";
+            grpDataSource.Radius = 10;
+            grpDataSource.RectColor = Color.White;
+            grpDataSource.RectDisableColor = Color.White;
+            grpDataSource.Size = new Size(707, 151);
+            grpDataSource.TabIndex = 444;
+            grpDataSource.Text = null;
+            grpDataSource.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
+            // cmbDataSourceType
+            // 
+            cmbDataSourceType.BackColor = Color.Transparent;
+            cmbDataSourceType.DataSource = null;
+            cmbDataSourceType.FillColor = Color.FromArgb(218, 220, 230);
+            cmbDataSourceType.FillColor2 = Color.FromArgb(218, 220, 230);
+            cmbDataSourceType.FillDisableColor = Color.FromArgb(218, 220, 230);
+            cmbDataSourceType.FilterMaxCount = 50;
+            cmbDataSourceType.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            cmbDataSourceType.ForeDisableColor = Color.FromArgb(48, 48, 48);
+            cmbDataSourceType.ItemHoverColor = Color.FromArgb(155, 200, 255);
+            cmbDataSourceType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+            cmbDataSourceType.Location = new Point(135, 11);
+            cmbDataSourceType.Margin = new Padding(4, 5, 4, 5);
+            cmbDataSourceType.MinimumSize = new Size(63, 0);
+            cmbDataSourceType.Name = "cmbDataSourceType";
+            cmbDataSourceType.Padding = new Padding(0, 0, 30, 2);
+            cmbDataSourceType.Radius = 10;
+            cmbDataSourceType.RectColor = Color.Gray;
+            cmbDataSourceType.RectDisableColor = Color.Gray;
+            cmbDataSourceType.RectSides = ToolStripStatusLabelBorderSides.None;
+            cmbDataSourceType.Size = new Size(184, 30);
+            cmbDataSourceType.SymbolSize = 24;
+            cmbDataSourceType.TabIndex = 124;
+            cmbDataSourceType.TextAlignment = ContentAlignment.MiddleLeft;
+            cmbDataSourceType.Watermark = "请选择";
+            cmbDataSourceType.WatermarkActiveColor = Color.FromArgb(64, 64, 64);
+            cmbDataSourceType.WatermarkColor = Color.FromArgb(64, 64, 64);
+            // 
+            // uiLine3
+            // 
+            uiLine3.BackColor = Color.Transparent;
+            uiLine3.EndCap = UILineCap.Circle;
+            uiLine3.Font = new Font("微软雅黑", 13F, FontStyle.Bold);
+            uiLine3.ForeColor = Color.FromArgb(48, 48, 48);
+            uiLine3.LineColor = Color.White;
+            uiLine3.Location = new Point(3, 425);
+            uiLine3.MinimumSize = new Size(1, 1);
+            uiLine3.Name = "uiLine3";
+            uiLine3.Size = new Size(717, 29);
+            uiLine3.TabIndex = 447;
+            uiLine3.Text = "检测条件配置";
+            uiLine3.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // grpCondition
+            // 
+            grpCondition.BackColor = Color.Transparent;
+            grpCondition.Controls.Add(pnlEqualityCondition);
+            grpCondition.Controls.Add(pnlRangeCondition);
+            grpCondition.Controls.Add(pnlCustomCondition);
+            grpCondition.Controls.Add(pnlThresholdCondition);
+            grpCondition.FillColor = Color.White;
+            grpCondition.FillColor2 = Color.White;
+            grpCondition.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            grpCondition.Location = new Point(13, 461);
+            grpCondition.Margin = new Padding(4, 5, 4, 5);
+            grpCondition.MinimumSize = new Size(1, 1);
+            grpCondition.Name = "grpCondition";
+            grpCondition.Radius = 10;
+            grpCondition.RectColor = Color.White;
+            grpCondition.RectDisableColor = Color.White;
+            grpCondition.Size = new Size(707, 127);
+            grpCondition.TabIndex = 446;
+            grpCondition.Text = null;
+            grpCondition.TextAlignment = ContentAlignment.MiddleCenter;
+            // 
             // Form_Detection
             // 
             AcceptButton = btnOK;
             AutoScaleMode = AutoScaleMode.None;
+            BackColor = Color.FromArgb(236, 236, 236);
             CancelButton = btnCancel;
-            ClientSize = new Size(784, 718);
+            ClientSize = new Size(734, 845);
+            Controls.Add(uiLine3);
+            Controls.Add(grpCondition);
+            Controls.Add(uiLine1);
+            Controls.Add(grpDataSource);
+            Controls.Add(uiLine2);
+            Controls.Add(grpBasicInfo);
             Controls.Add(btnTestDetection);
             Controls.Add(btnCancel);
             Controls.Add(btnOK);
             Controls.Add(grpResultHandling);
-            Controls.Add(grpCondition);
-            Controls.Add(grpDataSource);
-            Controls.Add(grpBasicInfo);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "Form_Detection";
+            RectColor = Color.FromArgb(65, 100, 204);
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterParent;
             Text = "检测工具配置";
+            TitleColor = Color.FromArgb(65, 100, 204);
+            TitleFont = new Font("微软雅黑", 14.25F, FontStyle.Bold);
             ZoomScaleRect = new Rectangle(15, 15, 784, 691);
-            grpBasicInfo.ResumeLayout(false);
-            grpBasicInfo.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numTimeout).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numRetryCount).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numRetryInterval).EndInit();
-            grpDataSource.ResumeLayout(false);
-            grpDataSource.PerformLayout();
-            pnlVariableSource.ResumeLayout(false);
-            pnlVariableSource.PerformLayout();
             pnlPlcSource.ResumeLayout(false);
             pnlPlcSource.PerformLayout();
             pnlExpressionSource.ResumeLayout(false);
             pnlExpressionSource.PerformLayout();
-            grpCondition.ResumeLayout(false);
+            pnlVariableSource.ResumeLayout(false);
+            pnlVariableSource.PerformLayout();
             pnlRangeCondition.ResumeLayout(false);
             pnlRangeCondition.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numMinValue).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numMaxValue).EndInit();
             pnlEqualityCondition.ResumeLayout(false);
             pnlEqualityCondition.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numTolerance).EndInit();
             pnlThresholdCondition.ResumeLayout(false);
             pnlThresholdCondition.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numThreshold).EndInit();
             pnlCustomCondition.ResumeLayout(false);
             pnlCustomCondition.PerformLayout();
             grpResultHandling.ResumeLayout(false);
@@ -809,59 +1051,41 @@
             pnlJumpStep.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numFailureStep).EndInit();
             ((System.ComponentModel.ISupportInitialize)numSuccessStep).EndInit();
+            grpBasicInfo.ResumeLayout(false);
+            grpBasicInfo.PerformLayout();
+            grpDataSource.ResumeLayout(false);
+            grpDataSource.PerformLayout();
+            grpCondition.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.GroupBox grpBasicInfo;
         private System.Windows.Forms.Label lblDetectionName;
-        private System.Windows.Forms.TextBox txtDetectionName;
+        private UITextBox txtDetectionName;
         private System.Windows.Forms.Label lblDetectionType;
-        private System.Windows.Forms.ComboBox cmbDetectionType;
         private System.Windows.Forms.Label lblTimeout;
-        private System.Windows.Forms.NumericUpDown numTimeout;
         private System.Windows.Forms.Label lblRetryCount;
-        private System.Windows.Forms.NumericUpDown numRetryCount;
         private System.Windows.Forms.Label lblRetryInterval;
-        private System.Windows.Forms.NumericUpDown numRetryInterval;
-
-        private System.Windows.Forms.GroupBox grpDataSource;
         private System.Windows.Forms.Label lblDataSourceType;
-        private System.Windows.Forms.ComboBox cmbDataSourceType;
         private System.Windows.Forms.Panel pnlVariableSource;
         private System.Windows.Forms.Label lblVariableName;
-        private System.Windows.Forms.TextBox txtVariableName;
         private System.Windows.Forms.Panel pnlPlcSource;
         private System.Windows.Forms.Label lblPlcModule;
-        private System.Windows.Forms.TextBox txtPlcModule;
         private System.Windows.Forms.Label lblPlcAddress;
-        private System.Windows.Forms.TextBox txtPlcAddress;
-        private System.Windows.Forms.Label lblDataType;
-        private System.Windows.Forms.TextBox txtDataType;
         private System.Windows.Forms.Panel pnlExpressionSource;
         private System.Windows.Forms.Label lblExpression;
-        private System.Windows.Forms.TextBox txtExpression;
-
-        private System.Windows.Forms.GroupBox grpCondition;
         private System.Windows.Forms.Panel pnlRangeCondition;
         private System.Windows.Forms.Label lblMinValue;
-        private System.Windows.Forms.NumericUpDown numMinValue;
         private System.Windows.Forms.Label lblMaxValue;
-        private System.Windows.Forms.NumericUpDown numMaxValue;
         private System.Windows.Forms.Panel pnlEqualityCondition;
         private System.Windows.Forms.Label lblTargetValue;
-        private System.Windows.Forms.TextBox txtTargetValue;
         private System.Windows.Forms.Label lblTolerance;
-        private System.Windows.Forms.NumericUpDown numTolerance;
         private System.Windows.Forms.Panel pnlThresholdCondition;
         private System.Windows.Forms.Label lblOperator;
-        private System.Windows.Forms.ComboBox cmbOperator;
         private System.Windows.Forms.Label lblThreshold;
-        private System.Windows.Forms.NumericUpDown numThreshold;
         private System.Windows.Forms.Panel pnlCustomCondition;
         private System.Windows.Forms.Label lblCustomExpression;
-        private System.Windows.Forms.TextBox txtCustomExpression;
 
         private System.Windows.Forms.GroupBox grpResultHandling;
         private System.Windows.Forms.CheckBox chkSaveResult;
@@ -884,5 +1108,27 @@
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnTestDetection;
+        private UIPanel grpBasicInfo;
+        private UIComboBox cmbDetectionType;
+        private UILine uiLine2;
+        private AntdUI.InputNumber numTimeout;
+        private AntdUI.InputNumber numRetryCount;
+        private AntdUI.InputNumber numRetryInterval;
+        private UILine uiLine1;
+        private UIPanel grpDataSource;
+        private UITextBox txtVariableName;
+        private UIComboBox cmbDataSourceType;
+        private UITextBox txtPlcModule;
+        private UITextBox txtPlcAddress;
+        private UITextBox txtExpression;
+        private AntdUI.InputNumber numMinValue;
+        private UILine uiLine3;
+        private UIPanel grpCondition;
+        private AntdUI.InputNumber numMaxValue;
+        private UITextBox txtTargetValue;
+        private AntdUI.InputNumber numTolerance;
+        private UIComboBox cmbOperator;
+        private AntdUI.InputNumber numThreshold;
+        private UITextBox txtCustomExpression;
     }
 }
