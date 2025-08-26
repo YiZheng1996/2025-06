@@ -77,17 +77,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         [Description("相等性检测")]
         Equality,
 
-        [Description("阈值检测")]
-        Threshold,
-
         [Description("状态检测")]
         Status,
 
-        [Description("变化率检测")]
-        ChangeRate,
-
-        [Description("自定义表达式")]
-        CustomExpression
     }
 
     /// <summary>
@@ -109,11 +101,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         /// PLC地址配置（当数据源类型为PLC时）
         /// </summary>
         public PlcAddressConfig PlcConfig { get; set; } = new PlcAddressConfig();
-
-        /// <summary>
-        /// 表达式（当数据源类型为表达式时）
-        /// </summary>
-        public string Expression { get; set; } = "";
     }
 
     /// <summary>
@@ -127,8 +114,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         [Description("PLC地址")]
         PLC,
 
-        [Description("计算表达式")]
-        Expression
     }
 
     /// <summary>
@@ -149,7 +134,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         /// <summary>
         /// 数据类型
         /// </summary>
-        public string DataType { get; set; } = "Float";
+        //public string DataType { get; set; } = "Float";
 
         /// <summary>
         /// 转换为PLC读取项（用于读取操作）
@@ -198,7 +183,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         /// <summary>
         /// 自定义判断表达式
         /// </summary>
-        public string CustomExpression { get; set; } = "";
+        //public string CustomExpression { get; set; } = "";
 
         /// <summary>
         /// 容差值

@@ -1,4 +1,5 @@
 ﻿using AntdUI;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +15,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private bool _isLoading = true;
 
         // 依赖注入的服务
-        protected readonly IWorkflowStateService _workflowState;
         protected readonly IPLCManager _plcManager;
+        protected readonly IWorkflowStateService _workflowState;
+        protected readonly GlobalVariableManager _globalVariable;
         protected readonly Microsoft.Extensions.Logging.ILogger _logger;
 
         #region 构造函数和生命周期
@@ -33,9 +35,10 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // 运行时如果没有通过DI构造函数创建，尝试从全局服务提供者获取
             try
             {
+                _plcManager = Program.ServiceProvider?.GetService<IPLCManager>();
                 _workflowState = Program.ServiceProvider?.GetService<IWorkflowStateService>();
                 _logger = Program.ServiceProvider?.GetService<ILogger<BaseParameterForm>>();
-
+                _globalVariable = Program.ServiceProvider?.GetService<GlobalVariableManager>();
                 if (_workflowState == null || _logger == null)
                 {
                     throw new InvalidOperationException(
@@ -56,6 +59,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             IPLCManager plcManager = null)
         {
             _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
+            _plcManager = plcManager ?? throw new ArgumentNullException(nameof(plcManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -237,6 +241,16 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// 获取工作流状态服务（供子类使用）
         /// </summary>
         protected IWorkflowStateService WorkflowState => _workflowState;
+
+        /// <summary>
+        /// 获取工作流PLC服务（供子类使用）
+        /// </summary>
+        protected IPLCManager PLCManager => _plcManager;
+
+        /// <summary>
+        /// 获取工作流PLC服务（供子类使用）
+        /// </summary>
+        protected GlobalVariableManager GlobalVariable => _globalVariable;
 
         /// <summary>
         /// 获取日志服务（供子类使用）

@@ -45,6 +45,7 @@
     <None Remove="BLL\ModelBLL.cs~RF111b3053.TMP" />
     <None Remove="frmDeviceInspect.Designer.cs~RF5b80c14.TMP" />
     <None Remove="Procedure\Controls\UcSwitch.resx~RF68be5d8.TMP" />
+    <None Remove="Procedure\DSL\LogicalConfiguration\Forms\BaseParameterForm.cs~RF58c064e.TMP" />
     <None Remove="Procedure\DSL\LogicalConfiguration\Forms\Form_DefineVar.resx~RF10f9bd27.TMP" />
     <None Remove="Procedure\DSL\nsspch1m.5il~" />
     <None Remove="x0h1fpci.uwg~" />

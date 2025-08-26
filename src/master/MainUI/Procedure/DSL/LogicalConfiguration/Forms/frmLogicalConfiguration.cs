@@ -23,9 +23,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private readonly ILogger<FrmLogicalConfiguration> _logger;
         private readonly IFormService _formService;
 
-        // 命名元组存储配置参数，减少字段数量
-        private readonly (string Path, string ModelType, string ModelName, string ProcessName) _configuration;
-
         // UI管理器
         private readonly DataGridViewManager _gridManager;
         private StepExecutionManager _executionManager;

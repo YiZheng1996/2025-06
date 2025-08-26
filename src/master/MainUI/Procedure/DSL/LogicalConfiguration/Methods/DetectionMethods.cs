@@ -122,17 +122,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
                     case DetectionType.Equality:
                         return await EvaluateEqualityDetection(value, param.Condition);
 
-                    case DetectionType.Threshold:
-                        return await EvaluateThresholdDetection(value, param.Condition);
-
                     case DetectionType.Status:
                         return await EvaluateStatusDetection(value, param.Condition);
-
-                    case DetectionType.ChangeRate:
-                        return await EvaluateChangeRateDetection(value, param.Condition);
-
-                    case DetectionType.CustomExpression:
-                        return await EvaluateCustomExpression(value, param.Condition);
 
                     default:
                         throw new NotSupportedException($"不支持的检测类型: {param.Type}");
@@ -224,28 +215,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Methods
             // 实际应用中需要维护历史值队列
             await Task.CompletedTask;
             return true; // 简化实现
-        }
-
-        /// <summary>
-        /// 自定义表达式检测
-        /// </summary>
-        private static async Task<bool> EvaluateCustomExpression(object value, DetectionCondition condition)
-        {
-            try
-            {
-                // 替换表达式中的变量引用
-                string expression = condition.CustomExpression.Replace("{value}", value?.ToString() ?? "0");
-
-                // 这里可以使用表达式求值库，比如 NCalc 或自定义解析器
-                // 简化实现，只支持基本的比较
-                await Task.CompletedTask;
-                return true; // 简化实现
-            }
-            catch (Exception ex)
-            {
-                NlogHelper.Default.Error($"自定义表达式求值失败: {ex.Message}", ex);
-                return false;
-            }
         }
 
         /// <summary>

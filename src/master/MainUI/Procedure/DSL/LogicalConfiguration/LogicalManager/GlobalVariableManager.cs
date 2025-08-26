@@ -1,5 +1,4 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
@@ -12,7 +11,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
         private readonly IWorkflowStateService _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
 
 
-        #region 实例方法（推荐使用）
+        #region 实例方法
         /// <summary>
         /// 获取所有变量
         /// </summary>

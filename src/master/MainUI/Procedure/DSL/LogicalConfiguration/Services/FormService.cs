@@ -120,7 +120,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
             {
                 _logger.LogDebug("创建窗体: {FormType}", typeof(T).Name);
 
-                // 使用字典映射替代重复的if-else和服务获取
                 // 避免每个窗体类型都重复获取服务，减少代码重复
                 var form = CreateFormByType<T>();
 
