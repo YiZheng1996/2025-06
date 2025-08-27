@@ -45,6 +45,14 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
         public ResultHandling ResultHandling { get; set; } = new ResultHandling();
 
         /// <summary>
+        /// 刷新频率（毫秒）- 检测间隔时间
+        /// 默认100ms，最小10ms，最大10000ms
+        /// </summary>
+        [DisplayName("刷新频率")]
+        [Description("检测间隔时间，单位毫秒。值越小检测越频繁")]
+        public int RefreshRateMs { get; set; } = 100;
+
+        /// <summary>
         /// 超时设置（毫秒）
         /// </summary>
         [DisplayName("超时时间")]

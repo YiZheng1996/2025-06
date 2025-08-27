@@ -1,6 +1,7 @@
 ﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RW.DSL;
 using RW.Modules;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
@@ -21,9 +22,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
         private readonly IPLCModuleProvider _moduleProvider;
         private readonly IPLCConfigurationService _configurationService;
         private readonly PLCManagerOptions _options;
-
-        // 懒加载的模块字典
-        private readonly Lazy<Task<Dictionary<string, BaseModule>>> _lazyModules;
+        
+        private readonly Task<Dictionary<string, BaseModule>> _initializationTask;
         private bool _disposed = false;
 
         /// <summary>
@@ -40,12 +40,26 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
-            // 懒加载模块初始化
-            _lazyModules = new Lazy<Task<Dictionary<string, BaseModule>>>(
-                () => _moduleProvider.InitializePLCModulesAsync(),
-                LazyThreadSafetyMode.ExecutionAndPublication);
+            _initializationTask = InitializeModulesAsync();
 
             _logger.LogInformation("PLCManager实例已创建，使用依赖注入模式");
+        }
+
+        // 主动加载
+        private async Task<Dictionary<string, BaseModule>> InitializeModulesAsync()
+        {
+            try
+            {
+                _logger.LogInformation("开始主动初始化PLC模块");
+                var result = await _moduleProvider.InitializePLCModulesAsync();
+                _logger.LogInformation("主动初始化完成，获得 {Count} 个模块", result.Count);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "主动初始化失败");
+                return new Dictionary<string, BaseModule>();
+            }
         }
 
         #region 属性实现
@@ -53,9 +67,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
         /// <summary>
         /// 检查PLC模块是否已成功初始化
         /// </summary>
-        public bool IsPLCInitialized => _lazyModules.IsValueCreated &&
-                                       _lazyModules.Value.IsCompletedSuccessfully &&
-                                       _lazyModules.Value.Result.Count > 0;
+        public bool IsPLCInitialized => _initializationTask.IsCompletedSuccessfully &&
+                                  _initializationTask.Result.Count > 0;
 
         #endregion
 
@@ -70,12 +83,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 
             try
             {
-                _logger.LogInformation("开始获取所有模块点位信息，使用TestAA配置服务");
+                _logger.LogInformation("开始获取所有模块点位信息，使用PLCManager配置服务");
 
                 var configuredTags = await GetTagsFromConfigurationAsync();
 
                 _logger.LogInformation("成功获取 {ModuleCount} 个模块的点位信息，总点位数: {TagCount}",
-                    result.Count, result.Values.Sum(tags => tags.Count));
+                    configuredTags.Count, configuredTags.Values.Sum(tags => tags.Count));
 
                 return result = configuredTags;
             }
@@ -459,7 +472,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
 
             try
             {
-                _logger.LogDebug("从TestAA配置服务获取点位信息");
+                _logger.LogDebug("从configurationService配置服务获取点位信息");
 
                 var configuration = _configurationService.Configuration;
 
@@ -541,7 +554,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
         {
             try
             {
-                return await _lazyModules.Value.WaitAsync(cancellationToken);
+                return await _initializationTask.WaitAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -567,9 +580,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
             if (!_disposed)
             {
                 // 如果模块已经初始化，尝试释放它们
-                if (_lazyModules.IsValueCreated && _lazyModules.Value.IsCompletedSuccessfully)
+                if (_initializationTask.IsCompletedSuccessfully)
                 {
-                    var modules = _lazyModules.Value.Result;
+                    var modules = _initializationTask.Result;
                     foreach (var module in modules.Values)
                     {
                         try

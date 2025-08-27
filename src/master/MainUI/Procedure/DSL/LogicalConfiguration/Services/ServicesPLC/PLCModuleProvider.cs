@@ -15,7 +15,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
     public class PLCModuleProvider(ILogger<PLCModuleProvider> logger) : IPLCModuleProvider, IDisposable
     {
         private readonly ILogger<PLCModuleProvider> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly ConcurrentDictionary<string, BaseModule> _modules = new();
+        private ConcurrentDictionary<string, BaseModule> _modules = new();
         private readonly ReaderWriterLockSlim _modulesLock = new();
         private bool _disposed = false;
 
@@ -68,7 +68,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC
             catch (Exception ex)
             {
                 _logger.LogError(ex, "PLC模块初始化失败");
-                return new Dictionary<string, BaseModule>();
+                return [];
             }
         }
 

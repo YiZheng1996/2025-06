@@ -1,12 +1,10 @@
 ﻿using AntdUI;
-using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Methods;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
@@ -147,24 +145,49 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <summary>
         /// 加载参数到表单
         /// </summary>
-        private void LoadParameterToForm()
+        private async void LoadParameterToForm()
         {
-            if (_parameter == null /*|| IsLoading*/) return;
+            if (_parameter == null) return;
 
             try
             {
                 // 基本信息
                 txtDetectionName.Text = _parameter.DetectionName;
                 cmbDetectionType.SelectedValue = _parameter.Type;
+                numRefreshRate.Value = _parameter.RefreshRateMs;
                 numTimeout.Value = _parameter.TimeoutMs;
                 numRetryCount.Value = _parameter.RetryCount;
                 numRetryInterval.Value = _parameter.RetryIntervalMs;
 
                 // 数据源配置
                 cmbDataSourceType.SelectedValue = _parameter.DataSource.SourceType;
-                CboVariableName.Text = _parameter.DataSource.VariableName;
-                CboPlcModule.Text = _parameter.DataSource.PlcConfig.ModuleName;
-                CboPlcAddress.Text = _parameter.DataSource.PlcConfig.Address;
+
+                // 先根据数据源类型加载相应的数据，然后再设置值
+                var sourceType = _parameter.DataSource.SourceType;
+                switch (sourceType)
+                {
+                    case DataSourceType.Variable:
+                        ParameterGlobalVariable(); // 先加载变量列表
+                        SetComboBoxValue(CboVariableName, _parameter.DataSource.VariableName);
+                        pnlVariableSource.Visible = true;
+                        pnlPlcSource.Visible = false;
+                        break;
+
+                    case DataSourceType.PLC:
+                        await Parameterplcs(); // 先加载PLC模块列表
+                        SetComboBoxValue(CboPlcModule, _parameter.DataSource.PlcConfig.ModuleName);
+
+                        // 如果有模块名，加载对应的地址列表
+                        if (!string.IsNullOrEmpty(_parameter.DataSource.PlcConfig.ModuleName))
+                        {
+                            await LoadPlcAddresses(_parameter.DataSource.PlcConfig.ModuleName);
+                            SetComboBoxValue(CboPlcAddress, _parameter.DataSource.PlcConfig.Address);
+                        }
+
+                        pnlVariableSource.Visible = false;
+                        pnlPlcSource.Visible = true;
+                        break;
+                }
 
                 // 检测条件
                 numMinValue.Value = (decimal)_parameter.Condition.MinValue;
@@ -183,16 +206,90 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 numFailureStep.Value = _parameter.ResultHandling.FailureStepIndex;
                 numSuccessStep.Value = _parameter.ResultHandling.SuccessStepIndex;
                 chkShowResult.Checked = _parameter.ResultHandling.ShowResult;
-                txtMessageTemplate.Text = _parameter.ResultHandling.MessageTemplate;
+                //txtMessageTemplate.Text = _parameter.ResultHandling.MessageTemplate;
 
-                UpdateFormLayout();  // 更新界面显示
-                UpdateDataSourceLayout(); //根据数据源类型更新表单布局
-                UpdateFailureActionLayout(); //根据失败处理方式更新表单布局
+                // 更新界面布局
+                UpdateFormLayout();
+                UpdateFailureActionLayout();
             }
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "加载参数到表单失败");
                 MessageHelper.MessageOK($"加载参数失败：{ex.Message}", TType.Error);
+            }
+            finally
+            {
+            }
+        }
+
+        /// <summary>
+        /// 安全设置ComboBox的值
+        /// </summary>
+        private void SetComboBoxValue(UIComboBox comboBox, string value)
+        {
+            if (comboBox == null || string.IsNullOrEmpty(value)) return;
+
+            try
+            {
+                // 方法1：先尝试在Items中查找匹配项
+                for (int i = 0; i < comboBox.Items.Count; i++)
+                {
+                    if (comboBox.Items[i].ToString().Equals(value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        comboBox.SelectedIndex = i;
+                        return;
+                    }
+                }
+
+                // 方法2：如果没有找到匹配项，且ComboBox允许编辑，则设置Text属性
+                if (comboBox.DropDownStyle == UIDropDownStyle.DropDown)
+                {
+                    comboBox.Text = value;
+                }
+                else
+                {
+                    // 方法3：对于DropDownList类型，如果找不到匹配项，添加该项
+                    comboBox.Items.Add(value);
+                    comboBox.SelectedItem = value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogWarning("设置ComboBox值失败: {value}", ex);
+                // 最后的备用方案
+                try
+                {
+                    comboBox.Text = value;
+                }
+                catch
+                {
+                    // 忽略最终的设置失败
+                }
+            }
+        }
+
+        /// <summary>
+        /// 加载指定PLC模块的地址列表
+        /// </summary>
+        private async Task LoadPlcAddresses(string moduleName)
+        {
+            if (string.IsNullOrEmpty(moduleName)) return;
+
+            try
+            {
+                CboPlcAddress.Clear();
+                var modules = await PLCManager.GetModuleTagsAsync();
+                if (modules.TryGetValue(moduleName, out List<string> addresses))
+                {
+                    foreach (var address in addresses)
+                    {
+                        CboPlcAddress.Items.Add(address);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError("加载PLC模块[{moduleName}]地址失败", ex);
             }
         }
 
@@ -208,6 +305,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 // 基本信息
                 _parameter.DetectionName = txtDetectionName.Text?.Trim() ?? "";
                 _parameter.Type = (DetectionType)cmbDetectionType.SelectedValue;
+                _parameter.RefreshRateMs = (int)numRefreshRate.Value;
                 _parameter.TimeoutMs = (int)numTimeout.Value;
                 _parameter.RetryCount = (int)numRetryCount.Value;
                 _parameter.RetryIntervalMs = (int)numRetryInterval.Value;
@@ -235,7 +333,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 _parameter.ResultHandling.FailureStepIndex = (int)numFailureStep.Value;
                 _parameter.ResultHandling.SuccessStepIndex = (int)numSuccessStep.Value;
                 _parameter.ResultHandling.ShowResult = chkShowResult.Checked;
-                _parameter.ResultHandling.MessageTemplate = txtMessageTemplate.Text?.Trim() ?? "";
+                //_parameter.ResultHandling.MessageTemplate = txtMessageTemplate.Text?.Trim() ?? "";
             }
             catch (Exception ex)
             {
@@ -536,14 +634,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                // 检测名称验证
-                if (string.IsNullOrWhiteSpace(txtDetectionName.Text))
-                {
-                    MessageHelper.MessageOK("请输入检测项名称", TType.Warn);
-                    txtDetectionName.Focus();
-                    return false;
-                }
-
                 // 数据源验证
                 var sourceType = (DataSourceType)cmbDataSourceType.SelectedValue;
                 switch (sourceType)

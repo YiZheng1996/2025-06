@@ -55,7 +55,7 @@ namespace MainUI
         private static void InitializeDatabase()
         {
             VarHelper.fsql = new FreeSql.FreeSqlBuilder()
-                .UseMonitorCommand(cmd => Trace.WriteLine($"Sql：{cmd.CommandText}"))
+                //.UseMonitorCommand(cmd => Trace.WriteLine($"Sql：{cmd.CommandText}"))
                 .UseConnectionString(FreeSql.DataType.Sqlite,
                     ConfigurationManager.ConnectionStrings["MyDb"].ConnectionString)
                 .Build();

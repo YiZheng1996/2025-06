@@ -73,8 +73,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             grpCondition = new UIPanel();
             uiLine4 = new UILine();
             grpResultHandling = new UIPanel();
-            label6 = new Label();
-            txtMessageTemplate = new UITextBox();
             chkShowResult = new UICheckBox();
             pnlJumpStep = new UIPanel();
             numSuccessStep = new AntdUI.InputNumber();
@@ -91,6 +89,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             btnOK = new UISymbolButton();
             btnCancel = new UISymbolButton();
             btnTestDetection = new UISymbolButton();
+            numRefreshRate = new AntdUI.InputNumber();
+            label1 = new Label();
             pnlPlcSource.SuspendLayout();
             pnlVariableSource.SuspendLayout();
             pnlRangeCondition.SuspendLayout();
@@ -107,7 +107,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // 
             lblDetectionName.AutoSize = true;
             lblDetectionName.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            lblDetectionName.Location = new Point(45, 19);
+            lblDetectionName.Location = new Point(401, 0);
             lblDetectionName.Name = "lblDetectionName";
             lblDetectionName.Size = new Size(82, 23);
             lblDetectionName.TabIndex = 0;
@@ -120,7 +120,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             txtDetectionName.FillDisableColor = Color.FromArgb(218, 220, 230);
             txtDetectionName.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
             txtDetectionName.Font = new Font("微软雅黑", 12.75F);
-            txtDetectionName.Location = new Point(135, 17);
+            txtDetectionName.Location = new Point(491, -2);
             txtDetectionName.Margin = new Padding(4, 5, 4, 5);
             txtDetectionName.MinimumSize = new Size(1, 16);
             txtDetectionName.Name = "txtDetectionName";
@@ -129,7 +129,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             txtDetectionName.RectDisableColor = Color.FromArgb(218, 220, 230);
             txtDetectionName.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
             txtDetectionName.ShowText = false;
-            txtDetectionName.Size = new Size(184, 30);
+            txtDetectionName.Size = new Size(120, 30);
             txtDetectionName.TabIndex = 1;
             txtDetectionName.TextAlignment = ContentAlignment.MiddleLeft;
             txtDetectionName.Watermark = "请输入";
@@ -140,7 +140,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // 
             lblDetectionType.AutoSize = true;
             lblDetectionType.Font = new Font("微软雅黑", 12.75F);
-            lblDetectionType.Location = new Point(402, 21);
+            lblDetectionType.Location = new Point(57, 16);
             lblDetectionType.Name = "lblDetectionType";
             lblDetectionType.Size = new Size(82, 23);
             lblDetectionType.TabIndex = 2;
@@ -293,6 +293,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             pnlVariableSource.BackColor = Color.Transparent;
             pnlVariableSource.Controls.Add(CboVariableName);
             pnlVariableSource.Controls.Add(lblVariableName);
+            pnlVariableSource.Controls.Add(lblDetectionName);
+            pnlVariableSource.Controls.Add(txtDetectionName);
             pnlVariableSource.FillColor = Color.White;
             pnlVariableSource.FillColor2 = Color.White;
             pnlVariableSource.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
@@ -582,12 +584,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // grpBasicInfo
             // 
             grpBasicInfo.BackColor = Color.Transparent;
+            grpBasicInfo.Controls.Add(numRefreshRate);
+            grpBasicInfo.Controls.Add(label1);
             grpBasicInfo.Controls.Add(numRetryInterval);
             grpBasicInfo.Controls.Add(numRetryCount);
             grpBasicInfo.Controls.Add(numTimeout);
             grpBasicInfo.Controls.Add(cmbDetectionType);
-            grpBasicInfo.Controls.Add(lblDetectionName);
-            grpBasicInfo.Controls.Add(txtDetectionName);
             grpBasicInfo.Controls.Add(lblRetryInterval);
             grpBasicInfo.Controls.Add(lblDetectionType);
             grpBasicInfo.Controls.Add(lblRetryCount);
@@ -655,7 +657,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             cmbDetectionType.ForeDisableColor = Color.FromArgb(48, 48, 48);
             cmbDetectionType.ItemHoverColor = Color.FromArgb(155, 200, 255);
             cmbDetectionType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
-            cmbDetectionType.Location = new Point(489, 17);
+            cmbDetectionType.Location = new Point(144, 12);
             cmbDetectionType.Margin = new Padding(4, 5, 4, 5);
             cmbDetectionType.MinimumSize = new Size(63, 0);
             cmbDetectionType.Name = "cmbDetectionType";
@@ -664,7 +666,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             cmbDetectionType.RectColor = Color.Gray;
             cmbDetectionType.RectDisableColor = Color.Gray;
             cmbDetectionType.RectSides = ToolStripStatusLabelBorderSides.None;
-            cmbDetectionType.Size = new Size(184, 30);
+            cmbDetectionType.Size = new Size(208, 30);
             cmbDetectionType.SymbolSize = 24;
             cmbDetectionType.TabIndex = 123;
             cmbDetectionType.TextAlignment = ContentAlignment.MiddleLeft;
@@ -809,8 +811,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             // 
             grpResultHandling.BackColor = Color.Transparent;
             grpResultHandling.Controls.Add(lblResultVariable);
-            grpResultHandling.Controls.Add(label6);
-            grpResultHandling.Controls.Add(txtMessageTemplate);
             grpResultHandling.Controls.Add(chkShowResult);
             grpResultHandling.Controls.Add(pnlJumpStep);
             grpResultHandling.Controls.Add(cmbFailureAction);
@@ -834,39 +834,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             grpResultHandling.TabIndex = 449;
             grpResultHandling.Text = null;
             grpResultHandling.TextAlignment = ContentAlignment.MiddleCenter;
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Font = new Font("微软雅黑", 12.75F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            label6.Location = new Point(18, 188);
-            label6.Name = "label6";
-            label6.Size = new Size(82, 23);
-            label6.TabIndex = 452;
-            label6.Text = "检测名称:";
-            // 
-            // txtMessageTemplate
-            // 
-            txtMessageTemplate.FillColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.FillColor2 = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.FillDisableColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.FillReadOnlyColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.Font = new Font("微软雅黑", 12.75F);
-            txtMessageTemplate.Location = new Point(108, 185);
-            txtMessageTemplate.Margin = new Padding(4, 5, 4, 5);
-            txtMessageTemplate.MinimumSize = new Size(1, 16);
-            txtMessageTemplate.Name = "txtMessageTemplate";
-            txtMessageTemplate.Padding = new Padding(5);
-            txtMessageTemplate.RectColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.RectDisableColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.RectReadOnlyColor = Color.FromArgb(218, 220, 230);
-            txtMessageTemplate.ShowText = false;
-            txtMessageTemplate.Size = new Size(493, 30);
-            txtMessageTemplate.TabIndex = 453;
-            txtMessageTemplate.TextAlignment = ContentAlignment.MiddleLeft;
-            txtMessageTemplate.Watermark = "检测项 {DetectionName}: {Result}";
-            txtMessageTemplate.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
-            txtMessageTemplate.WatermarkColor = Color.FromArgb(48, 48, 48);
             // 
             // chkShowResult
             // 
@@ -1130,6 +1097,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             btnTestDetection.Text = "测 试";
             btnTestDetection.TipsFont = new Font("微软雅黑", 12F);
             // 
+            // numRefreshRate
+            // 
+            numRefreshRate.BackColor = Color.FromArgb(218, 220, 230);
+            numRefreshRate.Font = new Font("微软雅黑", 12.75F);
+            numRefreshRate.Location = new Point(588, 12);
+            numRefreshRate.Name = "numRefreshRate";
+            numRefreshRate.SelectionStart = 5;
+            numRefreshRate.Size = new Size(85, 42);
+            numRefreshRate.TabIndex = 448;
+            numRefreshRate.Text = "30000";
+            numRefreshRate.Value = new decimal(new int[] { 30000, 0, 0, 0 });
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("微软雅黑", 12.75F);
+            label1.Location = new Point(464, 19);
+            label1.Name = "label1";
+            label1.Size = new Size(118, 23);
+            label1.TabIndex = 447;
+            label1.Text = "刷新频率(ms):";
+            // 
             // Form_Detection
             // 
             AutoScaleMode = AutoScaleMode.None;
@@ -1228,8 +1217,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private UICheckBox chkSaveValue;
         private UIComboBox CboResultVariable;
         private UICheckBox chkSaveResult;
-        private Label label6;
-        private UITextBox txtMessageTemplate;
         private UICheckBox chkShowResult;
         private UIPanel pnlJumpStep;
         private AntdUI.InputNumber numSuccessStep;
@@ -1243,5 +1230,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         private UISymbolButton btnOK;
         private UISymbolButton btnCancel;
         private UISymbolButton btnTestDetection;
+        private AntdUI.InputNumber numRefreshRate;
+        private Label label1;
     }
 }

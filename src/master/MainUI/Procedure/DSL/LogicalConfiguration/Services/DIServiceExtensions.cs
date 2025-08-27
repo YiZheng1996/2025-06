@@ -62,7 +62,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
             services.AddSingleton<IWorkflowStateService, WorkflowStateService>();
             services.AddSingleton<IPLCConfigurationService, PLCConfigurationService>();
             services.AddSingleton<IPLCModuleProvider, PLCModuleProvider>();
-            services.AddSingleton<IPLCManager, PLCManager>();
+            //services.AddSingleton<IPLCManager, PLCManager>();
+            services.AddScoped<IPLCManager, PLCManager>();
 
             return services;
         }
