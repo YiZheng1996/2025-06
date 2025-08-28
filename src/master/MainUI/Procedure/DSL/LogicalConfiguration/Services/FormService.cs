@@ -58,6 +58,9 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                     case "变量定义":
                         form = CreateForm<Form_DefineVar>();
                         break;
+                    case "变量赋值":
+                        form = CreateForm<Form_VariableAssignment>();
+                        break;
                     case "plc读取":
                         form = CreateForm<Form_ReadPLC>();
                         break;
@@ -145,6 +148,13 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 // 变量定义窗体
                 nameof(Form_DefineVar) => (T)(object)new Form_DefineVar(
                     _variableManager),
+
+                // 变量赋值窗体
+                nameof(Form_VariableAssignment) => (T)(object)new Form_VariableAssignment(
+                    _workflowState,
+                    _variableManager,
+                    GetSpecificLogger<Form_VariableAssignment>()
+                    ),
 
                 // PLC读取窗体
                 nameof(Form_ReadPLC) => (T)(object)new Form_ReadPLC(

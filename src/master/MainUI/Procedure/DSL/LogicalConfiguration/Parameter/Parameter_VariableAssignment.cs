@@ -24,5 +24,15 @@
         /// 赋值表单名称
         /// </summary>
         public string AssignmentForm { get; set; }
+
+        /// <summary>
+        /// 条件
+        /// </summary>
+        public string Condition { get; set; }
+
+        /// <summary>
+        /// 描述
+        /// </summary>
+        public string Description { get; set; }
     }
 }

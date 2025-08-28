@@ -61,6 +61,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             lblThreshold = new Label();
             lblResultVariable = new Label();
             grpBasicInfo = new UIPanel();
+            numRefreshRate = new AntdUI.InputNumber();
+            label1 = new Label();
             numRetryInterval = new AntdUI.InputNumber();
             numRetryCount = new AntdUI.InputNumber();
             numTimeout = new AntdUI.InputNumber();
@@ -89,8 +91,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             btnOK = new UISymbolButton();
             btnCancel = new UISymbolButton();
             btnTestDetection = new UISymbolButton();
-            numRefreshRate = new AntdUI.InputNumber();
-            label1 = new Label();
             pnlPlcSource.SuspendLayout();
             pnlVariableSource.SuspendLayout();
             pnlRangeCondition.SuspendLayout();
@@ -609,6 +609,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             grpBasicInfo.Text = null;
             grpBasicInfo.TextAlignment = ContentAlignment.MiddleCenter;
             // 
+            // numRefreshRate
+            // 
+            numRefreshRate.BackColor = Color.FromArgb(218, 220, 230);
+            numRefreshRate.Font = new Font("微软雅黑", 12.75F);
+            numRefreshRate.Location = new Point(588, 12);
+            numRefreshRate.Name = "numRefreshRate";
+            numRefreshRate.SelectionStart = 5;
+            numRefreshRate.Size = new Size(85, 42);
+            numRefreshRate.TabIndex = 448;
+            numRefreshRate.Text = "30000";
+            numRefreshRate.Value = new decimal(new int[] { 30000, 0, 0, 0 });
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("微软雅黑", 12.75F);
+            label1.Location = new Point(464, 19);
+            label1.Name = "label1";
+            label1.Size = new Size(118, 23);
+            label1.TabIndex = 447;
+            label1.Text = "刷新频率(ms):";
+            // 
             // numRetryInterval
             // 
             numRetryInterval.BackColor = Color.FromArgb(218, 220, 230);
@@ -1096,28 +1118,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             btnTestDetection.TabIndex = 452;
             btnTestDetection.Text = "测 试";
             btnTestDetection.TipsFont = new Font("微软雅黑", 12F);
-            // 
-            // numRefreshRate
-            // 
-            numRefreshRate.BackColor = Color.FromArgb(218, 220, 230);
-            numRefreshRate.Font = new Font("微软雅黑", 12.75F);
-            numRefreshRate.Location = new Point(588, 12);
-            numRefreshRate.Name = "numRefreshRate";
-            numRefreshRate.SelectionStart = 5;
-            numRefreshRate.Size = new Size(85, 42);
-            numRefreshRate.TabIndex = 448;
-            numRefreshRate.Text = "30000";
-            numRefreshRate.Value = new decimal(new int[] { 30000, 0, 0, 0 });
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("微软雅黑", 12.75F);
-            label1.Location = new Point(464, 19);
-            label1.Name = "label1";
-            label1.Size = new Size(118, 23);
-            label1.TabIndex = 447;
-            label1.Text = "刷新频率(ms):";
             // 
             // Form_Detection
             // 

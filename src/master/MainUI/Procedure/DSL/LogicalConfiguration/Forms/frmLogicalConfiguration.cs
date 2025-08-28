@@ -94,8 +94,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #endregion
 
         #region 初始化方法
-
-
         /// <summary>
         /// 注册事件处理程序
         /// </summary>
@@ -300,6 +298,12 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                     case "变量定义":
                         _formService.OpenFormByName(this, e.Node.Text, this);
                         break;
+                    case "变量赋值":
+                        _formService.OpenFormByName(this, e.Node.Text, this);
+                        break;
+                    case "变量监控":
+                        _formService.OpenFormByName(this, e.Node.Text, this);
+                        break;
                     default:
                         break;
                 }
@@ -367,6 +371,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         #endregion
 
         #region 工具箱初始化
+
         private void InitializeToolbox()
         {
             var toolNodes = BuildToolboxNodes();
@@ -381,10 +386,25 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <returns></returns>
         private static TreeNode[] BuildToolboxNodes() =>
             [
+                BuildVariableToolNode(),
                 BuildSystemToolNode(),
                 BuildReportToolNode(),
                 BuildCalculationToolNode()
             ];
+
+        /// <summary>
+        /// 创建变量管理工具节点
+        /// </summary>
+        /// <returns></returns>
+        private static TreeNode BuildVariableToolNode()
+        {
+            return new TreeNode("变量管理(双击查看)",
+            [
+                new("变量定义"),
+                new("变量赋值"),
+                new("变量监控"),
+            ]);
+        }
 
         /// <summary>
         /// 创建报表工具节点
@@ -397,7 +417,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
                 new("读取单元格"),
                 new("写入单元格"),
                 new("保存报表"),
-                new("打印报表")
             ]);
         }
 
@@ -407,9 +426,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         /// <returns></returns>
         private static TreeNode BuildSystemToolNode()
         {
-            return new TreeNode("通用参数(双击查看参数)",
+            return new TreeNode("参数管理",
             [
-                new("变量定义"),
                 new("试验参数"),
             ]);
         }
