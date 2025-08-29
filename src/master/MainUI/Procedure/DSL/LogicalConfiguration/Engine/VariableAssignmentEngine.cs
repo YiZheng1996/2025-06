@@ -1,4 +1,6 @@
-﻿using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
+using MainUI.Procedure.DSL.LogicalConfiguration.Infrastructure;
+using MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager;
 using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services;
 using MainUI.Procedure.DSL.LogicalConfiguration.Services.ServicesPLC;
@@ -51,8 +53,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
 
             try
             {
-                _logger?.LogInformation("开始执行变量赋值: {TargetVar} = {Expression}",
-                    parameter.TargetVarName, parameter.Expression);
+                _logger?.LogInformation("开始执行变量赋值: {TargetVar} = {AssignmentType}",
+                    parameter.TargetVarName, parameter.AssignmentType);
 
                 // 1. 验证参数
                 var validationResult = ValidateParameterAsync(parameter);
@@ -99,7 +101,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
                     }
                 }
 
-                // 4. 根据赋值方式执行相应的逻辑
+                // 4. 根据赋值方式执行相应的逻辑 - 使用枚举而不是字符串
                 var assignmentResult = await ExecuteAssignmentByTypeAsync(parameter, targetVariable);
                 if (!assignmentResult.Success)
                 {
@@ -110,11 +112,11 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
 
                 // 5. 执行赋值
                 var oldValue = targetVariable.VarValue;
-                targetVariable.UpdateValue(assignmentResult.Value, $"变量赋值引擎: {parameter.AssignmentForm}");
+                targetVariable.UpdateValue(assignmentResult.Value, $"变量赋值引擎: {parameter.AssignmentType.GetDescription()}");
 
                 result.Success = true;
                 result.NewValue = assignmentResult.Value;
-                result.AssignmentType = parameter.AssignmentForm;
+                result.AssignmentType = parameter.AssignmentType.GetDescription(); // 使用枚举描述
                 result.ExecutionTime = DateTime.Now - startTime;
 
                 _logger?.LogInformation("变量赋值完成: {TargetVar} 从 '{OldValue}' 变为 '{NewValue}'",
@@ -142,24 +144,62 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
             Parameter_VariableAssignment parameter,
             VarItem_Enhanced targetVariable)
         {
-            var assignmentType = DetermineAssignmentType(parameter.AssignmentForm);
-
-            switch (assignmentType)
+            // 直接使用枚举，不需要字符串转换
+            switch (parameter.AssignmentType)
             {
-                case AssignmentType.DirectValue:
+                case AssignmentTypeEnum.DirectAssignment:
                     return ExecuteDirectValueAssignment(parameter.Expression, targetVariable);
 
-                case AssignmentType.ExpressionCalculation:
+                case AssignmentTypeEnum.ExpressionCalculation:
                     return await ExecuteExpressionCalculation(parameter.Expression, targetVariable);
 
-                case AssignmentType.VariableCopy:
+                case AssignmentTypeEnum.VariableCopy:
                     return ExecuteVariableCopy(parameter.Expression, targetVariable);
 
-                case AssignmentType.PLCRead:
-                    return await ExecutePLCRead(parameter.Expression, targetVariable);
+                case AssignmentTypeEnum.PLCRead:
+                    return await ExecutePLCReadFromConfig(parameter.DataSource.PlcConfig, targetVariable);
 
                 default:
-                    return ValueCalculationResult.Error($"不支持的赋值类型: {parameter.AssignmentForm}");
+                    return ValueCalculationResult.Error($"不支持的赋值类型: {parameter.AssignmentType}");
+            }
+        }
+
+        /// <summary>
+        /// 执行PLC读取（使用配置对象）
+        /// </summary>
+        private async Task<ValueCalculationResult> ExecutePLCReadFromConfig(PlcAddressConfig plcConfig, VarItem_Enhanced targetVariable)
+        {
+            try
+            {
+                _logger?.LogDebug("执行PLC读取: {ModuleName}.{Address}", plcConfig.ModuleName, plcConfig.Address);
+
+                if (_plcManager == null)
+                {
+                    return ValueCalculationResult.Error("PLC管理器未初始化");
+                }
+
+                if (string.IsNullOrEmpty(plcConfig.ModuleName))
+                {
+                    return ValueCalculationResult.Error("PLC模块名不能为空");
+                }
+
+                if (string.IsNullOrEmpty(plcConfig.Address))
+                {
+                    return ValueCalculationResult.Error("PLC地址不能为空");
+                }
+
+                // 从PLC读取值
+                var value = await _plcManager.ReadPLCValueAsync(plcConfig.ModuleName, plcConfig.Address);
+
+                // 转换为目标类型
+                var convertedValue = ConvertValueToTargetType(value?.ToString(), targetVariable.VarType);
+
+                return ValueCalculationResult.Successs(convertedValue, $"从PLC读取: {plcConfig.ModuleName}.{plcConfig.Address}");
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "PLC读取失败: {ModuleName}.{Address}", plcConfig.ModuleName, plcConfig.Address);
+                return ValueCalculationResult.Error($"PLC读取失败: {ex.Message}");
             }
         }
 
@@ -266,46 +306,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
         }
 
         /// <summary>
-        /// 执行PLC读取
-        /// </summary>
-        private async Task<ValueCalculationResult> ExecutePLCRead(string expression, VarItem_Enhanced targetVariable)
-        {
-            try
-            {
-                _logger?.LogDebug("执行PLC读取: {Expression}", expression);
-
-                if (_plcManager == null)
-                {
-                    return ValueCalculationResult.Error("PLC管理器未初始化");
-                }
-
-                // 解析PLC地址 (例如: "DB1.DBD0" 或 "Module1:DB1.DBD0")
-                var addressInfo = ParsePLCAddress(expression);
-                if (addressInfo == null)
-                {
-                    return ValueCalculationResult.Error($"无效的PLC地址格式: {expression}");
-                }
-
-                // 从PLC读取值
-                var readResult = await ReadFromPLCAsync(addressInfo);
-                if (!readResult.Success)
-                {
-                    return ValueCalculationResult.Error($"PLC读取失败: {readResult.ErrorMessage}");
-                }
-
-                // 转换为目标类型
-                var convertedValue = ConvertValueToTargetType(readResult.Value?.ToString(), targetVariable.VarType);
-
-                return ValueCalculationResult.Successs(convertedValue, $"从PLC读取: {expression}");
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "PLC读取失败");
-                return ValueCalculationResult.Error($"PLC读取失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// 验证赋值参数
         /// </summary>
         private ValidationResult ValidateParameterAsync(Parameter_VariableAssignment parameter)
@@ -320,9 +320,28 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
                     errors.Add("目标变量名不能为空");
                 }
 
-                if (string.IsNullOrWhiteSpace(parameter.Expression))
+                // 根据赋值类型验证不同字段
+                switch (parameter.AssignmentType)
                 {
-                    errors.Add("赋值表达式不能为空");
+                    case AssignmentTypeEnum.PLCRead:
+                        // PLC读取验证DataSource
+                        if (string.IsNullOrWhiteSpace(parameter.DataSource.PlcConfig.ModuleName))
+                        {
+                            errors.Add("PLC模块名不能为空");
+                        }
+                        if (string.IsNullOrWhiteSpace(parameter.DataSource.PlcConfig.Address))
+                        {
+                            errors.Add("PLC地址不能为空");
+                        }
+                        break;
+
+                    default:
+                        // 其他类型验证Expression
+                        if (string.IsNullOrWhiteSpace(parameter.Expression))
+                        {
+                            errors.Add("赋值表达式不能为空");
+                        }
+                        break;
                 }
 
                 if (errors.Count != 0)
@@ -342,17 +361,20 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
                     errors.Add($"目标变量 '{parameter.TargetVarName}' 不存在");
                 }
 
-                // 表达式验证
-                var validationContext = new ValidationContext
+                // 表达式验证（非PLC读取类型）
+                if (parameter.AssignmentType != AssignmentTypeEnum.PLCRead)
                 {
-                    TargetVariableName = parameter.TargetVarName,
-                    TargetVariableType = targetVariable?.VarType
-                };
+                    var validationContext = new ValidationContext
+                    {
+                        TargetVariableName = parameter.TargetVarName,
+                        TargetVariableType = targetVariable?.VarType
+                    };
 
-                var expressionValidation = _expressionValidator.ValidateExpression(parameter.Expression, validationContext);
-                if (!expressionValidation.IsValid)
-                {
-                    errors.AddRange(expressionValidation.Errors);
+                    var expressionValidation = _expressionValidator.ValidateExpression(parameter.Expression, validationContext);
+                    if (!expressionValidation.IsValid)
+                    {
+                        errors.AddRange(expressionValidation.Errors);
+                    }
                 }
 
                 // 条件表达式验证（如果有）
@@ -496,111 +518,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
             }
         }
 
-        /// <summary>
-        /// 确定赋值类型
-        /// </summary>
-        private AssignmentType DetermineAssignmentType(string assignmentForm)
-        {
-            if (string.IsNullOrWhiteSpace(assignmentForm))
-                return AssignmentType.DirectValue;
-
-            switch (assignmentForm.Trim())
-            {
-                case "直接赋值":
-                    return AssignmentType.DirectValue;
-                case "表达式计算":
-                    return AssignmentType.ExpressionCalculation;
-                case "从其他变量复制":
-                    return AssignmentType.VariableCopy;
-                case "从PLC读取":
-                    return AssignmentType.PLCRead;
-                default:
-                    return AssignmentType.DirectValue;
-            }
-        }
-
-        /// <summary>
-        /// 解析PLC地址
-        /// </summary>
-        private PLCAddressInfo ParsePLCAddress(string address)
-        {
-            try
-            {
-                // 支持格式：
-                // "DB1.DBD0" - 默认模块
-                // "Module1:DB1.DBD0" - 指定模块
-
-                var parts = address.Split(':');
-                if (parts.Length == 1)
-                {
-                    // 没有指定模块，使用默认模块
-                    return new PLCAddressInfo
-                    {
-                        ModuleName = "Default",
-                        Address = parts[0].Trim()
-                    };
-                }
-                else if (parts.Length == 2)
-                {
-                    return new PLCAddressInfo
-                    {
-                        ModuleName = parts[0].Trim(),
-                        Address = parts[1].Trim()
-                    };
-                }
-
-                return null; // 无效格式
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 从PLC读取数据
-        /// </summary>
-        private async Task<PLCReadResult> ReadFromPLCAsync(PLCAddressInfo addressInfo)
-        {
-            try
-            {
-                // 这里应该调用实际的PLC读取方法
-                // 由于PLC接口可能异步，使用Task.Run模拟
-
-                return await Task.Run(() =>
-                {
-                    try
-                    {
-                        // 模拟PLC读取 - 实际实现需要根据具体的PLC通讯库
-                        // var value = _plcManager.ReadValue(addressInfo.ModuleName, addressInfo.Address);
-
-                        // 临时返回模拟值
-                        return new PLCReadResult
-                        {
-                            Success = true,
-                            Value = "123.45", // 模拟读取到的值
-                            ReadTime = DateTime.Now
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        return new PLCReadResult
-                        {
-                            Success = false,
-                            ErrorMessage = ex.Message
-                        };
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return new PLCReadResult
-                {
-                    Success = false,
-                    ErrorMessage = $"PLC读取异常: {ex.Message}"
-                };
-            }
-        }
     }
 
     #region 辅助类和枚举定义
@@ -621,6 +538,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Engine
     /// </summary>
     public class AssignmentExecutionResult
     {
+
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }
         public List<string> ValidationErrors { get; set; } = new List<string>();

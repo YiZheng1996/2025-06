@@ -68,7 +68,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 }
                 warnings.AddRange(variableResult.Warnings);
 
-                // 3. 类型兼容性检查
+                // 预留类型检查，暂时不需要
+                // 3. 类型兼容性检查 
                 if (context?.TargetVariableType != null)
                 {
                     var typeResult = ValidateTypeCompatibility(expression, context.TargetVariableType);

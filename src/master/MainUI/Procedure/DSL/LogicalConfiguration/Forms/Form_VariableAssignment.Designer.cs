@@ -1,4 +1,6 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Parameter;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
     partial class Form_VariableAssignment
     {
@@ -15,6 +17,8 @@
         {
             if (disposing && (components != null))
             {
+                _validationTimer?.Dispose();
+                _previewTimer?.Dispose();
                 components.Dispose();
             }
             base.Dispose(disposing);
@@ -314,7 +318,7 @@
             cmbAssignmentType.FillColor = Color.White;
             cmbAssignmentType.Font = new Font("微软雅黑", 10F);
             cmbAssignmentType.ItemHoverColor = Color.FromArgb(155, 200, 255);
-            cmbAssignmentType.Items.AddRange(new object[] { "直接赋值", "表达式计算", "从其他变量复制", "从PLC读取" });
+            //cmbAssignmentType.Items.AddRange(new object[] { "直接赋值", "表达式计算", "从其他变量复制", "从PLC读取" });
             cmbAssignmentType.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
             cmbAssignmentType.Location = new Point(130, 95);
             cmbAssignmentType.Margin = new Padding(4, 5, 4, 5);

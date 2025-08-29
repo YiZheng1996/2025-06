@@ -1,4 +1,6 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
+﻿using MainUI.Procedure.DSL.LogicalConfiguration.Forms;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Parameter
 {
     /// <summary>
     /// 项点变量赋值参数
@@ -11,19 +13,24 @@
         public string TargetVarName { get; set; }
 
         /// <summary>
-        /// 赋值表达式
+        /// 赋值方式
         /// </summary>
-        public string Expression { get; set; } 
+        public AssignmentTypeEnum AssignmentType { get; set; } = AssignmentTypeEnum.DirectAssignment;
+
+        /// <summary>
+        /// 赋值表达式（用于直接赋值、表达式计算、变量复制）
+        /// </summary>
+        public string Expression { get; set; }
+
+        /// <summary>
+        /// 数据源配置（用于PLC读取）
+        /// </summary>
+        public DataSourceConfig DataSource { get; set; } = new DataSourceConfig();
 
         /// <summary>
         /// 是否赋值
         /// </summary>
         public bool IsAssignment { get; set; }
-
-        /// <summary>
-        /// 赋值表单名称
-        /// </summary>
-        public string AssignmentForm { get; set; }
 
         /// <summary>
         /// 条件

@@ -152,8 +152,8 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
                 // 变量赋值窗体
                 nameof(Form_VariableAssignment) => (T)(object)new Form_VariableAssignment(
                     _workflowState,
-                    _variableManager,
-                    GetSpecificLogger<Form_VariableAssignment>()
+                    GetSpecificLogger<Form_VariableAssignment>(),
+                    _plcManager
                     ),
 
                 // PLC读取窗体

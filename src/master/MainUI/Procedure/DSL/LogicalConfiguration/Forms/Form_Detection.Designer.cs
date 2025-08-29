@@ -112,6 +112,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             lblDetectionName.Size = new Size(82, 23);
             lblDetectionName.TabIndex = 0;
             lblDetectionName.Text = "检测名称:";
+            lblDetectionName.Visible = false;
             // 
             // txtDetectionName
             // 
@@ -132,6 +133,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
             txtDetectionName.Size = new Size(120, 30);
             txtDetectionName.TabIndex = 1;
             txtDetectionName.TextAlignment = ContentAlignment.MiddleLeft;
+            txtDetectionName.Visible = false;
             txtDetectionName.Watermark = "请输入";
             txtDetectionName.WatermarkActiveColor = Color.FromArgb(48, 48, 48);
             txtDetectionName.WatermarkColor = Color.FromArgb(48, 48, 48);
