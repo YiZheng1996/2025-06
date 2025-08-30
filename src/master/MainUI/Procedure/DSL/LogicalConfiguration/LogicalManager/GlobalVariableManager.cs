@@ -4,7 +4,6 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
 {
     /// <summary>
     /// 全局变量管理器
-    /// 同时支持静态方法（兼容性）和实例方法（推荐）
     /// </summary>
     public class GlobalVariableManager(IWorkflowStateService workflowState)
     {
@@ -100,7 +99,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
                     HasConflict = true,
                     ConflictStepIndex = variable.AssignedByStepIndex,
                     ConflictStepInfo = variable.AssignedByStepInfo ?? "",
-                    AssignmentType = (VariableAssignmentType)variable.AssignmentType
+                    ConflictAssignmentType = (VariableAssignmentType)variable.AssignmentType
                 };
             }
 
@@ -164,19 +163,57 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager
             public string ExtraInfo { get; set; }
         }
 
-        // 最简单的 VariableConflictInfo 实现
+        /// <summary>
+        /// 变量冲突信息类
+        /// </summary>
         public class VariableConflictInfo
         {
-            public bool HasConflict { get; set; } = false;
+            /// <summary>
+            /// 是否存在冲突
+            /// </summary>
+            public bool HasConflict { get; set; }
+
+            /// <summary>
+            /// 冲突的步骤索引
+            /// </summary>
             public int ConflictStepIndex { get; set; } = -1;
+
+            /// <summary>
+            /// 冲突步骤的信息描述
+            /// </summary>
             public string ConflictStepInfo { get; set; } = "";
-            public VariableAssignmentType AssignmentType { get; set; } = VariableAssignmentType.None;
+
+            /// <summary>
+            /// 冲突的赋值类型
+            /// </summary>
+            public VariableAssignmentType ConflictAssignmentType { get; set; } = VariableAssignmentType.None;
+
+            /// <summary>
+            /// 冲突详细说明
+            /// </summary>
+            public string ConflictDescription => HasConflict
+                ? $"变量已被步骤{ConflictStepIndex + 1}({ConflictStepInfo})以{ConflictAssignmentType}方式赋值"
+                : "无冲突";
         }
 
+        /// <summary>
+        /// 变量赋值类型
+        /// </summary>
         public enum VariableAssignmentType
         {
+            /// <summary>
+            /// 变量未被赋值
+            /// </summary>
             None = 0,
+
+            /// <summary>
+            /// 通过PLC读取被赋值
+            /// </summary>
             PLCRead = 1,
+
+            /// <summary>
+            /// 通过表达式计算被赋值
+            /// </summary>
             Expression = 2
         }
 

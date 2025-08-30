@@ -1,4 +1,6 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+﻿using static MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager.GlobalVariableManager;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
 {
     /// <summary>
     /// 工作流状态管理服务的线程安全实现
@@ -609,6 +611,152 @@
             // 使用泛型查找方法，条件是变量名匹配
             return FindVariable<VarItem_Enhanced>(v => v.VarName == varName);
         }
+
+        /// <summary>
+        /// 标记变量被步骤赋值占用
+        /// </summary>
+        public void MarkVariableAssignedByStep(string varName, int stepIndex, string stepInfo, VariableAssignmentType assignmentType)
+        {
+            if (string.IsNullOrEmpty(varName) || stepIndex < 0)
+                return;
+
+            _variablesLock.EnterWriteLock();
+            try
+            {
+                var variable = FindVariableByName(varName);
+                if (variable != null)
+                {
+                    // 设置赋值状态
+                    variable.SetAssignmentStatus(stepIndex, stepInfo, assignmentType);
+
+                    // 触发变量状态变更事件
+                    OnVariableStateChanged(variable);
+                }
+            }
+            finally
+            {
+                _variablesLock.ExitWriteLock();
+            }
+        }
+
+        /// <summary>
+        /// 清除变量的赋值标记
+        /// </summary>
+        public void ClearVariableAssignmentMark(string varName, int stepIndex)
+        {
+            if (string.IsNullOrEmpty(varName) || stepIndex < 0)
+                return;
+
+            _variablesLock.EnterWriteLock();
+            try
+            {
+                var variable = FindVariableByName(varName);
+                if (variable != null && variable.AssignedByStepIndex == stepIndex)
+                {
+                    // 只能清除自己标记的变量
+                    variable.ClearAssignmentStatus();
+
+                    // 触发变量状态变更事件
+                    OnVariableStateChanged(variable);
+                }
+            }
+            finally
+            {
+                _variablesLock.ExitWriteLock();
+            }
+        }
+
+        /// <summary>
+        /// 检查变量赋值冲突
+        /// </summary>
+        public VariableConflictInfo CheckVariableAssignmentConflict(string varName, int excludeStepIndex)
+        {
+            if (string.IsNullOrEmpty(varName))
+                return new VariableConflictInfo { HasConflict = false };
+
+            _variablesLock.EnterReadLock();
+            try
+            {
+                // 查找变量
+                var variable = FindVariableByName(varName);
+                if (variable == null || !variable.IsAssignedByStep)
+                    return new VariableConflictInfo { HasConflict = false };
+
+                // 如果被当前步骤赋值，不算冲突
+                if (variable.AssignedByStepIndex == excludeStepIndex)
+                    return new VariableConflictInfo { HasConflict = false };
+
+                // 存在冲突
+                return new VariableConflictInfo
+                {
+                    HasConflict = true,
+                    ConflictStepIndex = variable.AssignedByStepIndex,
+                    ConflictStepInfo = variable.AssignedByStepInfo,
+                    ConflictAssignmentType = (LogicalManager.GlobalVariableManager.VariableAssignmentType)variable.AssignmentType
+                };
+            }
+            finally
+            {
+                _variablesLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
+        /// 批量检查多个变量的赋值冲突
+        /// </summary>
+        public Dictionary<string, VariableConflictInfo> CheckMultipleVariableConflicts(List<string> varNames, int excludeStepIndex)
+        {
+            var conflicts = new Dictionary<string, VariableConflictInfo>();
+
+            if (varNames?.Count > 0)
+            {
+                foreach (var varName in varNames)
+                {
+                    conflicts[varName] = CheckVariableAssignmentConflict(varName, excludeStepIndex);
+                }
+            }
+
+            return conflicts;
+        }
+
+        /// <summary>
+        /// 获取被指定步骤赋值的所有变量
+        /// </summary>
+        public List<VarItem_Enhanced> GetVariablesAssignedByStep(int stepIndex)
+        {
+            _variablesLock.EnterReadLock();
+            try
+            {
+                return _variables.OfType<VarItem_Enhanced>()
+                    .Where(v => v.IsAssignedByStep && v.AssignedByStepIndex == stepIndex)
+                    .ToList();
+            }
+            finally
+            {
+                _variablesLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
+        /// 变量状态变更事件
+        /// </summary>
+        public event Action<VarItem_Enhanced> VariableStateChanged;
+
+        /// <summary>
+        /// 触发变量状态变更事件
+        /// </summary>
+        private void OnVariableStateChanged(VarItem_Enhanced variable)
+        {
+            try
+            {
+                VariableStateChanged?.Invoke(variable);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("触发变量状态变更事件时发生错误", ex);
+            }
+        }
+
 
         #endregion
 

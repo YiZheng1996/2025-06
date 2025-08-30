@@ -82,6 +82,7 @@
             AssignedByStepInfo = "";
             AssignmentType = VariableAssignmentType.None;
         }
+
     }
 
     /// <summary>

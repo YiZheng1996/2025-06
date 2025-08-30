@@ -1,4 +1,6 @@
-﻿namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
+﻿using static MainUI.Procedure.DSL.LogicalConfiguration.LogicalManager.GlobalVariableManager;
+
+namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
 {
     /// <summary>
     /// 工作流状态管理服务接口
@@ -194,6 +196,47 @@
         /// <returns>找到的变量对象，如果不存在则返回 null</returns>
         VarItem_Enhanced FindVariableByName(string varName);
 
+        /// <summary>
+        /// 标记变量被步骤赋值占用
+        /// 用于跟踪变量的赋值状态和冲突检测
+        /// </summary>
+        /// <param name="varName">变量名</param>
+        /// <param name="stepIndex">步骤索引</param>
+        /// <param name="stepInfo">步骤信息描述</param>
+        /// <param name="assignmentType">赋值类型</param>
+        void MarkVariableAssignedByStep(string varName, int stepIndex, string stepInfo, VariableAssignmentType assignmentType);
+
+        /// <summary>
+        /// 清除变量的赋值标记
+        /// 当步骤被删除或赋值配置被移除时调用
+        /// </summary>
+        /// <param name="varName">变量名</param>
+        /// <param name="stepIndex">步骤索引，用于验证只能清除自己标记的变量</param>
+        void ClearVariableAssignmentMark(string varName, int stepIndex);
+
+        /// <summary>
+        /// 检查变量赋值冲突
+        /// 检测变量是否已被其他步骤赋值
+        /// </summary>
+        /// <param name="varName">变量名</param>
+        /// <param name="excludeStepIndex">排除的步骤索引（通常是当前步骤）</param>
+        /// <returns>冲突检查结果</returns>
+        VariableConflictInfo CheckVariableAssignmentConflict(string varName, int excludeStepIndex);
+
+        /// <summary>
+        /// 批量检查多个变量的赋值冲突
+        /// </summary>
+        /// <param name="varNames">变量名列表</param>
+        /// <param name="excludeStepIndex">排除的步骤索引</param>
+        /// <returns>冲突信息字典，key为变量名</returns>
+        Dictionary<string, VariableConflictInfo> CheckMultipleVariableConflicts(List<string> varNames, int excludeStepIndex);
+
+        /// <summary>
+        /// 获取被指定步骤赋值的所有变量
+        /// </summary>
+        /// <param name="stepIndex">步骤索引</param>
+        /// <returns>被该步骤赋值的变量列表</returns>
+        List<VarItem_Enhanced> GetVariablesAssignedByStep(int stepIndex);
         #endregion
 
         #region 事件通知
