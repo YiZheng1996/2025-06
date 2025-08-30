@@ -836,9 +836,24 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
     /// </summary>
     public class ValidationResult
     {
+        /// <summary>
+        /// 是否有效
+        /// </summary>
         public bool IsValid { get; set; } = true;
-        public List<string> Errors { get; set; } = new List<string>();
-        public List<string> Warnings { get; set; } = new List<string>();
+
+        /// <summary>
+        /// 错误信息列表
+        /// </summary>
+        public List<string> Errors { get; set; } = [];
+
+        /// <summary>
+        /// 提醒信息列表
+        /// </summary>
+        public List<string> Warnings { get; set; } = [];
+
+        /// <summary>
+        /// 消息摘要
+        /// </summary>
         public string Message { get; set; } = string.Empty;
 
         public static ValidationResult Error(string message)
@@ -866,9 +881,20 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
     /// </summary>
     public class ValidationContext
     {
+        /// <summary>
+        /// 目标变量名称
+        /// </summary>
         public string TargetVariableName { get; set; }
+
+        /// <summary>
+        /// 目标变量类型
+        /// </summary>
         public string TargetVariableType { get; set; }
-        public Dictionary<string, object> AdditionalContext { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// 附加上下文
+        /// </summary>
+        public Dictionary<string, object> AdditionalContext { get; set; } = [];
     }
 
     /// <summary>
@@ -876,9 +902,24 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Services
     /// </summary>
     public class CalculationResult
     {
+        /// <summary>
+        /// 计算结果
+        /// </summary>
         public bool Success { get; set; }
+
+        /// <summary>
+        /// 计算值
+        /// </summary>
         public object Value { get; set; }
+
+        /// <summary>
+        /// 计算值类型
+        /// </summary>
         public Type ValueType { get; set; }
+
+        /// <summary>
+        /// 错误消息
+        /// </summary>
         public string ErrorMessage { get; set; }
         
         public override string ToString()
