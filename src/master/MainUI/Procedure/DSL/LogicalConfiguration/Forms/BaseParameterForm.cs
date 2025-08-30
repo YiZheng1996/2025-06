@@ -60,6 +60,7 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             _workflowState = workflowState ?? throw new ArgumentNullException(nameof(workflowState));
             _plcManager = plcManager ?? throw new ArgumentNullException(nameof(plcManager));
+            _globalVariable = Program.ServiceProvider?.GetService<GlobalVariableManager>();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 

@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
 {
@@ -1404,12 +1403,34 @@ namespace MainUI.Procedure.DSL.LogicalConfiguration.Forms
         {
             try
             {
-                // TODO: 实现表达式构建器功能
-                MessageHelper.MessageOK("表达式构建器功能正在开发中...", TType.Info);
+                // 创建表达式构建器对话框
+                using var builder = new ExpressionBuilderDialog(GlobalVariable, _expressionValidator)
+                {
+                    InitialExpression = txtAssignmentContent?.Text ?? "",
+                    TargetVariableType = GetTargetVariableType(),
+                    StartPosition = FormStartPosition.CenterParent
+                };
+
+                // 显示对话框
+                if (builder.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(builder.GeneratedExpression))
+                {
+                    // 将生成的表达式设置到文本框
+                    txtAssignmentContent.Text = builder.GeneratedExpression;
+
+                    // 标记有未保存的更改
+                    _hasUnsavedChanges = true;
+
+                    // 重启验证和预览定时器
+                    RestartValidationTimer();
+                    RestartPreviewTimer();
+
+                    Logger?.LogDebug("表达式构建器生成表达式: {Expression}", builder.GeneratedExpression);
+                }
             }
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "打开表达式构建器时发生错误");
+                MessageHelper.MessageOK($"打开表达式构建器失败：{ex.Message}", TType.Error);
             }
         }
 
