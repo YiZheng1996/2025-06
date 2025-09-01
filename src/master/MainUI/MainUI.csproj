@@ -49,6 +49,7 @@
     <None Remove="Procedure\DSL\LogicalConfiguration\Forms\Form_DefineVar.resx~RF10f9bd27.TMP" />
     <None Remove="Procedure\DSL\LogicalConfiguration\Forms\Form_VariableAssignment.Designer.cs~RF4660589.TMP" />
     <None Remove="Procedure\DSL\LogicalConfiguration\Forms\Form_VariableAssignment.resx~RF53ea374.TMP" />
+    <None Remove="Procedure\DSL\LogicalConfiguration\Forms\frmLogicalConfiguration.Designer.cs~RF16b4996.TMP" />
     <None Remove="Procedure\DSL\nsspch1m.5il~" />
     <None Remove="x0h1fpci.uwg~" />
     <None Remove="思源黑体 CN Bold.ttf" />

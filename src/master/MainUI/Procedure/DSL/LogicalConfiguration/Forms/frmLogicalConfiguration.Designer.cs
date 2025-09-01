@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle8 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle9 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle10 = new DataGridViewCellStyle();
             ToolTreeView = new UITreeView();
             uiLine1 = new UILine();
             ProcessDataGridView = new UIDataGridView();
@@ -46,9 +46,24 @@
             BtnClose = new UISymbolButton();
             btnSave = new UISymbolButton();
             uiLine3 = new UILine();
+            groupStepLog = new UITitlePanel();
+            txtExecutionLog = new RichTextBox();
+            groupStepInfo = new UITitlePanel();
+            lblExecTimeValue = new AntdUI.Label();
+            lblStatusValue = new AntdUI.Label();
+            lblStepNameValue = new AntdUI.Label();
+            lblStepNumberValue = new AntdUI.Label();
+            lblExecTimeTitle = new AntdUI.Label();
+            lblStatusTitle = new AntdUI.Label();
+            lblStepNameTitle = new AntdUI.Label();
+            lblStepNumberTitle = new AntdUI.Label();
+            tableStepInfo = new TableLayoutPanel();
             ((System.ComponentModel.ISupportInitialize)ProcessDataGridView).BeginInit();
             uiContextMenuStrip1.SuspendLayout();
             uiPanel1.SuspendLayout();
+            groupStepLog.SuspendLayout();
+            groupStepInfo.SuspendLayout();
+            tableStepInfo.SuspendLayout();
             SuspendLayout();
             // 
             // ToolTreeView
@@ -93,30 +108,30 @@
             ProcessDataGridView.AllowDrop = true;
             ProcessDataGridView.AllowUserToAddRows = false;
             ProcessDataGridView.AllowUserToDeleteRows = false;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(235, 243, 255);
-            ProcessDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle6.BackColor = Color.FromArgb(235, 243, 255);
+            ProcessDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle6;
             ProcessDataGridView.BackgroundColor = Color.White;
             ProcessDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = Color.FromArgb(44, 62, 80);
-            dataGridViewCellStyle2.Font = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            dataGridViewCellStyle2.ForeColor = Color.White;
-            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(44, 62, 80);
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            ProcessDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = Color.FromArgb(44, 62, 80);
+            dataGridViewCellStyle7.Font = new Font("微软雅黑", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            dataGridViewCellStyle7.ForeColor = Color.White;
+            dataGridViewCellStyle7.SelectionBackColor = Color.FromArgb(44, 62, 80);
+            dataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
+            ProcessDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             ProcessDataGridView.ColumnHeadersHeight = 40;
             ProcessDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             ProcessDataGridView.Columns.AddRange(new DataGridViewColumn[] { ColProcessName, ColStepNum });
             ProcessDataGridView.ContextMenuStrip = uiContextMenuStrip1;
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = SystemColors.Window;
-            dataGridViewCellStyle3.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dataGridViewCellStyle3.ForeColor = Color.FromArgb(48, 48, 48);
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            ProcessDataGridView.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = SystemColors.Window;
+            dataGridViewCellStyle8.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            dataGridViewCellStyle8.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle8.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = DataGridViewTriState.False;
+            ProcessDataGridView.DefaultCellStyle = dataGridViewCellStyle8;
             ProcessDataGridView.EnableHeadersVisualStyles = false;
             ProcessDataGridView.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
             ProcessDataGridView.GridColor = Color.Black;
@@ -124,18 +139,18 @@
             ProcessDataGridView.Name = "ProcessDataGridView";
             ProcessDataGridView.ReadOnly = true;
             ProcessDataGridView.RectColor = Color.White;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = Color.FromArgb(235, 243, 255);
-            dataGridViewCellStyle4.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
-            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(80, 160, 255);
-            dataGridViewCellStyle4.SelectionForeColor = Color.White;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
-            ProcessDataGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle5.BackColor = Color.White;
-            dataGridViewCellStyle5.Font = new Font("微软雅黑", 12F, FontStyle.Bold, GraphicsUnit.Point, 134);
-            ProcessDataGridView.RowsDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle9.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = Color.FromArgb(235, 243, 255);
+            dataGridViewCellStyle9.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            dataGridViewCellStyle9.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle9.SelectionBackColor = Color.FromArgb(80, 160, 255);
+            dataGridViewCellStyle9.SelectionForeColor = Color.White;
+            dataGridViewCellStyle9.WrapMode = DataGridViewTriState.True;
+            ProcessDataGridView.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle10.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle10.BackColor = Color.White;
+            dataGridViewCellStyle10.Font = new Font("微软雅黑", 12F, FontStyle.Bold, GraphicsUnit.Point, 134);
+            ProcessDataGridView.RowsDefaultCellStyle = dataGridViewCellStyle10;
             ProcessDataGridView.RowTemplate.Height = 35;
             ProcessDataGridView.SelectedIndex = -1;
             ProcessDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -282,8 +297,175 @@
             uiLine3.Name = "uiLine3";
             uiLine3.Size = new Size(321, 29);
             uiLine3.TabIndex = 439;
-            uiLine3.Text = "PLC点位";
+            uiLine3.Text = "步骤执行详情";
             uiLine3.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // groupStepLog
+            // 
+            groupStepLog.Controls.Add(txtExecutionLog);
+            groupStepLog.FillColor = Color.White;
+            groupStepLog.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            groupStepLog.ForeColor = Color.FromArgb(64, 64, 64);
+            groupStepLog.Location = new Point(741, 309);
+            groupStepLog.Margin = new Padding(4, 5, 4, 5);
+            groupStepLog.MinimumSize = new Size(1, 1);
+            groupStepLog.Name = "groupStepLog";
+            groupStepLog.Padding = new Padding(10);
+            groupStepLog.RectColor = Color.FromArgb(230, 230, 230);
+            groupStepLog.ShowText = false;
+            groupStepLog.Size = new Size(350, 492);
+            groupStepLog.Style = UIStyle.Custom;
+            groupStepLog.TabIndex = 441;
+            groupStepLog.Text = "📝 执行日志";
+            groupStepLog.TextAlignment = ContentAlignment.MiddleCenter;
+            groupStepLog.TitleColor = Color.FromArgb(64, 64, 64);
+            // 
+            // txtExecutionLog
+            // 
+            txtExecutionLog.BackColor = Color.FromArgb(40, 40, 40);
+            txtExecutionLog.BorderStyle = BorderStyle.None;
+            txtExecutionLog.Font = new Font("Consolas", 9F);
+            txtExecutionLog.ForeColor = Color.FromArgb(0, 255, 127);
+            txtExecutionLog.Location = new Point(10, 41);
+            txtExecutionLog.Name = "txtExecutionLog";
+            txtExecutionLog.ReadOnly = true;
+            txtExecutionLog.ScrollBars = RichTextBoxScrollBars.Vertical;
+            txtExecutionLog.Size = new Size(330, 438);
+            txtExecutionLog.TabIndex = 0;
+            txtExecutionLog.Text = "[系统] 等待选择步骤...";
+            txtExecutionLog.WordWrap = false;
+            // 
+            // groupStepInfo
+            // 
+            groupStepInfo.Controls.Add(tableStepInfo);
+            groupStepInfo.FillColor = Color.White;
+            groupStepInfo.Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold);
+            groupStepInfo.ForeColor = Color.FromArgb(64, 64, 64);
+            groupStepInfo.Location = new Point(741, 87);
+            groupStepInfo.Margin = new Padding(4, 5, 4, 5);
+            groupStepInfo.MinimumSize = new Size(1, 1);
+            groupStepInfo.Name = "groupStepInfo";
+            groupStepInfo.Padding = new Padding(10);
+            groupStepInfo.RectColor = Color.FromArgb(230, 230, 230);
+            groupStepInfo.ShowText = false;
+            groupStepInfo.Size = new Size(350, 215);
+            groupStepInfo.Style = UIStyle.Custom;
+            groupStepInfo.TabIndex = 440;
+            groupStepInfo.Text = "📊 步骤详情";
+            groupStepInfo.TextAlignment = ContentAlignment.MiddleCenter;
+            groupStepInfo.TitleColor = Color.FromArgb(64, 64, 64);
+            // 
+            // lblExecTimeValue
+            // 
+            lblExecTimeValue.Dock = DockStyle.Fill;
+            lblExecTimeValue.Font = new Font("Microsoft YaHei UI", 9F);
+            lblExecTimeValue.ForeColor = Color.FromArgb(64, 64, 64);
+            lblExecTimeValue.Location = new Point(93, 78);
+            lblExecTimeValue.Name = "lblExecTimeValue";
+            lblExecTimeValue.Size = new Size(234, 77);
+            lblExecTimeValue.TabIndex = 8;
+            lblExecTimeValue.Text = "--";
+            // 
+            // lblStatusValue
+            // 
+            lblStatusValue.Dock = DockStyle.Fill;
+            lblStatusValue.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            lblStatusValue.ForeColor = Color.FromArgb(108, 117, 125);
+            lblStatusValue.Location = new Point(93, 53);
+            lblStatusValue.Name = "lblStatusValue";
+            lblStatusValue.Size = new Size(234, 19);
+            lblStatusValue.TabIndex = 7;
+            lblStatusValue.Text = "未选择";
+            // 
+            // lblStepNameValue
+            // 
+            lblStepNameValue.Dock = DockStyle.Fill;
+            lblStepNameValue.Font = new Font("Microsoft YaHei UI", 9F);
+            lblStepNameValue.ForeColor = Color.FromArgb(64, 64, 64);
+            lblStepNameValue.Location = new Point(93, 28);
+            lblStepNameValue.Name = "lblStepNameValue";
+            lblStepNameValue.Size = new Size(234, 19);
+            lblStepNameValue.TabIndex = 6;
+            lblStepNameValue.Text = "--";
+            // 
+            // lblStepNumberValue
+            // 
+            lblStepNumberValue.Dock = DockStyle.Fill;
+            lblStepNumberValue.Font = new Font("Microsoft YaHei UI", 9F);
+            lblStepNumberValue.ForeColor = Color.FromArgb(64, 64, 64);
+            lblStepNumberValue.Location = new Point(93, 3);
+            lblStepNumberValue.Name = "lblStepNumberValue";
+            lblStepNumberValue.Size = new Size(234, 19);
+            lblStepNumberValue.TabIndex = 5;
+            lblStepNumberValue.Text = "--";
+            // 
+            // lblExecTimeTitle
+            // 
+            lblExecTimeTitle.Dock = DockStyle.Fill;
+            lblExecTimeTitle.Font = new Font("Microsoft YaHei UI", 9F);
+            lblExecTimeTitle.ForeColor = Color.FromArgb(128, 128, 128);
+            lblExecTimeTitle.Location = new Point(3, 78);
+            lblExecTimeTitle.Name = "lblExecTimeTitle";
+            lblExecTimeTitle.Size = new Size(84, 77);
+            lblExecTimeTitle.TabIndex = 3;
+            lblExecTimeTitle.Text = "执行时间:";
+            // 
+            // lblStatusTitle
+            // 
+            lblStatusTitle.Dock = DockStyle.Fill;
+            lblStatusTitle.Font = new Font("Microsoft YaHei UI", 9F);
+            lblStatusTitle.ForeColor = Color.FromArgb(128, 128, 128);
+            lblStatusTitle.Location = new Point(3, 53);
+            lblStatusTitle.Name = "lblStatusTitle";
+            lblStatusTitle.Size = new Size(84, 19);
+            lblStatusTitle.TabIndex = 2;
+            lblStatusTitle.Text = "当前状态:";
+            // 
+            // lblStepNameTitle
+            // 
+            lblStepNameTitle.Dock = DockStyle.Fill;
+            lblStepNameTitle.Font = new Font("Microsoft YaHei UI", 9F);
+            lblStepNameTitle.ForeColor = Color.FromArgb(128, 128, 128);
+            lblStepNameTitle.Location = new Point(3, 28);
+            lblStepNameTitle.Name = "lblStepNameTitle";
+            lblStepNameTitle.Size = new Size(84, 19);
+            lblStepNameTitle.TabIndex = 1;
+            lblStepNameTitle.Text = "步骤名称:";
+            // 
+            // lblStepNumberTitle
+            // 
+            lblStepNumberTitle.Dock = DockStyle.Fill;
+            lblStepNumberTitle.Font = new Font("Microsoft YaHei UI", 9F);
+            lblStepNumberTitle.ForeColor = Color.FromArgb(128, 128, 128);
+            lblStepNumberTitle.Location = new Point(3, 3);
+            lblStepNumberTitle.Name = "lblStepNumberTitle";
+            lblStepNumberTitle.Size = new Size(84, 19);
+            lblStepNumberTitle.TabIndex = 0;
+            lblStepNumberTitle.Text = "步骤编号:";
+            // 
+            // tableStepInfo
+            // 
+            tableStepInfo.ColumnCount = 2;
+            tableStepInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90F));
+            tableStepInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableStepInfo.Controls.Add(lblStepNumberTitle, 0, 0);
+            tableStepInfo.Controls.Add(lblStepNameTitle, 0, 1);
+            tableStepInfo.Controls.Add(lblStatusTitle, 0, 2);
+            tableStepInfo.Controls.Add(lblExecTimeTitle, 0, 3);
+            tableStepInfo.Controls.Add(lblStepNumberValue, 1, 0);
+            tableStepInfo.Controls.Add(lblStepNameValue, 1, 1);
+            tableStepInfo.Controls.Add(lblStatusValue, 1, 2);
+            tableStepInfo.Controls.Add(lblExecTimeValue, 1, 3);
+            tableStepInfo.Dock = DockStyle.Bottom;
+            tableStepInfo.Location = new Point(10, 47);
+            tableStepInfo.Name = "tableStepInfo";
+            tableStepInfo.RowCount = 4;
+            tableStepInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableStepInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableStepInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableStepInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
+            tableStepInfo.Size = new Size(330, 158);
+            tableStepInfo.TabIndex = 0;
             // 
             // FrmLogicalConfiguration
             // 
@@ -291,6 +473,8 @@
             BackColor = Color.FromArgb(236, 236, 236);
             ClientSize = new Size(1102, 878);
             ControlBox = false;
+            Controls.Add(groupStepLog);
+            Controls.Add(groupStepInfo);
             Controls.Add(uiLine3);
             Controls.Add(uiPanel1);
             Controls.Add(uiLine2);
@@ -309,6 +493,9 @@
             ((System.ComponentModel.ISupportInitialize)ProcessDataGridView).EndInit();
             uiContextMenuStrip1.ResumeLayout(false);
             uiPanel1.ResumeLayout(false);
+            groupStepLog.ResumeLayout(false);
+            groupStepInfo.ResumeLayout(false);
+            tableStepInfo.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -327,5 +514,17 @@
         private UISymbolButton btnSave;
         private UISymbolButton BtnClose;
         private UISymbolButton btnExecute;
+        private UITitlePanel groupStepLog;
+        private RichTextBox txtExecutionLog;
+        private UITitlePanel groupStepInfo;
+        private TableLayoutPanel tableStepInfo;
+        private AntdUI.Label lblStepNumberTitle;
+        private AntdUI.Label lblStepNameTitle;
+        private AntdUI.Label lblStatusTitle;
+        private AntdUI.Label lblExecTimeTitle;
+        private AntdUI.Label lblStepNumberValue;
+        private AntdUI.Label lblStepNameValue;
+        private AntdUI.Label lblStatusValue;
+        private AntdUI.Label lblExecTimeValue;
     }
 }
